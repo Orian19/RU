@@ -6,10 +6,14 @@ public class Main {
      * @param args .
      */
     public static void main(String[] args) throws InterruptedException {
-        Manager <Patient> manager = new Manager<>();
-        addPatients(10, manager);
-        simulateOnlyByPriority(manager);
-        simulateOnlyByCreation(manager); // TODO: currently can do only one of priority/creation because each cleans the other data structure.
+        Manager <Patient> manager1 = new Manager<>();
+        Manager <Patient> manager2 = new Manager<>();
+        addPatients(10, manager1);
+        addPatients(10, manager2);
+        System.out.println("\nsimulateOnlyByPriority\n");
+        simulateOnlyByPriority(manager1);
+        System.out.println("\nsimulateOnlyByCreation\n");
+        simulateOnlyByCreation(manager2); // TODO: currently can do only one of priority/creation because each cleans the other data structure.
     }
 
     /**
@@ -28,7 +32,6 @@ public class Main {
             manager.add(new Patient(rndP, vip));
             Thread.sleep(1000);
         }
-
     }
 
     /**
