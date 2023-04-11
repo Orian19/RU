@@ -8,8 +8,8 @@ public class Manager <T extends Comparable<T>> { // TODO: check if I understood 
     }
 
     public Manager() {
-        this.queue = new Queue<T>();
-        this.heap = new Heap<T>();
+        this.queue = new Queue<>();
+        this.heap = new Heap<>();
         this.size = 0;
     }
     /**

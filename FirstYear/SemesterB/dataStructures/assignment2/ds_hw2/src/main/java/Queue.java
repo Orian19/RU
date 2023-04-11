@@ -8,7 +8,7 @@ public class Queue <T> { // implementation using DoublyLinkedList
      */
     public Queue() {
         // starts with a dummy node, to avoid creating an empty list
-        Node<T> dummy = new Node<T>(null);
+        Node<T> dummy = new Node<>(null);
         this.first = dummy;
         this.last = first;
         this.size = 0;
@@ -20,7 +20,7 @@ public class Queue <T> { // implementation using DoublyLinkedList
      * @param t the element
      */
     public void add(T t) {
-        Node<T> newNode = new Node<T>(t);
+        Node<T> newNode = new Node<>(t);
         if (this.size == 0) {
             this.last = newNode;
             this.first.next = this.last;
@@ -65,7 +65,7 @@ public class Queue <T> { // implementation using DoublyLinkedList
         Node<T> cur = this.first.next;
 
         while (cur != null && cur != this.first) {
-            if (cur.t.equals(t)) { // TODO: do I need to implement equals?
+            if (cur.t.equals(t)) { // TODO: use compareTo or equals?
                 if (cur == this.first.next) {
                     this.first.next = cur.next;
                     if (cur.next != null) {

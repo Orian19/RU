@@ -101,6 +101,11 @@ public class Patient implements Comparable<Patient>{
     }
 
 
+    /**
+     * toString override
+     *
+     * @return string for patient object
+     */
     @Override
     public String toString() {
         return "\npriority: " + this.priority + "\nvip: " + this.vip + "\nid: " +

@@ -79,8 +79,8 @@ public class Heap<T extends Comparable<T>> { // implementation max heap using ci
         }
         int eIdx = indexOf(t); // TODO: is there a better way to implement this method without using indexOf function?
 
-        // swapping the last element with t
         if (eIdx != -1) {
+            // swapping the last element with t
             this.heap[eIdx] = this.heap[size-1];
             this.heap[size-1] = t;
             this.size--;
