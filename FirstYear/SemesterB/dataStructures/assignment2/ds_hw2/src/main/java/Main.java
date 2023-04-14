@@ -13,7 +13,7 @@ public class Main {
         System.out.println("\nsimulateOnlyByPriority\n");
         simulateOnlyByPriority(manager1);
         System.out.println("\nsimulateOnlyByCreation\n");
-        simulateOnlyByCreation(manager2); // TODO: currently can do only one of priority/creation because each cleans the other data structure.
+        simulateOnlyByCreation(manager2); 
     }
 
     /**

@@ -65,7 +65,7 @@ public class Queue <T> { // implementation using DoublyLinkedList
         Node<T> cur = this.first.next;
 
         while (cur != null && cur != this.first) {
-            if (cur.t.equals(t)) { // TODO: use compareTo or equals?
+            if (cur.t.equals(t)) {
                 if (cur == this.first.next) {
                     this.first.next = cur.next;
                     if (cur.next != null) {

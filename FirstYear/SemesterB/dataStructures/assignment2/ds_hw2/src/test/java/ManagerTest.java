@@ -33,7 +33,7 @@ class ManagerTest {
     }
 
     @Test
-    void managerTestBoth() throws InterruptedException { //TODO:make sure the test works well
+    void managerTestBoth() throws InterruptedException {
         Manager<Patient> manager = new Manager<>();
 
         Patient p1 = new Patient(1, false);

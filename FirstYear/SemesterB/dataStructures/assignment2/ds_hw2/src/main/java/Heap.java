@@ -1,20 +1,16 @@
 import java.lang.reflect.Array;
-import java.util.Arrays;
 
-// TODO: think about edge cases!!! + is it necessary to do circular? (for overflow)
 public class Heap<T extends Comparable<T>> { // implementation max heap using circular arrays
     private T[] heap;
     private int maxSize = 50;
     private int size;
-    private int start;
 
     /**
      * constructor - creates an empty array
      */
     public Heap() {
-        this.heap = (T[]) Array.newInstance(Comparable.class, this.maxSize); // TODO: do I need to handle this warning?
+        this.heap = (T[]) Array.newInstance(Comparable.class, this.maxSize);
         this.size = 0;
-        this.start = 0;
     }
     /**
      * Adds t to the data structure
@@ -77,7 +73,7 @@ public class Heap<T extends Comparable<T>> { // implementation max heap using ci
         if (this.size == 0) {
             return;
         }
-        int eIdx = indexOf(t); // TODO: is there a better way to implement this method without using indexOf function?
+        int eIdx = indexOf(t);
 
         if (eIdx != -1) {
             // swapping the last element with t

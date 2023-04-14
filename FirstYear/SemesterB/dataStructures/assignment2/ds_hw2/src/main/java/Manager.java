@@ -1,4 +1,4 @@
-public class Manager <T extends Comparable<T>> { // TODO: check if I understood what manager needs to be. maybe do not need to delete from both heap and queue
+public class Manager <T extends Comparable<T>> {
     private Queue<T> queue;
     private Heap<T> heap;
     private int size;
