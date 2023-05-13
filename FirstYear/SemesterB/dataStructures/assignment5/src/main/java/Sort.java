@@ -4,7 +4,7 @@ public class Sort <T extends Comparable<T>> {
     private int threshold;
 
     public Sort() {
-        this.threshold = 0;//mergeRecursive = 50000; quickClass = 50;
+        this.threshold = 10;//mergeRecursive = 50000; quickClass = 50;
     }
 
     /**
@@ -79,8 +79,8 @@ public class Sort <T extends Comparable<T>> {
     private void quickSortRecitation(T[] array, int start, int end) {
         if (end - start > this.threshold) {
             int parti = partitionRecitation(array, start, end-1);
-            quickSortClass(array, start, parti-1);
-            quickSortClass(array, parti+1, end);
+            quickSortRecitation(array, start, parti-1);
+            quickSortRecitation(array, parti+1, end);
         } else {
             bubbleSort(array, start, end-1);
         }
@@ -103,7 +103,7 @@ public class Sort <T extends Comparable<T>> {
                 swapValues(array, lessIdx, moreIdx);
             }
         }
-        swapValues(array, lessIdx+1, end-1);
+        swapValues(array, lessIdx+1, end);
         return lessIdx + 1;
     }
 
@@ -260,36 +260,29 @@ public class Sort <T extends Comparable<T>> {
      * @param array to sort
      * @param base to be used
      */
-    //TODO: fixxxxx, does not work + I dont fully understand some parts
     public static void radixSort(int[] array, int base) {
-        int maxNumDigits = (int) Math.log(base); //TODO: probably issue here! // calculating the max num of digits for a specific base
-        // TODO: do we also need to deal with letters? for ex. hexadecimal
-        convertBase(array, 10, base);
-        int sizeDigits = getMaxSize(array, base);
+        int sizeDigits = getMaxSize(array);
 
-        for (int i = 0; i < sizeDigits; i += maxNumDigits) {
+        for (int i = 1; sizeDigits / i > 0; i *= base) { //TODO: understand 'for loop'
             int[] sortedBySubNum =  new int[array.length]; // starting from LSB to MSB
-            countSort(array, sortedBySubNum, sizeDigits, i, base);
+            countSort(array, sortedBySubNum, i, base);
             System.arraycopy(sortedBySubNum, 0, array, 0, array.length);
         }
-        convertBase(array, base, 10);
     }
 
     /**
      * finding the bound for radix sort
      * @param array given
-     * @param base given
      * @return max size of digits
      */
-    private static int getMaxSize(int[] array, int base) {
-        // TODO: not sure how this works or if needed
-        int maxElement = array[0];
-        for (int i = 1; i < array.length; i++) {
+    private static int getMaxSize(int[] array) {
+        int maxElement = Integer.MIN_VALUE;
+        for (int i = 0; i < array.length; i++) {
             if (array[i] > maxElement) {
                 maxElement = array[i];
             }
         }
-        return  (int) Math.ceil(Math.log(maxElement + 1) / Math.log(base));
+        return  maxElement;
     }
 
     /**
@@ -298,16 +291,13 @@ public class Sort <T extends Comparable<T>> {
      * @param digitIdx amount of digits representing one number in the given base
      * @param base working with (all elements in the array are from this base)
      * @param sorted result of the sorted array will be here
-     * @param sizeBound the maximum number of digits in the given array (our k)
      */
-    private static void countSort(int [] array, int [] sorted, int sizeBound, int digitIdx, int base) {
-        // TODO: need to somehow get the max num of digits
-        // TODO: need somehow integrate digitIdx and base!!!
+    private static void countSort(int [] array, int [] sorted, int digitIdx, int base) {
         // initializing the prefix sum array (C in the lecture)
-        int[] prefixSum = new int[base]; //TODO: not sure about the size (sizeBoound?)
+        int[] prefixSum = new int[base];
 
         // building C to hold the number of appearance of each element s.t it corresponds to index of C
-        for (int i = 0; i < array.length; i++) { // TODO: should start from 0/1?
+        for (int i = 0; i < array.length; i++) {
             int curDigit= getCurDigit(array[i], digitIdx, base);
             prefixSum[curDigit]++;
         }
@@ -320,52 +310,15 @@ public class Sort <T extends Comparable<T>> {
 
         // now C prime = prefix sum contains the number of elements less than or equal to i
         // we now fill the sorted(B) with the correct values by prefixSum to get the sorted array
-        for (int i = array.length-1; i >= 0; i--) { //TODO: make sure for is good
+        for (int i = array.length-1; i >= 0; i--) {
             int curDigit = getCurDigit(array[i], digitIdx, base);
-            sorted[prefixSum[curDigit] - 1] = array[i]; //TODO: should there be -1 here?
+            sorted[prefixSum[curDigit]-1] = array[i];
             prefixSum[curDigit]--;
         }
     }
 
-    private static int getCurDigit(int curValue, int digIdx, int base) {
-        // TODO: need to convert. is this what I need?
-        return (curValue / (int)Math.pow(base, digIdx)) % base;
-    }
-
-    /**
-     * converting a number from one base to another
-     * @param array given
-     * @param fromBase from which base to convert
-     * @param toBase to which base to convert
-     */
-    private static void convertBase(int[] array, int fromBase, int toBase) {
-        for (int i = 0; i < array.length; i++) {
-            array[i] = convertNumber(array[i], fromBase, toBase);
-        }
-    }
-
-    private static int convertNumber(int number, int fromBase, int toBase) {
-        return convertFromDecimal(convertToDecimal(number, fromBase), toBase);
-    }
-
-    private static int convertToDecimal(int number, int base) {
-        int decimal = 0;
-        int power = 0;
-        while (number > 0) {
-            decimal += (number % 10) * Math.pow(base, power++);
-            number /= 10;
-        }
-        return decimal;
-    }
-
-    private static int convertFromDecimal(int decimal, int base) {
-        int number = 0;
-        int power = 0;
-        while (decimal > 0) {
-            number += (decimal % base) * (int) Math.pow(10, power++);
-            decimal /= base;
-        }
-        return number;
+    private static int getCurDigit(int num, int digIdx, int base) {
+        return (num / digIdx) % base;  //TODO:understand
     }
 
     /**
