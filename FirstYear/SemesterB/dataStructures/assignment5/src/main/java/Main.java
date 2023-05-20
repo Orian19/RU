@@ -1,8 +1,11 @@
 import java.util.Arrays;
 import java.util.Random;
 
+import java.awt.*;
+import javax.swing.*;
+import java.awt.geom.*;
 public class Main <T extends Comparable<T>> {
-    static int NUMITER = 10;
+    static int NUMITER = 100;
     static String[] sortingAlgorithms = {"MergeSortClass", "MergeSortIterative",
             "quickSortClass", "quickSortRecitation", "radixSort", "JavaArraySort"};
     public static void main(String[] args) {
@@ -37,19 +40,28 @@ public class Main <T extends Comparable<T>> {
      * @param inputSizes to run on
      */
     public static void runComparisonTests(int[] inputSizes) {
+        double[][] rndAvgs = new double[inputSizes.length][sortingAlgorithms.length];
+        double[][] incAvgs = new double[inputSizes.length][sortingAlgorithms.length];
+        double[][] decAvgs = new double[inputSizes.length][sortingAlgorithms.length];
+
         for (int i = 0; i < inputSizes.length; i++) {
             System.out.println("Sorting comparison tests for input: " + inputSizes[i] + "\n");
-            randomInputsTester(inputSizes[i]);
-            increasingInputsTester(inputSizes[i]);
-            decreasingInputsTester(inputSizes[i]);
+            rndAvgs[i] = randomInputsTester(inputSizes[i]);
+            incAvgs[i] = increasingInputsTester(inputSizes[i]);
+            decAvgs[i] = decreasingInputsTester(inputSizes[i]);
         }
+
+//        // showing comparison plots
+//        ResultsGraph.showGraph(rndAvgs); // Show graph for random input averages
+//        ResultsGraph.showGraph(incAvgs); // Show graph for increasing input averages
+//        ResultsGraph.showGraph(decAvgs); // Show graph for decreasing input averages
     }
 
     /**
      * run randomInputTests
      * @param size input size
      */
-    public static void randomInputsTester(int size) {
+    public static double[] randomInputsTester(int size) {
         Sort s = new Sort();
         long startTime =  0, endTime;
         long[][] durationList = new long [6][NUMITER];
@@ -105,13 +117,16 @@ public class Main <T extends Comparable<T>> {
         double[] averages = getAverages(durationList, 5);
         double [] standardDeviations = getStandardDeviations(durationList, 5);
         printResults(averages, standardDeviations);
+
+        return averages;
     }
+
 
     /**
      * run decreasing input tests
      * @param size to sort
      */
-    public static void decreasingInputsTester(int size) {
+    public static double[] decreasingInputsTester(int size) {
         Sort s = new Sort();
         long startTime =  0, endTime =  0;
         long [][] durationList = new long [6][NUMITER];
@@ -171,13 +186,15 @@ public class Main <T extends Comparable<T>> {
         double[] averages = getAverages(durationList, 5);
         double [] standardDeviations = getStandardDeviations(durationList, 5);
         printResults(averages, standardDeviations);
+
+        return averages;
     }
 
     /**
      * run increasing input tests
      * @param size to sort
      */
-    public static void increasingInputsTester(int size) {
+    public static double[] increasingInputsTester(int size) {
         Sort s = new Sort();
         long startTime =  0, endTime =  0;
         long [][] durationList = new long [6][NUMITER];
@@ -235,6 +252,8 @@ public class Main <T extends Comparable<T>> {
         double[] averages = getAverages(durationList, 5);
         double [] standardDeviations = getStandardDeviations(durationList, 5);
         printResults(averages, standardDeviations);
+
+        return averages;
     }
 
     /**
@@ -421,5 +440,3 @@ public class Main <T extends Comparable<T>> {
         return output;
     }
 }
-
-
