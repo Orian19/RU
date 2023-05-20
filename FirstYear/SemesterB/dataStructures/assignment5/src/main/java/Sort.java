@@ -4,7 +4,7 @@ public class Sort <T extends Comparable<T>> {
     private int threshold;
 
     public Sort() {
-        this.threshold = 10;//mergeRecursive = 50000; quickClass = 50;
+        this.threshold = 50;
     }
 
     /**
@@ -13,7 +13,7 @@ public class Sort <T extends Comparable<T>> {
      * @param array to sort
      */
     public void quickSortClass(T[] array) {
-        quickSortClass(array, 0, array.length);
+        quickSortClass(array, 0, array.length-1);
     }
 
     /**
@@ -24,11 +24,31 @@ public class Sort <T extends Comparable<T>> {
      */
     private void quickSortClass(T[] array, int start, int end) {
         if (end - start > this.threshold) {
-            int parti = partitionClass(array, start, end-1);
+            int parti = partitionClass(array, start, end);
             quickSortClass(array, start, parti-1);
             quickSortClass(array, parti+1, end);
         } else {
-            bubbleSort(array, start, end-1);
+            simpleSort(array, start, end);
+//            bubbleSort(array, start, end);
+        }
+    }
+
+    /** TODO: which sort is this? why my bubble does not work and this does?
+     * gal's simple sort
+     * @param array to sort
+     * @param i start index
+     * @param j end index
+     */
+    public void simpleSort(T[] array, int i,int j){
+        int length = j - i + 1;
+        if (length > 1) {
+            for (int k = i; k < j; k++) {
+                for (int l = i; l < j; l++) {
+                    if (array[l].compareTo(array[l+1]) > 0) {
+                        swapValues(array,l,l+1);
+                    }
+                }
+            }
         }
     }
 
@@ -41,24 +61,24 @@ public class Sort <T extends Comparable<T>> {
      */
     private int partitionClass(T[] array, int start, int end) {
         T pivot = array[end]; // last element
-        int lessIdx = end, moreIdx = start - 1;
+        int moreIdx = start - 1, lessIdx = end;
 
-        while (true) {
-            do {
+        while (moreIdx < lessIdx) {
+            lessIdx--; moreIdx++;
+            while (lessIdx >= start && array[lessIdx].compareTo(pivot) > 0) {
                 lessIdx--;
-            } while (array[lessIdx].compareTo(pivot) > 0 && lessIdx > start);
+            }
 
-            do {
+            while (moreIdx <= end && array[moreIdx].compareTo(pivot) <= 0) {
                 moreIdx++;
-            } while (array[moreIdx].compareTo(pivot) > 0 || moreIdx > end);
+            }
 
             if (moreIdx < lessIdx) {
                 swapValues(array, moreIdx, lessIdx);
-            } else {
-                swapValues(array, lessIdx+1, moreIdx);
-                return lessIdx+1;
             }
         }
+        swapValues(array, lessIdx+1, end);
+        return lessIdx+1;
     }
 
     /**
@@ -67,7 +87,7 @@ public class Sort <T extends Comparable<T>> {
      * @param array to sort
      */
     public void quickSortRecitation(T[] array) {
-        quickSortRecitation(array, 0, array.length);
+        quickSortRecitation(array, 0, array.length-1);
     }
 
     /**
@@ -78,11 +98,12 @@ public class Sort <T extends Comparable<T>> {
      */
     private void quickSortRecitation(T[] array, int start, int end) {
         if (end - start > this.threshold) {
-            int parti = partitionRecitation(array, start, end-1);
+            int parti = partitionRecitation(array, start, end);
             quickSortRecitation(array, start, parti-1);
             quickSortRecitation(array, parti+1, end);
         } else {
-            bubbleSort(array, start, end-1);
+              simpleSort(array, start, end);
+//            bubbleSort(array, start, end-1);
         }
     }
 
@@ -97,7 +118,7 @@ public class Sort <T extends Comparable<T>> {
         T pivot = array[end]; // last element
         int lessIdx = start-1;
 
-        for (int moreIdx = start; moreIdx < end-1; moreIdx++) {
+        for (int moreIdx = start; moreIdx <= end-1; moreIdx++) {
             if (array[moreIdx].compareTo(pivot) <= 0) {
                 lessIdx++;
                 swapValues(array, lessIdx, moreIdx);
@@ -139,40 +160,14 @@ public class Sort <T extends Comparable<T>> {
      * @param mid pointer
      * @param end pointer
      */
-//    private void merge(T[] array, int start, int mid, int end) { // TODO: something wrong. I get duplicate values
-//        int n = end - start + 1;
-//        T[] tempArr = (T[]) Array.newInstance(Comparable.class, n);
-//        int i = 0;
-//        int i1 = start, i2 = mid + 1;
-//
-//        while (i < n) {
-//            if(array[i1].compareTo(array[i2]) < 0) { // checking if A[i1] < A[i2]
-//                tempArr[i++] = array[i1++];
-//            } else {
-//                tempArr[i++] = array[i2++];
-//            }
-//        }
-//
-//        // copying the merged array into the input array
-//        for (int j = 0; j < n-1; j++) {
-//            array[start+j] = tempArr[j]; // TODO: maybe issue is this is too slow and not memory efficient?
-//        }
-////        System.arraycopy(array, start, tempArr, start, n-start); // copying elements to the new array
-//    }
 
     private void merge(T[] array, int start, int mid, int end) { // TODO: something wrong. I get duplicate values
         int n1 = mid - start + 1, n2 = end - mid;
         T[] left = (T[]) Array.newInstance(Comparable.class, n1);
         T[] right = (T[]) Array.newInstance(Comparable.class, n2);
 
-        for (int i = 0; i < n1; i++) {
-            left[i] = array[start+i];
-        }
-
-        // TODO: copy helper function
-        for (int i = 0; i < n2; i++) {
-            right[i] = array[mid+1+i];
-        }
+        copyArray(array, left, start, mid);
+        copyArray(array, right, mid+1, end);
 
         int i = 0, j = 0, k = start;
         while (i < left.length && j < right.length) {
@@ -186,7 +181,7 @@ public class Sort <T extends Comparable<T>> {
             k++;
         }
 
-        // copying left overs to final array
+        // copying remaining elements to the final array
         while (i < left.length) {
             array[k] = left[i];
             k++;
@@ -207,16 +202,16 @@ public class Sort <T extends Comparable<T>> {
      * @param end pointer
      */
     private void bubbleSort(T[] array, int start, int end) {
-        for (int i = 0; i < end; i++) {
-            int swap = 0; // binary indicator for detecting early stops
-            for (int j = 1; j < end-i+1; j++) {
-                if (array[j-1].compareTo(array[j]) > 0) { // if A[j-1] bigger than A[j]
-                    swap = 1;
-                    swapValues(array, j-1, j);
+        for (int i = start; i < end; i++) {
+            boolean swapped = false; // binary indicator for detecting early stops
+            for (int j = start; j < end - i; j++) {
+                if (array[j].compareTo(array[j+1]) > 0) { // if A[j-1] bigger than A[j]
+                    swapped = true;
+                    swapValues(array, j, j+1);
                 }
             }
-            if (swap == 0) { // no swaps were made --> array is already sorted and can stop
-                return;
+            if (!swapped) { // no swaps were made --> array is already sorted and can stop
+                break;
             }
         }
     }
@@ -239,18 +234,32 @@ public class Sort <T extends Comparable<T>> {
      */
     public void mergeSortIterative(T[] array) { //TODO: does not work? separate merge?
         int n = array.length;
-//        T[] tempArr = (T[]) Array.newInstance(Comparable.class, n);
 
         for (int subSsize = 1; subSsize < n; subSsize *= 2) { // represents the size of the sub-arrays
-            for (int start = 0; start < n - subSsize; start += 2 * subSsize) { // indices of the arrays
+            for (int start = 0; start < n - subSsize; start += 2 * subSsize) { // indices of the array
+                int rightSubEnd = Math.min(2 * subSsize + start - 1, n - 1);
                 if (subSsize > this.threshold) {
                     int mid = start + subSsize - 1;
-                    int end = Math.min(start + (2 * subSsize - 1), n - 1);
-                    merge(array, start, mid, end);
+                    merge(array, start, mid, rightSubEnd);
                 } else {
-                    bubbleSort(array, start, n - 1);
+                    bubbleSort(array, start, rightSubEnd);
                 }
             }
+        }
+    }
+
+    /**
+     * helper function to copy elements from one array to another
+     * @param from array to copy from
+     * @param to array to copy to
+     * @param start index
+     * @param end index
+     */
+    private void copyArray(T[] from, T[] to, int start, int end) {
+        int cur = 0;
+        for (int i = start; i <= end; i++) {
+            to[cur] = from[i];
+            cur++;
         }
     }
 
@@ -263,6 +272,7 @@ public class Sort <T extends Comparable<T>> {
     public static void radixSort(int[] array, int base) {
         int sizeDigits = getMaxSize(array);
 
+        // running over the digits in the base given
         for (int i = 1; sizeDigits / i > 0; i *= base) { //TODO: understand 'for loop'
             int[] sortedBySubNum =  new int[array.length]; // starting from LSB to MSB
             countSort(array, sortedBySubNum, i, base);
