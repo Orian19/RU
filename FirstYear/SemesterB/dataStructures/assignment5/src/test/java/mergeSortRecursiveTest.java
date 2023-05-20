@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class mergeSortRecursiveTest {
     Sort s = new Sort();
     testHelper helper = new testHelper();
-    int size = 10;//100000;
+    int size = 100000;
 
     @Test
     void testRandom() {
