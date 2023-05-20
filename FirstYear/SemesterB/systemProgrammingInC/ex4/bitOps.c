@@ -55,7 +55,7 @@ int getLeft(int n, int k);
 int getBit(int n, int k) {
 
    /*** check for valid value of k ***/
-   if(k>=(sizeof(int)8) || k<0)            /** <--- replace the 1 with an appropriate condition on k    ***/
+   if(k>=(sizeof(int)*8) || k<0)            /** <--- replace the 1 with an appropriate condition on k    ***/
       return 0;
 
    return (((unsigned)n)& (1<<k)) >> k;      /*** <--- replace the 749 with an appropriate expression      ***/
@@ -76,7 +76,7 @@ int getBit(int n, int k) {
    if(k<=0)             /*** <--- replace the 1 with an appropriate condition on k    ***/
       return 0;
 
-   if(k> ((sizeof(int)8)-1))             /** <--- replace the 1 with an appropriate condition on k    ***/
+   if(k> ((sizeof(int)*8)-1))             /** <--- replace the 1 with an appropriate condition on k    ***/
       return n;
 
    return ((1 << (k-1)) * (getBit(n,k-1))) + getRight(n,k-1);       /*** <--- replace the 749 with an appropriate expression involving a recursive call to rightBits     ***/
@@ -97,9 +97,9 @@ int getLeft(int n, int k) {
    if(k<=0 )             /*** <--- replace the 1 with an appropriate condition on k    ***/
       return 0;
 
-   if(k> ((sizeof(int)8)-1))             /** <--- replace the 1 with an appropriate condition on k    ***/
+   if(k> ((sizeof(int)*8)-1))             /** <--- replace the 1 with an appropriate condition on k    ***/
       return n;
 
-  
-   return (((unsigned)n) >> ((sizeof(int)8)-k));       /** <--- replace the 749 with an appropriate expression (no function calls)     ***/
+
+   return (((unsigned)n) >> ((sizeof(int)*8)-k));       /** <--- replace the 749 with an appropriate expression (no function calls)***/
 }

@@ -124,7 +124,7 @@ int constructLargeInt(int mantissa, int exponent) {
                         mantissa = mantissa << 1;
 
                 }
-        
+
         }
 
    else if (mantissa > rangeM)  /* checking if the range of the mantissa value is larger than 2^n-1 */
@@ -141,7 +141,7 @@ int constructLargeInt(int mantissa, int exponent) {
                 return 0xFFFFFFFF;
         }
 
-   return (exponent << NUM_MAN_BITS) + mantissa; 
+   return (exponent << NUM_MAN_BITS) + mantissa;
    /***      Apply all changes to the code above this line. DO NOT DELETE THIS COMMENT   ***/
 }
 
@@ -176,7 +176,7 @@ int largeIntSum(int largeInt1, int largeInt2) {
         }
 
    int sum = constructLargeInt(man, exp);
-   int maxInt = 0xFFFFFFFF;
+   int maxInt = -1;
 
    if (sum == maxInt)
         {
@@ -206,24 +206,29 @@ int largeIntSum(int largeInt1, int largeInt2) {
 *********************************/
 double largeIntToDouble(int largeInt) {
 
-   int mantissa = largeIntMan(largeInt),
-       exponent = largeIntExp(largeInt);
+    int mantissa = largeIntMan(largeInt),
+            exponent = largeIntExp(largeInt);
 
-   /*** This loop computes 2^exponent efficiently
-        by using at most 2 x log_2(exponent) multiplications
-        After the i'th iteration of this while loop
-        - temp holds 2^(2^i) (2.0 , 4.0 , 16.0 , 256.0 , ... )
-        - num holds 2^x, where x is the integer represented
-          by the right-most i bits of exponent
-                                                       ***/
-   double temp = 2.0, num = 1.0;
-   while(exponent) {
-      if(exponent & 1) num *= temp;
-      temp *= temp;
-      exponent = exponent >> 1;
-   } // end of while(exponent)
+    /*** This loop computes 2^exponent efficiently
+         by using at most 2 x log_2(exponent) multiplications
+         After the i'th iteration of this while loop
+         - temp holds 2^(2^i) (2.0 , 4.0 , 16.0 , 256.0 , ... )
+         - num holds 2^x, where x is the integer represented
+           by the right-most i bits of exponent
+                                                        ***/
+    double temp = 2.0, num = 1.0;
+    while (exponent) {
+        if (exponent & 1) num *= temp;
+        temp *= temp;
+        exponent = exponent >> 1;
+    } // end of while(exponent)
 
-   /*** return 2^exp x mantissa  ***/
+    /*** return 2^exp x mantissa  ***/
 
-   return num * mantissa;
-  
+    return num * mantissa;
+}
+
+int main () {
+    printf("%d\n",largeIntSum(0x36000000, -3));
+    printf("%d", largeIntSum(0x340ABCDEF, -1597));
+}
