@@ -79,7 +79,7 @@ int getBit(int n, int k) {
    if(k> ((sizeof(int)*8)-1))             /** <--- replace the 1 with an appropriate condition on k    ***/
       return n;
 
-   return ((1 << (k-1)) * (getBit(n,k-1))) + getRight(n,k-1);       /*** <--- replace the 749 with an appropriate expression involving a recursive call to rightBits     ***/
+   return ((1 << (k-1)) & n) + getRight(n,k-1);       /*** <--- replace the 749 with an appropriate expression involving a recursive call to rightBits     ***/
 
 }
 

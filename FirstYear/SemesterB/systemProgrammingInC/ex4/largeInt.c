@@ -229,6 +229,13 @@ double largeIntToDouble(int largeInt) {
 }
 
 int main () {
+    printf("%d\n", getRight(6, 2));
+    printf("%d\n", getRight(6, 12));
+    printf("%d\n", getRight(6, 74));
+    printf("%d\n", getRight(6, -1));
+    printf("%d\n", getRight(1, 74));
+    printf("%d\n", getRight(-2, 3));
+    printf("%d\n\n", getRight(-2, 6));
     printf("%d\n",largeIntSum(0x36000000, -3));
     printf("%d", largeIntSum(0x340ABCDEF, -1597));
 }
