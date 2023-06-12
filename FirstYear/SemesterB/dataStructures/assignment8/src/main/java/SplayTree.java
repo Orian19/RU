@@ -20,8 +20,8 @@ public class SplayTree {
          */
         public Node(char character) {
             this.parent = null;
-            this.character = character;
-            this.size = 1;
+            this.character = character; // "value"
+            this.size = 1;              // size of the subtree rooted at the node (augmented data)
             this.children = new Node[2];
         }
     }
@@ -42,7 +42,70 @@ public class SplayTree {
      * @param s the string to use for constructing the tree.
      */
     public SplayTree(String s) {
-        // Fill in your code here
+        int len = s.length();
+
+        if (len == 0) { // checking if the string is empty
+            this.root = null;
+            return;
+        }
+
+        this.root = buildBST(s, 0, len-1); // building the balanced BST
+
+
+
+        // TODO: change to iterative solution
+
+//        int median = len / 2; // taking the median
+//        this.root = new Node(s.charAt(median)); // initializing a new node to be the root
+//
+//        Node curNode = this.root;
+//        Node prevNode = null;
+//
+//        for (int i = 0; i < len; i++) {
+//            if (curNode != null) {
+//                median = len / 2; // taking the median
+//            }
+//
+//            median =
+//            int leftMedian = (median-1) / 2;
+//            int rightMedian = (median+1) / 2;
+//            this.root = new Node(s.charAt(median)); // initializing a new node to be the root
+//            this.root.children[0] = new Node(s.charAt(leftMedian));
+//            this.root.children[1] = new Node(s.charAt(rightMedian));
+//            this.root.size = updateSize();
+//        }
+    }
+
+    /**
+     * building a BST from a sorted array using a recursion
+     * the key idea is to take the median to be the root recursively
+     * (if an inorder traversal is done the result will be the original permutation of the string)
+     *
+     * @param s the string from which we create the BST (each node is a char from s)
+     * @param start index
+     * @param end index
+     * @return the root node of the BST
+     */
+    private Node buildBST(String s, int start, int end) {
+        if (start > end) return null;
+
+        int median = (start + end) / 2;
+        Node newNode = new Node(s.charAt(median)); // taking the median to be the root
+
+        newNode.children[0] = buildBST(s, start, median-1); // recursively handling left children
+        // updating the parent node and size for a left child
+        if (newNode.children[0] != null) {
+            newNode.children[0].parent = newNode;
+            newNode.size += newNode.children[0].size;
+        }
+
+        newNode.children[1] = buildBST(s, median+1, end); // recursively handling right children
+        // updating the parent node and size for a right child
+        if (newNode.children[1] != null) {
+            newNode.children[1].parent = newNode;
+            newNode.size += newNode.children[1].size;
+        }
+        return newNode; // returning the newNode which represents the root of the tree
     }
 
     /**
@@ -191,6 +254,7 @@ public class SplayTree {
                 x = x.children[1];
                 k = k - t - 1; //relative rank in the right subtree
             } else {
+                // similar to find operation
                 // If the size of the subtree is equal to k, x is the desired node
                 // Splay x and return it
                 splay(x);
