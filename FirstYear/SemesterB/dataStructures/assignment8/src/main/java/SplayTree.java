@@ -29,28 +29,6 @@ public class SplayTree {
             this.children = new Node[2];
             this.swap = 0; // initializing swap field (can be 0/1)
         }
-
-        //TODO: remove the following functions before submitting
-
-        public Node getLeft() {
-            Node temp = parent;
-            int idx = swap;
-            while (temp != null) {
-                idx = idx ^ temp.swap;
-                temp = temp.parent;
-            }
-            return children[idx] != null ? children[idx] : null;
-        }
-
-        public Node getRight() {
-            Node temp = parent;
-            int idx = swap;
-            while (temp != null) {
-                idx = idx ^ temp.swap;
-                temp = temp.parent;
-            }
-            return children[idx ^ 1] != null ? children[idx ^ 1] : null;
-        }
     }
 
     // The root of the SplayTree
@@ -142,9 +120,9 @@ public class SplayTree {
         T1.splay(max);
 
         // Make T2 the right subtree of the root of T1
-        T2.root.swap = T2.root.swap ^ T1.root.swap;
+        T2.root.swap = T2.root.swap ^ T1.root.swap; //TODO: explain
 
-        T1.root.children[T1.root.swap^ 1] = T2.root;
+        T1.root.children[T1.root.swap ^ 1] = T2.root;
         T2.root.parent = T1.root;
         updateSize(T1.root);
         this.root = T1.root;
@@ -216,14 +194,12 @@ public class SplayTree {
         }
     }
 
-    
-
     /**
      * Performs a splay operation on the given node, bringing it to the root of the tree 
      * using zigzig and zigzag operations.
      * @param x The node to be splayed.
      */
-    private void splay(Node x) { // TODO: probably need to update swap here (zig-zig, zig-zag). maybe already handled in rotate?
+    private void splay(Node x) {
         //Keep rotating until x is the root.
         int sAccum_p = 0;
         int sAccum_gp = 0;
@@ -266,13 +242,13 @@ public class SplayTree {
         int sAccum = 0;
         while (x != null) {
             sAccum = (x.swap + sAccum) % 2;
-            int t = size(x.children[sAccum]); // Size of left subtree //TODO: update (swap)
+            int t = size(x.children[sAccum]); // Size of left subtree
             if (t > k) {
                 // If left subtree has more than k nodes, go to the left subtree
-                x = x.children[sAccum]; //TODO: update (swap)
+                x = x.children[sAccum];
             } else if (t < k) {
                 // If left subtree has fewer than k nodes, go to the right subtree
-                x = x.children[sAccum ^ 1]; //TODO: update (swap)
+                x = x.children[sAccum ^ 1];
                 k = k - t - 1; //relative rank in the right subtree
             } else {
                 // similar to find operation
@@ -301,7 +277,7 @@ public class SplayTree {
         splay(x);
 
         SplayTree T1 = new SplayTree();
-        T1.root = x.children[x.swap]; //TODO: explain
+        T1.root = x.children[x.swap];
         if (T1.root != null) {
             T1.root.parent = null;
             T1.root.swap ^= x.swap; //TODO: explain
@@ -310,7 +286,7 @@ public class SplayTree {
         // Create a new splay tree for the right subtree of x (nodes greater than or equal to x)
         SplayTree T2 = new SplayTree();
         T2.root = x; // x is included in the right subtree after splitting according to x
-        T2.root.children[x.swap] = null; //TODO: explain
+        T2.root.children[x.swap] = null;
         updateSize(T2.root);
 
         //invalidate current tree
@@ -318,7 +294,6 @@ public class SplayTree {
         
         return new SplayTree[] {T1, T2};
     }
-
 
     /**
      * Set the i’th character in the sequence to be character c.
@@ -374,12 +349,11 @@ public class SplayTree {
             translocate(max_rank,max_rank, i);	
     }
 
-
     /**
      * Remove the i’th character from the sequence (shifting all the following characters)
      * @param i The index of the node to be deleted from the splay tree. Index starts from 0.
      */
-    public void delete(int i) { //todo: need to test
+    public void delete(int i) { //TODO: issues here (probably)
         // Check if the index i is within the valid range.
         if (i < 0 || i >= this.root.size) {
             throw new IllegalArgumentException("Invalid index: " + i);
@@ -394,10 +368,12 @@ public class SplayTree {
         t1.root = x.children[x.swap]; //TODO: update (swap)
         if (t1.root != null) {
             t1.root.parent = null;
+            t1.root.swap ^= x.swap; //TODO: explain
         }   
         t2.root = x.children[x.swap ^ 1];
         if (t2.root != null) {
             t2.root.parent = null;
+            t2.root.swap ^= x.swap; //TODO: explain
         }
         x.children[x.swap] = x.children[x.swap ^ 1] = null;  //TODO: update (swap)
 
@@ -417,7 +393,6 @@ public class SplayTree {
      * @param j The end index (rank) of the subsequence to be translocated.
      * @param k The index (rank) to which the subsequence is to be translocated.
      */
-
      public void translocate(int i, int j, int k){
 
         // Deal with invalid arguments
@@ -541,7 +516,6 @@ public class SplayTree {
         return toString(root);
     }
 
-
     /**
      * Helper method for toString(). 
      * Recursively collects the characters of the nodes of the tree rooted at x using inorder traversal.
@@ -558,7 +532,7 @@ public class SplayTree {
             return "";
         }
         int curS = (x.swap + sAccum) % 2;
-        return toString(x.children[curS], curS) + x.character + toString(x.children[curS ^ 1], curS); //TODO: update (swap)
+        return toString(x.children[curS], curS) + x.character + toString(x.children[curS ^ 1], curS);
     }
 
     /*
@@ -566,176 +540,31 @@ public class SplayTree {
      */
     public static void main(String[] args) {
         //test invert
-        TreePrinter newT1 = new TreePrinter();
-        TreePrinter newT2 = new TreePrinter();
-        TreePrinter newT3 = new TreePrinter();
-        TreePrinter newT4 = new TreePrinter();
-        TreePrinter newT5 = new TreePrinter();
-
         String s1 = "1234", s2 = "1234567890", s3 = "12345", s4 = "1234567", s5 = "abcdefghij";
 
         SplayTree st1 = new SplayTree(s1);
-        newT1.print(st1.root);
         SplayTree st2 = new SplayTree(s2);
-        newT2.print(st2.root);
         SplayTree st3 = new SplayTree(s3);
-        newT3.print(st3.root);
         SplayTree st4 = new SplayTree(s4);
-        newT4.print(st4.root);
         SplayTree st5 = new SplayTree(s5);
-        newT5.print(st5.root);
+        SplayTree st6 = new SplayTree(s5);
 
         st1.invert(0, s1.length()-1);
         st2.invert(0, s2.length()-1);
         st3.invert(0, s3.length()-1);
         st4.invert(0, s4.length()-1);
+        st5.invert(0, 7-1);
+        st6.invert(1, 7);
 
-        st5.invert(1, 7);
-//        st5.invert(0, 7-1);
+        System.out.println("\ninverting: " + s1 + "\nresults:" + st1.toString(st1.root));
+        System.out.println("\ninverting: " + s2 + "\nresults:" + st2.toString(st2.root));
+        System.out.println("\ninverting: " + s3 + "\nresults:" + st3.toString(st3.root));
+        System.out.println("\ninverting: " + s4 + "\nresults:" + st4.toString(st4.root));
+        System.out.println("\ninverting: " + s5 + "\nresults:" + st5.toString(st5.root) +
+                "\nshould be: " + "gfedcbahij" + "\nsuccess?  " + (st5.toString(st5.root)).equals("gfedcbahij"));
+        System.out.println("\ninverting: " + s5 + "\nresults:" + st6.toString(st6.root) +
+                "\nshould be: " + "gfedcbahij" + "\nsuccess?  " + (st6.toString(st6.root)).equals("ahgfedcbij"));
 
-        System.out.println("inverting: " + s1 + "     results:" + st1.toString(st1.root));
-        System.out.println("inverting: " + s2 + "     results:" + st2.toString(st2.root));
-        System.out.println("inverting: " + s3 + "     results:" + st3.toString(st3.root));
-        System.out.println("inverting: " + s4 + "     results:" + st4.toString(st4.root));
-        System.out.println("inverting: " + s5 + "     results:" + st5.toString(st5.root) +
-                "    should be: " + "gfedcbahij" + "   success?  " + (st5.toString(st5.root)).equals("gfedcbahij"));
-
-        newT1.print(st1.root);
-        newT2.print(st2.root);
-        newT3.print(st3.root);
-        newT4.print(st4.root);
-        newT5.print(st5.root);
-        //TODO: think about and check edge cases!
     }
-
-
-
-    //TODO: delete when submitting
-    /**
-     * Binary tree printer
-     *
-     * @author MightyPork
-     */
-    public static class TreePrinter {
-
-        /**
-         * Print a tree
-         *
-         * @param root
-         *             tree root node
-         */
-        public void print(Node root) {
-            List<List<String>> lines = new ArrayList<>();
-
-            List<Node> level = new ArrayList<>();
-            List<Node> next = new ArrayList<>();
-
-            level.add(root);
-            int nn = 1;
-
-            int widest = 0;
-
-            while (nn != 0) {
-                List<String> line = new ArrayList<>();
-
-                nn = 0;
-
-                for (Node n : level) {
-                    if (n == null) {
-                        line.add(null);
-
-                        next.add(null);
-                        next.add(null);
-                    } else {
-                        String aa = "" + n.character;
-                        line.add(aa);
-                        if (aa.length() > widest)
-                            widest = aa.length();
-
-                        next.add(n.getLeft());
-                        next.add(n.getRight());
-
-                        if (n.getLeft() != null)
-                            nn++;
-                        if (n.getRight() != null)
-                            nn++;
-                    }
-                }
-
-                if (widest % 2 == 1)
-                    widest++;
-
-                lines.add(line);
-
-                List<Node> tmp = level;
-                level = next;
-                next = tmp;
-                next.clear();
-            }
-
-            int perpiece = lines.get(lines.size() - 1).size() * (widest + 4);
-            for (int i = 0; i < lines.size(); i++) {
-                List<String> line = lines.get(i);
-                int hpw = (int) Math.floor(perpiece / 2f) - 1;
-
-                if (i > 0) {
-                    for (int j = 0; j < line.size(); j++) {
-
-                        // split node
-                        char c = ' ';
-                        if (j % 2 == 1) {
-                            if (line.get(j - 1) != null) {
-                                c = (line.get(j) != null) ? '┴' : '┘';
-                            } else {
-                                if (j < line.size() && line.get(j) != null)
-                                    c = '└';
-                            }
-                        }
-                        System.out.print(c);
-
-                        // lines and spaces
-                        if (line.get(j) == null) {
-                            for (int k = 0; k < perpiece - 1; k++) {
-                                System.out.print(" ");
-                            }
-                        } else {
-
-                            for (int k = 0; k < hpw; k++) {
-                                System.out.print(j % 2 == 0 ? " " : "─");
-                            }
-                            System.out.print(j % 2 == 0 ? "┌" : "┐");
-                            for (int k = 0; k < hpw; k++) {
-                                System.out.print(j % 2 == 0 ? "─" : " ");
-                            }
-                        }
-                    }
-                    System.out.println();
-                }
-
-                // print line of numbers
-                for (int j = 0; j < line.size(); j++) {
-
-                    String f = line.get(j);
-                    if (f == null)
-                        f = "";
-                    int gap1 = (int) Math.ceil(perpiece / 2f - f.length() / 2f);
-                    int gap2 = (int) Math.floor(perpiece / 2f - f.length() / 2f);
-
-                    // a number
-                    for (int k = 0; k < gap1; k++) {
-                        System.out.print(" ");
-                    }
-                    System.out.print(f);
-                    for (int k = 0; k < gap2; k++) {
-                        System.out.print(" ");
-                    }
-                }
-                System.out.println();
-
-                perpiece /= 2;
-            }
-        }
-    }
-
 }
 
