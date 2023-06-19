@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * SplayTree.java
  * Implementation of a keyless Splay tree for representing a seuqence
@@ -13,6 +16,7 @@ public class SplayTree {
         Node[] children;
         Node parent;
         char character;
+        int swap;
 
         /**
          * Constructs a new Node with the given character.
@@ -23,6 +27,29 @@ public class SplayTree {
             this.character = character; // "value"
             this.size = 1;              // size of the subtree rooted at the node (augmented data)
             this.children = new Node[2];
+            this.swap = 0; // initializing swap field (can be 0/1)
+        }
+
+        //TODO: remove the following functions before submitting
+
+        public Node getLeft() {
+            Node temp = parent;
+            int idx = swap;
+            while (temp != null) {
+                idx = idx ^ temp.swap;
+                temp = temp.parent;
+            }
+            return children[idx] != null ? children[idx] : null;
+        }
+
+        public Node getRight() {
+            Node temp = parent;
+            int idx = swap;
+            while (temp != null) {
+                idx = idx ^ temp.swap;
+                temp = temp.parent;
+            }
+            return children[idx ^ 1] != null ? children[idx ^ 1] : null;
         }
     }
 
@@ -48,32 +75,7 @@ public class SplayTree {
             this.root = null;
             return;
         }
-
         this.root = buildBST(s, 0, len-1); // building the balanced BST
-
-
-
-        // TODO: change to iterative solution
-
-//        int median = len / 2; // taking the median
-//        this.root = new Node(s.charAt(median)); // initializing a new node to be the root
-//
-//        Node curNode = this.root;
-//        Node prevNode = null;
-//
-//        for (int i = 0; i < len; i++) {
-//            if (curNode != null) {
-//                median = len / 2; // taking the median
-//            }
-//
-//            median =
-//            int leftMedian = (median-1) / 2;
-//            int rightMedian = (median+1) / 2;
-//            this.root = new Node(s.charAt(median)); // initializing a new node to be the root
-//            this.root.children[0] = new Node(s.charAt(leftMedian));
-//            this.root.children[1] = new Node(s.charAt(rightMedian));
-//            this.root.size = updateSize();
-//        }
     }
 
     /**
@@ -130,15 +132,19 @@ public class SplayTree {
             return;
         }
         
-        // Splay the rightmost node of T1 to the root so it has no left child
+        // Splay the rightmost("largest") node of T1 to the root so it has no left child
         Node max = T1.root;
-        while(max.children[1] != null) {
-            max = max.children[1];
+        int sAccum = T1.root.swap;
+        while(max.children[sAccum^ 1] != null) {
+            max = max.children[sAccum ^ 1];
+            sAccum = (max.swap + sAccum) % 2;
         }
         T1.splay(max);
 
         // Make T2 the right subtree of the root of T1
-        T1.root.children[1] = T2.root;
+        T2.root.swap = T2.root.swap ^ T1.root.swap;
+
+        T1.root.children[T1.root.swap^ 1] = T2.root;
         T2.root.parent = T1.root;
         updateSize(T1.root);
         this.root = T1.root;
@@ -184,14 +190,21 @@ public class SplayTree {
         x.parent = gp;
 
         // x's child in the direction opposite to idx becomes the child of p instead of x
-        p.children[idx] = x.children[idx ^ 1];
-        if (x.children[idx ^ 1] != null) {
-            x.children[idx ^ 1].parent = p;
+        p.children[idx] = x.children[idx ^ 1 ^ x.swap];
+        if (p.children[idx] != null) {
+            p.children[idx].parent = p;
+            // TODO: explain
+            // updating swap
+            p.children[idx].swap = (p.children[idx].swap + x.swap) % 2;
         }
 
         //p becomes the child of x in the position opposite to idx
-        x.children[idx ^ 1] = p;
+        x.children[idx ^ 1 ^ x.swap] = p;
         p.parent = x;
+
+        // updating swap values of x and p //TODO: explain in details
+        x.swap = (x.swap + p.swap) % 2;
+        p.swap = (p.swap + x.swap) % 2;
 
         //update the sizes of p then x
         updateSize(p);
@@ -210,18 +223,23 @@ public class SplayTree {
      * using zigzig and zigzag operations.
      * @param x The node to be splayed.
      */
-    private void splay(Node x) {
+    private void splay(Node x) { // TODO: probably need to update swap here (zig-zig, zig-zag). maybe already handled in rotate?
         //Keep rotating until x is the root.
+        int sAccum_p = 0;
+        int sAccum_gp = 0;
         while (x.parent != null) {
-	    
+
             Node p = x.parent; //parent
             Node gp = p.parent; //grandparent
 
+            sAccum_p = (p.swap + sAccum_p) % 2;
+
             // If the node has a grandparent, determine the type of rotation needed.
             if (gp != null) {
-		
+                sAccum_p = (gp.swap + sAccum_gp) % 2;
+
                 // If the relation between gp and p is the same as the relation between p and x - zigzig
-                boolean zigzig = (gp.children[1] == p) == (p.children[1] == x);
+                boolean zigzig = (gp.children[sAccum_gp ^ 1] == p) == (p.children[sAccum_p ^ 1] == x);
                 if (zigzig) {
 		            rotate(p); // In zigzig, rotate p first.
                 } else {
@@ -242,16 +260,19 @@ public class SplayTree {
      * @return The node at rank k, or null if such a node does not exist.
      */
     public Node select(int k) {
-
         Node x = root;
+
+        // swap accumulator
+        int sAccum = 0;
         while (x != null) {
-            int t = size(x.children[0]); // Size of left subtree
+            sAccum = (x.swap + sAccum) % 2;
+            int t = size(x.children[sAccum]); // Size of left subtree //TODO: update (swap)
             if (t > k) {
                 // If left subtree has more than k nodes, go to the left subtree
-                x = x.children[0];
+                x = x.children[sAccum]; //TODO: update (swap)
             } else if (t < k) {
                 // If left subtree has fewer than k nodes, go to the right subtree
-                x = x.children[1];
+                x = x.children[sAccum ^ 1]; //TODO: update (swap)
                 k = k - t - 1; //relative rank in the right subtree
             } else {
                 // similar to find operation
@@ -280,15 +301,16 @@ public class SplayTree {
         splay(x);
 
         SplayTree T1 = new SplayTree();
-        T1.root = x.children[0];
+        T1.root = x.children[x.swap]; //TODO: explain
         if (T1.root != null) {
             T1.root.parent = null;
+            T1.root.swap ^= x.swap; //TODO: explain
         }
 
         // Create a new splay tree for the right subtree of x (nodes greater than or equal to x)
         SplayTree T2 = new SplayTree();
-        T2.root = x;
-        T2.root.children[0] = null;
+        T2.root = x; // x is included in the right subtree after splitting according to x
+        T2.root.children[x.swap] = null; //TODO: explain
         updateSize(T2.root);
 
         //invalidate current tree
@@ -357,7 +379,7 @@ public class SplayTree {
      * Remove the i’th character from the sequence (shifting all the following characters)
      * @param i The index of the node to be deleted from the splay tree. Index starts from 0.
      */
-    public void delete(int i) {
+    public void delete(int i) { //todo: need to test
         // Check if the index i is within the valid range.
         if (i < 0 || i >= this.root.size) {
             throw new IllegalArgumentException("Invalid index: " + i);
@@ -369,15 +391,15 @@ public class SplayTree {
         // Disconnect x from its children
         SplayTree t1 = new SplayTree();
         SplayTree t2 = new SplayTree();
-        t1.root = x.children[0];
+        t1.root = x.children[x.swap]; //TODO: update (swap)
         if (t1.root != null) {
             t1.root.parent = null;
         }   
-        t2.root = x.children[1];
+        t2.root = x.children[x.swap ^ 1];
         if (t2.root != null) {
             t2.root.parent = null;
         }
-        x.children[0] = x.children[1] = null;
+        x.children[x.swap] = x.children[x.swap ^ 1] = null;  //TODO: update (swap)
 
         // Join the two subtrees
         SplayTree t = new SplayTree(t1,t2);
@@ -463,7 +485,50 @@ public class SplayTree {
      * @param j The ending index of the range to be inverted.
      */
     public void invert(int i, int j){
-        // Fill in your code here.
+        // Deal with invalid arguments
+        if (i < 0 || j < i || j >= this.root.size) {
+            throw new IllegalArgumentException("Invalid indices: " + i + j);
+        }
+
+        Node x_i, x_j;
+        x_i = select(i);
+        x_j = select(j+1);
+
+        // Split the tree at x_i.
+        // tt[0] contains nodes with ranks smaller than i  [...i)
+        // tt[1] contains nodes with ranks at least i  [i...]
+        SplayTree[] tt = split(x_i);  // tt[0] is [0...i), tt[1] is [i...]
+
+        SplayTree t_ij;
+        SplayTree t_i = tt[0];
+        SplayTree[] tt2 = new SplayTree[0];
+
+        if (x_j != null) {
+            // j is not the maximum rank
+            // Split the [i...] part at x_j.
+            // tt2[0] contains nodes with ranks from i to j (including)   [i...j]
+            // tt2[1] contains nodes with ranks greater than j  (j...]
+            tt2 = tt[1].split(x_j); // tt2[0] is [i,j], tt2[1] is (j...]
+
+            // Join [0...i) with (j...]
+            t_ij = tt2[0];  //t_ij contains [i...j]
+        }
+        else {
+            // j is the maximum element, so there is no (j...] part
+            t_ij = tt[1]; //t_ij contains [i...j] = [i...]
+        }
+
+        //inverting t_ij as needed
+        t_ij.root.swap = 1 - t_ij.root.swap;
+
+        //joining all the trees back together
+        SplayTree st = new SplayTree(t_i, t_ij); // joining "T1","T2"
+        if (x_j != null) {
+            st = new SplayTree(st, tt2[1]); // "joining st with "T3" (if exists)
+        }
+
+        // updating the root to be the root of the new inverted tree
+        this.root = st.root;
     }
     
     /**
@@ -483,17 +548,194 @@ public class SplayTree {
      *
      * @param x The root of the subtree to be visited.
      * @return The sequence of characters represented by the subtree rooted at x.
-     */    
+     */
     public String toString(Node x) {
+        return toString(x, 0);
+    }
+
+    public String toString(Node x, int sAccum) {
         if (x == null) {
             return "";
         }
-        return toString(x.children[0]) + x.character + toString(x.children[1]);
+        int curS = (x.swap + sAccum) % 2;
+        return toString(x.children[curS], curS) + x.character + toString(x.children[curS ^ 1], curS); //TODO: update (swap)
     }
 
     /*
      * The main method used for testing.
      */
-    public static void main(String[] args) {}
+    public static void main(String[] args) {
+        //test invert
+        TreePrinter newT1 = new TreePrinter();
+        TreePrinter newT2 = new TreePrinter();
+        TreePrinter newT3 = new TreePrinter();
+        TreePrinter newT4 = new TreePrinter();
+        TreePrinter newT5 = new TreePrinter();
+
+        String s1 = "1234", s2 = "1234567890", s3 = "12345", s4 = "1234567", s5 = "abcdefghij";
+
+        SplayTree st1 = new SplayTree(s1);
+        newT1.print(st1.root);
+        SplayTree st2 = new SplayTree(s2);
+        newT2.print(st2.root);
+        SplayTree st3 = new SplayTree(s3);
+        newT3.print(st3.root);
+        SplayTree st4 = new SplayTree(s4);
+        newT4.print(st4.root);
+        SplayTree st5 = new SplayTree(s5);
+        newT5.print(st5.root);
+
+        st1.invert(0, s1.length()-1);
+        st2.invert(0, s2.length()-1);
+        st3.invert(0, s3.length()-1);
+        st4.invert(0, s4.length()-1);
+
+        st5.invert(1, 7);
+//        st5.invert(0, 7-1);
+
+        System.out.println("inverting: " + s1 + "     results:" + st1.toString(st1.root));
+        System.out.println("inverting: " + s2 + "     results:" + st2.toString(st2.root));
+        System.out.println("inverting: " + s3 + "     results:" + st3.toString(st3.root));
+        System.out.println("inverting: " + s4 + "     results:" + st4.toString(st4.root));
+        System.out.println("inverting: " + s5 + "     results:" + st5.toString(st5.root) +
+                "    should be: " + "gfedcbahij" + "   success?  " + (st5.toString(st5.root)).equals("gfedcbahij"));
+
+        newT1.print(st1.root);
+        newT2.print(st2.root);
+        newT3.print(st3.root);
+        newT4.print(st4.root);
+        newT5.print(st5.root);
+        //TODO: think about and check edge cases!
+    }
+
+
+
+    //TODO: delete when submitting
+    /**
+     * Binary tree printer
+     *
+     * @author MightyPork
+     */
+    public static class TreePrinter {
+
+        /**
+         * Print a tree
+         *
+         * @param root
+         *             tree root node
+         */
+        public void print(Node root) {
+            List<List<String>> lines = new ArrayList<>();
+
+            List<Node> level = new ArrayList<>();
+            List<Node> next = new ArrayList<>();
+
+            level.add(root);
+            int nn = 1;
+
+            int widest = 0;
+
+            while (nn != 0) {
+                List<String> line = new ArrayList<>();
+
+                nn = 0;
+
+                for (Node n : level) {
+                    if (n == null) {
+                        line.add(null);
+
+                        next.add(null);
+                        next.add(null);
+                    } else {
+                        String aa = "" + n.character;
+                        line.add(aa);
+                        if (aa.length() > widest)
+                            widest = aa.length();
+
+                        next.add(n.getLeft());
+                        next.add(n.getRight());
+
+                        if (n.getLeft() != null)
+                            nn++;
+                        if (n.getRight() != null)
+                            nn++;
+                    }
+                }
+
+                if (widest % 2 == 1)
+                    widest++;
+
+                lines.add(line);
+
+                List<Node> tmp = level;
+                level = next;
+                next = tmp;
+                next.clear();
+            }
+
+            int perpiece = lines.get(lines.size() - 1).size() * (widest + 4);
+            for (int i = 0; i < lines.size(); i++) {
+                List<String> line = lines.get(i);
+                int hpw = (int) Math.floor(perpiece / 2f) - 1;
+
+                if (i > 0) {
+                    for (int j = 0; j < line.size(); j++) {
+
+                        // split node
+                        char c = ' ';
+                        if (j % 2 == 1) {
+                            if (line.get(j - 1) != null) {
+                                c = (line.get(j) != null) ? '┴' : '┘';
+                            } else {
+                                if (j < line.size() && line.get(j) != null)
+                                    c = '└';
+                            }
+                        }
+                        System.out.print(c);
+
+                        // lines and spaces
+                        if (line.get(j) == null) {
+                            for (int k = 0; k < perpiece - 1; k++) {
+                                System.out.print(" ");
+                            }
+                        } else {
+
+                            for (int k = 0; k < hpw; k++) {
+                                System.out.print(j % 2 == 0 ? " " : "─");
+                            }
+                            System.out.print(j % 2 == 0 ? "┌" : "┐");
+                            for (int k = 0; k < hpw; k++) {
+                                System.out.print(j % 2 == 0 ? "─" : " ");
+                            }
+                        }
+                    }
+                    System.out.println();
+                }
+
+                // print line of numbers
+                for (int j = 0; j < line.size(); j++) {
+
+                    String f = line.get(j);
+                    if (f == null)
+                        f = "";
+                    int gap1 = (int) Math.ceil(perpiece / 2f - f.length() / 2f);
+                    int gap2 = (int) Math.floor(perpiece / 2f - f.length() / 2f);
+
+                    // a number
+                    for (int k = 0; k < gap1; k++) {
+                        System.out.print(" ");
+                    }
+                    System.out.print(f);
+                    for (int k = 0; k < gap2; k++) {
+                        System.out.print(" ");
+                    }
+                }
+                System.out.println();
+
+                perpiece /= 2;
+            }
+        }
+    }
 
 }
+
