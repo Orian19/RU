@@ -120,7 +120,7 @@ public class SplayTree {
         T1.splay(max);
 
         // Make T2 the right subtree of the root of T1
-        T2.root.swap = T2.root.swap ^ T1.root.swap; //TODO: explain
+        T2.root.swap = T2.root.swap ^ T1.root.swap; // updating swap to be according to T1
 
         T1.root.children[T1.root.swap ^ 1] = T2.root;
         T2.root.parent = T1.root;
@@ -169,7 +169,7 @@ public class SplayTree {
 
         // x's child in the direction opposite to idx becomes the child of p instead of x
         p.children[idx] = x.children[idx ^ 1 ^ x.swap];
-        if (p.children[idx] != null) {
+        if (p.children[idx] != null) {  //TODO: explain why checking x instead of p
             p.children[idx].parent = p;
             // TODO: explain
             // updating swap
@@ -280,12 +280,15 @@ public class SplayTree {
         T1.root = x.children[x.swap];
         if (T1.root != null) {
             T1.root.parent = null;
-            T1.root.swap ^= x.swap; //TODO: explain
+            T1.root.swap ^= x.swap; // updating the swap value of the root,
+                                    // as now t1(a subtree of x) needs to be according
+                                    // to x.swap (which is currently the root (was splayed in select(i))
         }
 
         // Create a new splay tree for the right subtree of x (nodes greater than or equal to x)
         SplayTree T2 = new SplayTree();
-        T2.root = x; // x is included in the right subtree after splitting according to x
+        T2.root = x; // x is included in the right subtree after splitting according to x (this is why no
+                                                                       // need to update swap of t2 (unlike in delete))
         T2.root.children[x.swap] = null;
         updateSize(T2.root);
 
@@ -353,7 +356,7 @@ public class SplayTree {
      * Remove the i’th character from the sequence (shifting all the following characters)
      * @param i The index of the node to be deleted from the splay tree. Index starts from 0.
      */
-    public void delete(int i) { //TODO: issues here (probably)
+    public void delete(int i) {
         // Check if the index i is within the valid range.
         if (i < 0 || i >= this.root.size) {
             throw new IllegalArgumentException("Invalid index: " + i);
@@ -365,17 +368,19 @@ public class SplayTree {
         // Disconnect x from its children
         SplayTree t1 = new SplayTree();
         SplayTree t2 = new SplayTree();
-        t1.root = x.children[x.swap]; //TODO: update (swap)
+        t1.root = x.children[x.swap];
         if (t1.root != null) {
             t1.root.parent = null;
-            t1.root.swap ^= x.swap; //TODO: explain
+            t1.root.swap ^= x.swap; // updating the swap value of the root,
+                                    // as now t1(a subtree of x) needs to be according
+                                     // to x.swap (which is currently the root (was splayed in select(i))
         }   
         t2.root = x.children[x.swap ^ 1];
         if (t2.root != null) {
             t2.root.parent = null;
-            t2.root.swap ^= x.swap; //TODO: explain
+            t2.root.swap ^= x.swap; // updating swap of t2(subtree of x) according to x.swap - similar to above
         }
-        x.children[x.swap] = x.children[x.swap ^ 1] = null;  //TODO: update (swap)
+        x.children[x.swap] = x.children[x.swap ^ 1] = null;
 
         // Join the two subtrees
         SplayTree t = new SplayTree(t1,t2);
