@@ -1,9 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-// 208126094 Orian Daniel
-// 211676325 Gal Chohat
-
 /**
  * SplayTree.java
  * Implementation of a keyless Splay tree for representing a seuqence
