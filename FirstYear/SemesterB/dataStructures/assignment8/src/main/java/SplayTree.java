@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.List;
 
+// 208126094 Orian Daniel
+// 211676325 Gal Chohat
+
 /**
  * SplayTree.java
  * Implementation of a keyless Splay tree for representing a seuqence
@@ -112,7 +115,7 @@ public class SplayTree {
         
         // Splay the rightmost("largest") node of T1 to the root so it has no left child
         Node max = T1.root;
-        int sAccum = T1.root.swap;
+        int sAccum = T1.root.swap; // accumulating the swaps to know the current swap value
         while(max.children[sAccum^ 1] != null) {
             max = max.children[sAccum ^ 1];
             sAccum = (max.swap + sAccum) % 2;
@@ -168,19 +171,18 @@ public class SplayTree {
         x.parent = gp;
 
         // x's child in the direction opposite to idx becomes the child of p instead of x
-        p.children[idx] = x.children[idx ^ 1 ^ x.swap];
-        if (p.children[idx] != null) {  //TODO: explain why checking x instead of p
-            p.children[idx].parent = p;
-            // TODO: explain
-            // updating swap
-            p.children[idx].swap = (p.children[idx].swap + x.swap) % 2;
+        p.children[idx] = x.children[idx ^ 1 ^ x.swap]; // children[] should be in relation to x (it's former parent)
+        if (x.children[idx ^ 1 ^ x.swap] != null) {
+            x.children[idx ^ 1 ^ x.swap].parent = p;
+            // updating swap to preserve the accumulated swaps
+            x.children[idx ^ 1 ^ x.swap].swap = (x.children[idx ^ 1 ^ x.swap].swap + x.swap) % 2;
         }
 
         //p becomes the child of x in the position opposite to idx
         x.children[idx ^ 1 ^ x.swap] = p;
         p.parent = x;
 
-        // updating swap values of x and p //TODO: explain in details
+        // updating swap values of x and p (as x is not the parent then it needs to accumulate the swap of p as well)
         x.swap = (x.swap + p.swap) % 2;
         p.swap = (p.swap + x.swap) % 2;
 
@@ -201,21 +203,16 @@ public class SplayTree {
      */
     private void splay(Node x) {
         //Keep rotating until x is the root.
-        int sAccum_p = 0;
-        int sAccum_gp = 0;
         while (x.parent != null) {
 
             Node p = x.parent; //parent
             Node gp = p.parent; //grandparent
 
-            sAccum_p = (p.swap + sAccum_p) % 2;
-
             // If the node has a grandparent, determine the type of rotation needed.
             if (gp != null) {
-                sAccum_p = (gp.swap + sAccum_gp) % 2;
 
                 // If the relation between gp and p is the same as the relation between p and x - zigzig
-                boolean zigzig = (gp.children[sAccum_gp ^ 1] == p) == (p.children[sAccum_p ^ 1] == x);
+                boolean zigzig = (gp.children[gp.swap] == p) == (p.children[gp.swap ^ p.swap] == x);
                 if (zigzig) {
 		            rotate(p); // In zigzig, rotate p first.
                 } else {
@@ -380,7 +377,7 @@ public class SplayTree {
             t2.root.parent = null;
             t2.root.swap ^= x.swap; // updating swap of t2(subtree of x) according to x.swap - similar to above
         }
-        x.children[x.swap] = x.children[x.swap ^ 1] = null;
+        x.children[0] = x.children[1] = null;
 
         // Join the two subtrees
         SplayTree t = new SplayTree(t1,t2);
@@ -477,38 +474,38 @@ public class SplayTree {
         // Split the tree at x_i.
         // tt[0] contains nodes with ranks smaller than i  [...i)
         // tt[1] contains nodes with ranks at least i  [i...]
-        SplayTree[] tt = split(x_i);  // tt[0] is [0...i), tt[1] is [i...]
+        SplayTree[] tt_firstSplit = split(x_i);  // tt[0] is [0...i), tt[1] is [i...]
 
-        SplayTree t_ij;
-        SplayTree t_i = tt[0];
-        SplayTree[] tt2 = new SplayTree[0];
+        SplayTree t_ij; // will contain [i....j]
+        SplayTree t_i = tt_firstSplit[0]; // contains [0...i]
+        SplayTree[] tt_secondSplit = new SplayTree[0];
 
         if (x_j != null) {
             // j is not the maximum rank
             // Split the [i...] part at x_j.
-            // tt2[0] contains nodes with ranks from i to j (including)   [i...j]
-            // tt2[1] contains nodes with ranks greater than j  (j...]
-            tt2 = tt[1].split(x_j); // tt2[0] is [i,j], tt2[1] is (j...]
+            // tt_secondSplit[0] contains nodes with ranks from i to j (including)   [i...j]
+            // tt_secondSplit[1] contains nodes with ranks greater than j  (j...]
+            tt_secondSplit = tt_firstSplit[1].split(x_j); // tt_secondSplit[0] is [i,j], tt_secondSplit[1] is (j...]
 
             // Join [0...i) with (j...]
-            t_ij = tt2[0];  //t_ij contains [i...j]
+            t_ij = tt_secondSplit[0];  //t_ij contains [i...j]
         }
         else {
             // j is the maximum element, so there is no (j...] part
-            t_ij = tt[1]; //t_ij contains [i...j] = [i...]
+            t_ij = tt_firstSplit[1]; //t_ij contains [i...j] = [i...]
         }
 
         //inverting t_ij as needed
         t_ij.root.swap = 1 - t_ij.root.swap;
 
         //joining all the trees back together
-        SplayTree st = new SplayTree(t_i, t_ij); // joining "T1","T2"
+        SplayTree st_result = new SplayTree(t_i, t_ij); // joining "T1","T2"
         if (x_j != null) {
-            st = new SplayTree(st, tt2[1]); // "joining st with "T3" (if exists)
+            st_result = new SplayTree(st_result, tt_secondSplit[1]); // "joining st_result with "T3" (if exist_results)
         }
 
         // updating the root to be the root of the new inverted tree
-        this.root = st.root;
+        this.root = st_result.root;
     }
     
     /**
@@ -543,33 +540,6 @@ public class SplayTree {
     /*
      * The main method used for testing.
      */
-    public static void main(String[] args) {
-        //test invert
-        String s1 = "1234", s2 = "1234567890", s3 = "12345", s4 = "1234567", s5 = "abcdefghij";
-
-        SplayTree st1 = new SplayTree(s1);
-        SplayTree st2 = new SplayTree(s2);
-        SplayTree st3 = new SplayTree(s3);
-        SplayTree st4 = new SplayTree(s4);
-        SplayTree st5 = new SplayTree(s5);
-        SplayTree st6 = new SplayTree(s5);
-
-        st1.invert(0, s1.length()-1);
-        st2.invert(0, s2.length()-1);
-        st3.invert(0, s3.length()-1);
-        st4.invert(0, s4.length()-1);
-        st5.invert(0, 7-1);
-        st6.invert(1, 7);
-
-        System.out.println("\ninverting: " + s1 + "\nresults:" + st1.toString(st1.root));
-        System.out.println("\ninverting: " + s2 + "\nresults:" + st2.toString(st2.root));
-        System.out.println("\ninverting: " + s3 + "\nresults:" + st3.toString(st3.root));
-        System.out.println("\ninverting: " + s4 + "\nresults:" + st4.toString(st4.root));
-        System.out.println("\ninverting: " + s5 + "\nresults:" + st5.toString(st5.root) +
-                "\nshould be: " + "gfedcbahij" + "\nsuccess?  " + (st5.toString(st5.root)).equals("gfedcbahij"));
-        System.out.println("\ninverting: " + s5 + "\nresults:" + st6.toString(st6.root) +
-                "\nshould be: " + "gfedcbahij" + "\nsuccess?  " + (st6.toString(st6.root)).equals("ahgfedcbij"));
-
-    }
+    public static void main(String[] args) {}
 }
 
