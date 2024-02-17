@@ -1,0 +1,221 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    /* scroll-padding-top: max(3.5rem, 6vh); */
+    scroll-padding-top: 7em;
+}
+
+/* offset scroll target to compensate for the page header */
+:target:before {
+    content: "";
+    display: block;
+}
+
+body {
+    font: clamp(15px, 1vmax, 16px) "Comic Sans MS", cursive, "Segoe UI", fantasy;
+    line-height: 1.7;
+    background: #fff1dc;
+    letter-spacing: 0.03em;
+}
+
+/* Used in conjunction with js to stop all transitions when the window is being resized. This prevents an artifact where
+   the navbar appears open and then transitions to the closed state (when the media query boundary is crossed). */
+body.stop-transitions * {
+    transition: none !important;
+}
+
+.clear {
+    clear: both;
+    height: clamp(2em, 5vmax, 3em);
+}
+
+#page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1em;
+    overflow: hidden;
+}
+
+a {
+    color: gray;
+    text-decoration: none;
+    border-bottom: 1px dotted #757575;
+}
+
+a:hover {
+    border-bottom-style: solid;
+    color: dodgerblue;
+}
+
+h2 {
+    font-weight: bold;
+    font-size: 1.3em;
+    padding-bottom: 0.7em;
+}
+
+/* used to set a fixed width font */
+.fixed {
+    font-family: "Courier", monospace;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-gap: 2.5em;
+    align-items: center;
+}
+
+/* To center the image within its div */
+.grid-container > .publication_figure {
+    display: grid;
+    align-items: center;
+}
+
+/* Switch to a single column (paper description below image) if the screen is small.
+   Make the gap between an image and its text smaller than the gap between two different publications.*/
+@media only screen and (max-width: 550px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+        grid-gap: 1em;
+    }
+
+    .grid-container > .publication_text {
+        margin-bottom: 2em;
+    }
+}
+
+/* Make table more readable by adding alternate colors, with special handling for the multi-rows */
+tr:nth-child(2n+9), tr:nth-child(6), tr:nth-child(7) {
+    background-color: #f5f5f5;
+}
+
+td {
+    padding-right: 2em;
+}
+
+span.joe {
+    color: green;
+}
+
+span.lately {
+    color: #0a66c2;
+    float: left;
+}
+
+span.paper {
+    color: #c75300;
+}
+
+em {
+    color: #aa1d1d;
+}
+
+#email {
+    float: right;
+}
+
+/* footer with social icons */
+
+footer {
+    background-color: #eaeaea;
+    text-align: center;
+    width: 100%;
+}
+
+footer i {
+    margin: 20px 5px;
+    transform: scale(1.0);
+    transition-duration: 0.2s;
+}
+
+footer i:hover {
+    margin: 20px 5px;
+    transform: scale(1.2);
+    transition-duration: 0.2s;
+}
+
+footer a {
+    color: black;
+    text-decoration: none;
+    border-bottom: none;
+}
+
+footer a:hover {
+    color: #757575;
+    border-bottom: none;
+}
+
+/* Set different hover colors per icon */
+footer i[class*="fa-linkedin"]:hover {
+    color: #0a66c2;
+}
+
+footer i[class*="fa-github-square"]:hover {
+    color: black;
+}
+
+footer i[class*="fa-envelope"]:hover {
+    color: red;
+}
+
+/* bib tooltips */
+
+.bib {
+    color: #757575;
+    text-decoration: none;
+    border-bottom: 1px dotted #757575;
+}
+
+.bib_tooltip {
+    line-height: 1.2;
+    font-size: 0.8em;
+    min-width: min(600px, 100%);
+}
+
+.formWraping {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.formPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    max-height: 70%;
+    overflow-y: auto;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 1000; /* will appear above formWraping */
+}
+
+#map-container {
+    width: 70%;
+    height: 50vh;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+.correctGuess {
+    background-color: greenyellow;
+}
+
+.correctGuessClear {
+    background-color: white;
+}

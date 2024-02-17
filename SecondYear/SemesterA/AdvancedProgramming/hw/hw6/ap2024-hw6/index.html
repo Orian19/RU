@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Orian @ RUni</title>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="96x96" href="/favicons/f3.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/f2.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/f1.png">
+    <link rel="manifest" href="/favicons/site.webmanifest">
+
+    <meta charset="UTF-8">
+    <meta name="description" content="Computer Science Student at RU">
+    <meta name="keywords" content="Orian,Daniel,Reichman University">
+    <meta name="author" content="Orian Daniel">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="all">
+
+    <link rel="stylesheet" type="text/css" href="css/cv.css">
+    <link rel="stylesheet" type="text/css" href="css/nav.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <!-- Use FontAwesome for (most) icons -->
+    <!--    <script src="https://kit.fontawesome.com/2a7f8c9d6d.js" defer crossorigin="anonymous"></script>-->
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css"
+          rel="stylesheet" type='text/css'>
+
+    <!-- The following pattern defers CSS loading, making page load much faster -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" as="style"
+          onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    </noscript>
+
+    <script src="js/logic.js" defer=""></script>
+    <script src="js/no-transition-on-resize.js" defer=""></script>
+
+    <script type="application/ld+json">
+        {
+            "@context": "http://schema.org",
+            "@type": "Person",
+            "name": "Orian Daniel",
+            "url": "http://www.OrianD.com",
+            "sameAs": [
+                "https://www.linkedin.com/in/OrianDaniel/"
+            ]
+        }
+    </script>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">
+        <img id="me" loading=lazy alt="A photo of Orian Daniel" src="images/me1.png"
+             srcset="images-responsive/me1.png 100w, images-responsive/me1.png 200w, images-responsive/me1.png 300w, images-responsive/me1.png 400w, images-responsive/me1.png 500w, images-responsive/me1.png 600w, images-responsive/me1.png 700w, images-responsive/me1.png 800w, images-responsive/me1.png 900w, images-responsive/me1.png 2316w"
+             sizes="100px">
+
+        <a href="index.html">Orian Daniel</a>
+    </div>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation bar">
+    <nav>
+        <ul>
+            <li><a href="./index.html" aria-label="home"><i class="fa fa-home" aria-hidden="true"></i></a></li>
+            <li><a href="./about.html">About</a></li>
+            <li><a href="./education.html">Education</a></li>
+            <li><a href="./employment.html">Employment</a></li>
+            <li><a href="./hobbies.html">Hobbies</a></li>
+            <li><a href="mailto:orian19@gmail.com" aria-label="email"><i class="fa fa-envelope"
+                                                                         aria-hidden="true"></i></a></li>
+        </ul>
+    </nav>
+    <label for="nav-toggle" class="nav-toggle-label">
+      <span>
+        <i class="fa fa-bars fa-lg"></i>
+      </span>
+    </label>
+</header>
+
+<div id="page-wrap">
+
+    <div class="clear"></div>
+    <div class="clear"></div>
+
+    <div>
+        <span class="lately">Lately:</span> Starting to prepare for exams <br>
+        <span class="lately">Lately:</span> read the book "The Lazy Investor" <br>
+    </div>
+
+    <div class="clear"></div>
+
+    <div id="guessGame" class="guessGame">
+        <h2>Guess the number game</h2>
+        <p>Guess a number between 1 and 100:</p>
+        <input type="text" id="guessInput">
+        <button id="guessBtn">Submit Guess</button>
+        <p id="gameMsg"></p>
+    </div>
+
+    <div class="clear"></div>
+
+    <div id="map-container">
+        <p> just because it's cool :) </p>
+        <div id="map"></div>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <div class="clear"></div>
+
+    <h2>Forms</h2>
+    <ul>
+        <li>
+            <button id="formBtn"> Exams Prep Form</button>
+        </li>
+    </ul>
+
+    <div class="formWraping" id="formWraping"></div>
+
+    <div class="formPopup" id="formPopup">
+        <h2>Exams Prep Progress Tracking Form</h2>
+        <p> The following form is meant to help prep for exams. I fill the data about a past exam I solved for preparing
+            to a certain exam. <br> The data collected helps to track my progress. </p> <br>
+        <form action="" method="post" id="formE">
+            <label for="course">Course:</label>
+            <input type="text" id="course" name="course" required><br><br>
+
+            <label for="year">Year:</label>
+            <select name="year" id="year">
+            </select><br><br>
+
+            <label>Moed:</label><br>
+            <input type="radio" id="moedA" name="moed" value="A" required>
+            <label for="moedA">A</label><br>
+            <input type="radio" id="moedB" name="moed" value="B" required>
+            <label for="moedB">B</label><br><br>
+
+            <label>Difficulty:</label><br>
+            <input type="radio" id="easy" name="difficulty" value="easy" required>
+            <label for="easy">Easy</label><br>
+            <input type="radio" id="moderate" name="difficulty" value="moderate" required>
+            <label for="moderate">Moderate</label><br>
+            <input type="radio" id="difficult" name="difficulty" value="difficult" required>
+            <label for="difficult">Difficult</label><br><br>
+
+            <label for="feeling">Feeling:</label><br>
+            <textarea id="feeling" name="feeling" rows="4" cols="50"></textarea><br><br>
+
+            <label for="notes">Additional Notes:</label><br>
+            <textarea id="notes" name="notes" rows="4" cols="50"></textarea><br><br>
+
+            <label for="date">Date:</label><br>
+            <input type="date" id="date" name="date" required><br><br>
+
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+
+
+    <div class="clear"></div>
+
+    <h2 id="joe">In Memory of Joe</h2>
+    <div>
+        <span class="joe"> Sergeant first class (res.) Joseph Gitarts z"l </span> <br>
+
+        He deserves to be here too :(
+    </div>
+    <a href="https://www.idf.il/%D7%A0%D7%95%D7%A4%D7%9C%D7%99%D7%9D/%D7%97%D7%9C%D7%9C%D7%99-%D7%94%D7%9E%D7%9C%D7%97%D7%9E%D7%94/%D7%99%D7%95%D7%A1%D7%A3-%D7%92%D7%99%D7%98%D7%A8%D7%A5/">
+        <img id="joe1" alt="A photo of Joe" src="images-responsive/joe.png"> </a>
+
+    <div class="clear"></div>
+
+</div>
+
+<footer>
+    <a href="https://github.com/Orian19" aria-label="github">
+        <i class="fa fa-github-square fa-2x" aria-hidden="true"></i>
+    </a>
+
+    <a href="https://www.linkedin.com/in/orian-d-24a924135/" target="_blank" rel="noopener" aria-label="linkedin">
+        <i class="fa fa-linkedin fa-2x"></i>
+    </a>
+
+    <a href="mailto:orian19@gmail.com" aria-label="email">
+        <i class="fa fa-envelope fa-2x" aria-hidden="true"></i>
+    </a>
+</footer>
+
+
+</body>
+</html>
