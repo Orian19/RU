@@ -1,0 +1,3 @@
+C:\Users\User\anaconda3\envs\ml
+
+need to configure interpeter as conda env with this path
