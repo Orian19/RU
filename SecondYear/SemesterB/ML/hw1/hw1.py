@@ -55,14 +55,15 @@ def compute_cost(X, y, theta):
     Returns:
     - J: the cost associated with the current set of parameters (single number).
     """
-    J = 0  # We use J for the cost.
+    J = 0  # We use J for the cost
 
-    # Creating the variables for the equation.
-    m = len(X)
-    h = X.dot(theta)
+    # Creating the variables for the equation
+    m = len(X)  # instances
+    h = X.dot(theta)  # h function
 
-    # Calculate the value of the equation.
+    # Calculating J (cost function)
     J = np.sum((h - y) ** 2) / (2 * m)
+
     return J
 
 
@@ -89,7 +90,7 @@ def gradient_descent(X, y, theta, alpha, num_iters):
 
     theta = theta.copy()  # optional: theta outside the function will not change
     J_history = []  # Use a python list to save the cost value in every iteration
-    m = X.shape[0]  # 4000
+    m = X.shape[0]  # instances
     for i in range(0, num_iters):
         J_history.append(compute_cost(X, y, theta))
         h_zero_vector = X.dot(theta)
@@ -116,7 +117,7 @@ def compute_pinv(X, y):
     - pinv_theta: The optimal parameters of your model.
     """
 
-    pinv_theta = []
+    pinv_theta = []  # TODO: must use this list?
     pinv_X = np.dot(np.linalg.inv((np.dot(X.transpose(), X))), X.transpose())
     pinv_theta = np.dot(pinv_X, y)
     return pinv_theta
@@ -140,11 +141,13 @@ def efficient_gradient_descent(X, y, theta, alpha, num_iters):
     - theta: The learned parameters of your model.
     - J_history: the loss value for every iteration.
     """
-    m = X.shape[0]  # 4000
     theta = theta.copy()  # optional: theta outside the function will not change
     J_history = []  # Use a python list to save the cost value in every iteration
-    current = np.inf
+
+    m = X.shape[0]  # instances
+    current = np.inf  # initialization for first itr
     i = 0
+
     J_history.append(compute_cost(X, y, theta))
     h_zero_vector = X.dot(theta)
     deviation = h_zero_vector - y
@@ -208,7 +211,7 @@ def forward_feature_selection(X_train, y_train, X_val, y_val, best_alpha, iterat
     - selected_features: A list of selected top 5 feature indices
     """
     selected_features = []
-    n = X_train.shape[1]  # 17
+    n = X_train.shape[1]  # features
 
     while len(selected_features) < 5:
         min_cost = []
@@ -227,6 +230,7 @@ def forward_feature_selection(X_train, y_train, X_val, y_val, best_alpha, iterat
         while min_idx in selected_features:
             min_cost[min_idx] = np.inf
             min_idx = min_cost.index(min(min_cost))
+
         selected_features.append(min_idx)
 
     return selected_features
@@ -245,7 +249,7 @@ def create_square_features(df):
     """
 
     df_poly = df.copy()
-    n = len(df_poly.columns)
+    n = len(df_poly.columns)  # features
     for i in range(0, n):
         column_i_name = df_poly.columns[i]
         for j in range(i, n):
