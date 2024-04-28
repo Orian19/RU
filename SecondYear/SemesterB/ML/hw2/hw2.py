@@ -74,8 +74,8 @@ def calc_gini(data):
     - gini: The gini impurity value.
     """
     gini = 0.0
-    m, n = data.shape  # m - #instances n - #features
-    unique_labels, counts = np.unique(data[:, -1], return_counts=True)  # getting the labels and thier #appearences
+    m, n = data.shape  # m - #instances, n - #features
+    unique_labels, counts = np.unique(data[:, -1], return_counts=True)  # getting the labels and their #appearences
     dist_vector = counts / m  # |Si| / |S|
     gini = 1.0 - np.sum(dist_vector ** 2)  # equation of gini
     return gini
@@ -92,8 +92,8 @@ def calc_entropy(data):
     - entropy: The entropy value.
     """
     entropy = 0.0
-    m, n = data.shape  # m - #instances n - #features
-    unique_labels, counts = np.unique(data[:, -1], return_counts=True)  # getting the labels and thier #appearences
+    m, n = data.shape  # m - #instances, n - #features
+    unique_labels, counts = np.unique(data[:, -1], return_counts=True)  # getting the labels and their #appearences
     dist_vector = counts / m  # |Si| / |S|
     entropy = -np.sum(dist_vector * np.log2(dist_vector))  # equation of entropy
     return entropy
@@ -107,7 +107,7 @@ class DecisionNode:
         self.feature = feature  # column index of criteria being tested
         self.pred = self.calc_node_pred()  # the prediction of the node
         self.depth = depth  # the current depth of the node
-        self.children = []  # array that holds this nodes children
+        self.children = []  # array that holds this node's children
         self.children_values = []
         self.terminal = False  # determines if the node is a leaf
         self.chi = chi
@@ -124,9 +124,8 @@ class DecisionNode:
         - pred: the prediction of the node
         """
         pred = None
-        unique_labels, counts = np.unique(self.data[:, -1], return_counts=True)
-        # unique = np.asarray((unique_labels,counts)).transpose()
-        unique = dict(zip(unique_labels, counts))
+        unique_labels, counts = np.unique(self.data[:, -1], return_counts=True)  # getting the labels and their #appearences
+        unique = dict(zip(unique_labels, counts))  # creating a dict to easily find the max.
         pred = max(unique, key=unique.get)
         return pred
 
@@ -149,18 +148,9 @@ class DecisionNode:
         This function has no return value - it stores the feature importance in 
         self.feature_importance
         """
-        m, n = self.data.shape  # m - #instances n - #features
+        m, n = self.data.shape  # m - #instances, n - #features
         goodness, groups = self.goodness_of_split(self.feature)
         self.feature_importance = (m / n_total_sample) * goodness
-
-        # impurity=(m/n_total_sample)*self.impurity_func(self.data)
-        # feature_gain = 0
-        # unique_values, counts = np.unique(self.data[:,self.feature],return_counts=True) 
-        # for value in unique_values:
-        #     feature_data = self.data
-        #     feature_data = feature_data[feature_data[:,self.feature] == value] # keeping rows of the specific value of the feature
-        #     feature_gain += (m/n_total_sample)*self.impurity_func(feature_data)# calculting Gini_Gain\information_Gain (according to impurity_func)
-        # self.feature_importance = impurity - feature_gain
 
     def goodness_of_split(self, feature):
         """
@@ -176,9 +166,8 @@ class DecisionNode:
         """
         goodness = 0
         groups = {}  # groups[feature_value] = data_subset
-        m, n = self.data.shape  # m - #instances n - #features
+        m, n = self.data.shape  # m - #instances, n - #features
         feature_gain = 0
-        info_gain = 0.0
         split_gain = 0.0
         impurity = self.impurity_func(self.data)  # impurity of the class
         unique_values, counts = np.unique(self.data[:, feature], return_counts=True)
@@ -189,21 +178,17 @@ class DecisionNode:
         if not self.gain_ratio:  # regular goodness of split
             for value in unique_values:
                 feature_data = self.data
-                feature_data = feature_data[
-                    feature_data[:, feature] == value]  # keeping rows of the specific value of the feature
+                feature_data = feature_data[feature_data[:, feature] == value]  # keeping rows of the specific value of the feature
                 groups.update({value: feature_data})
-                feature_gain += (feature_data.shape[0] / m) * self.impurity_func(
-                    feature_data)  # calculting Gini_Gain\information_Gain (according to impurity_func)
+                feature_gain += (feature_data.shape[0] / m) * self.impurity_func(feature_data)  # calculating Gini_Gain\information_Gain (according to impurity_func)
             goodness = impurity - feature_gain
         else:  # gain ratio
             info_gain = calc_entropy(self.data)
             for idx, value in enumerate(unique_values):
                 feature_data = self.data
-                feature_data = feature_data[
-                    feature_data[:, feature] == value]  # keeping rows of the specific value of the feature
+                feature_data = feature_data[feature_data[:, feature] == value]  # keeping rows of the specific value of the feature
                 groups.update({value: feature_data})
-                info_gain -= (counts[idx] / m) * calc_entropy(
-                    feature_data)  # calculting information_Gain (with entropy)
+                info_gain -= (counts[idx] / m) * calc_entropy(feature_data)  # calculating information_Gain (with entropy)
                 split_gain += (counts[idx] / m) * np.log2((counts[idx] / m))
             if split_gain == 0:
                 goodness = 0
@@ -220,41 +205,43 @@ class DecisionNode:
 
         This function has no return value
         """
-        m, n = self.data.shape  # m - #instances n - #features
-        best_feature_idx = -1
-        # unique_cls_values, _ = np.unique(self.data[:,-1],return_counts=True)
+        m, n = self.data.shape  # m - #instances, n - #features
 
-        # * (len(unique_cls_values) - 1) # (#attributes-1)*(#classes -1)
+        best_feature_idx = -1
         max_goodness_of_split = -1
-        for feature_idx in range(0, n - 1):  # finding best feature
+        for feature_idx in range(0, n - 1):  # finding the best feature
             # checking for the maximum goodness of split
             goodness = self.goodness_of_split(feature_idx)[0]
-            if (max_goodness_of_split < goodness):
+            if max_goodness_of_split < goodness:
                 max_goodness_of_split = goodness
                 best_feature_idx = feature_idx
         self.feature = best_feature_idx
         self.calc_feature_importance(m)
-        if (self.feature is None):
+        if self.feature is None:
             self.terminal = True
+
         unique_feature_values, _ = np.unique(self.data[:, best_feature_idx], return_counts=True)
         unique_curFeature_values, _ = np.unique(self.data[:, self.feature], return_counts=True)
 
         if len(unique_curFeature_values) > 1:
-            degree_of_freedom = (len(unique_curFeature_values) - 1)
+            # df = (#attributes - 1) * (#classes - 1)
+            degree_of_freedom = (len(unique_curFeature_values) - 1)  # * (len(unique_cls_values) - 1)
         else:
             self.terminal = True
             return
 
-        # checking we didn't pass the max_depth
+        # getting the relevant p_value from the table
         if not self.chi == 1:
-            p_value = chi_table[degree_of_freedom][self.chi]
+            p_value = chi_table[degree_of_freedom][self.chi]  # p_value = table[df][risk]
         else:
             p_value = 0
 
+        # calculating the chi square value
         chi_squared_value = calc_chi_squared(best_feature_idx, self.data)
+
+        # (checking we didn't pass the max_depth) and (chi_squared_value is greater than the p_value)
         if self.depth < self.max_depth and chi_squared_value >= p_value:
-            # checking if chi_squared_value is greater than the p_value
-            for value in unique_feature_values:
+            for value in unique_feature_values:  # creating the children nodes (value/attributes of that feature)
                 new_child = DecisionNode(
                     data=self.data[self.data[:, best_feature_idx] == value],
                     impurity_func=self.impurity_func,
@@ -270,7 +257,7 @@ class DecisionNode:
 
 
 def calc_chi_squared(best_feature_idx, data):
-    m, n = data.shape  # m - #instances n - #features
+    m, n = data.shape  # m - #instances, n - #features
     unique_class_values, _ = np.unique(data[:, -1], return_counts=True)
     unique_feature_values, _ = np.unique(data[:, best_feature_idx], return_counts=True)
     chi_squared = 0
@@ -278,15 +265,15 @@ def calc_chi_squared(best_feature_idx, data):
     for value in unique_feature_values:
         # filtering the data by current value
         value_data_filter = data[data[:, best_feature_idx] == value]
-        # D_f
-        value_instances = value_data_filter.shape[0]
+
+        value_instances = value_data_filter.shape[0]   # D_f
         for label in unique_class_values:
             # Another filter, to the specific class
             value_data = value_data_filter[value_data_filter[:, -1] == label]
-            # p_f, n_f...
-            instance_idx = value_data.shape[0]
-            E_idx = ((data[data[:, -1] == label].shape[0]) / m) * value_instances
-            chi_squared += (instance_idx - E_idx) ** 2 / E_idx  # from the formula, per value
+            instance_idx = value_data.shape[0]  # p_f, n_f...
+            E_idx = ((data[data[:, -1] == label].shape[0]) / m) * value_instances  # expected (rnd) values
+            chi_squared += (instance_idx - E_idx) ** 2 / E_idx  # the formula, per value
+
     return chi_squared
 
 
@@ -309,16 +296,19 @@ class DecisionTree:
         This function has no return value
         """
         self.root = None
-        self.root = DecisionNode(self.data, self.impurity_func, chi=self.chi, max_depth=self.max_depth,
-                                 gain_ratio=self.gain_ratio)
-        nodes = [self.root]
-        # nodes.extend(self.root.children)
-        # if self.is_pure(self.nodes[0]) or self.root.goodness_of_split(nodes[0].feature) == 0:
-        #     self.root.terminal = True
-        #     return
-        while len(nodes) > 0:
-            nodes[0].split()
+        self.root = DecisionNode(
+            self.data,
+            self.impurity_func,
+            chi=self.chi,
+            max_depth=self.max_depth,
+            gain_ratio=self.gain_ratio
+        )
 
+        nodes = [self.root]
+
+        while len(nodes) > 0:  # while there are still node to explore (split)
+            nodes[0].split()
+            # in case terminal?(max_dept/chi_value) or fully pure node
             if not nodes[0].terminal and self.is_pure(nodes[0]):
                 nodes[0].terminal = True
                 del nodes[0]
@@ -327,11 +317,20 @@ class DecisionTree:
             if nodes[0].terminal or nodes[0].goodness_of_split(nodes[0].children[0].feature)[0] == 0:
                 del nodes[0]
 
-            else:
+            else:  # adding the children of the current node (then continuing to split them)
                 nodes.extend(nodes[0].children)
                 del nodes[0]
 
-    def is_pure(self, node):
+    @staticmethod
+    def is_pure(node):
+        """
+        checking if a node is fully pure or not (monochromatic)
+        Args:
+            node: TreeNode
+
+        Returns:
+
+        """
         unique_node_values, _ = np.unique(node.data[:, node.children[0].feature], return_counts=True)
         if len(unique_node_values) == 1:
             return True
@@ -349,12 +348,14 @@ class DecisionTree:
         """
         pred = None
         node = self.root
+
+        # exploring the tree until finiding the relevant node
         while not node.terminal:
-            curr_value = instance[node.feature]
+            curr_value = instance[node.feature]  # the value of the instance at the feature column
             if curr_value not in node.children_values:
                 break
-            curr_value_idx = node.children_values.index(curr_value)
-            node = node.children[curr_value_idx]
+            curr_value_idx = node.children_values.index(curr_value)  # getting the index of that value inside childre_values list
+            node = node.children[curr_value_idx]  # getting the node corresponding to the index above
 
         return node.pred
 
@@ -368,18 +369,19 @@ class DecisionTree:
         Output: the accuracy of the decision tree on the given dataset (%).
         """
         accuracy = 0
-        actual_labels = list(dataset.transpose()[-1])
+        actual_labels = list(dataset.transpose()[-1])  # getting the labels column
+
         prediction_labels = []
-        for instance in dataset:
+        for instance in dataset:  # getting the predictions for each instance
             prediction_labels.append(self.predict(instance))
 
         count_matching = 0
-
         for idx, actual_label in enumerate(actual_labels):
+            # checking if the prediction matches the actual value
             if actual_label == prediction_labels[idx]:
                 count_matching += 1
 
-        accuracy = 100 * count_matching / len(actual_labels)
+        accuracy = count_matching / len(actual_labels)
 
         return accuracy
 
@@ -403,11 +405,13 @@ def depth_pruning(X_train, X_validation):
     training = []
     validation = []
     root = None
+
     tree = DecisionTree(data=X_train, impurity_func=calc_entropy, gain_ratio=True)
     for max_depth in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
         tree.max_depth = max_depth
         tree.build_tree()
 
+        # calculating the accuracies for both the training and validation sets
         training.append(tree.calc_accuracy(X_train))
         validation.append(tree.calc_accuracy(X_validation))
 
@@ -437,8 +441,12 @@ def chi_pruning(X_train, X_test):
     for chi in [1, 0.5, 0.25, 0.1, 0.05, 0.0001]:
         tree.chi = chi
         tree.build_tree()
+
+        # calculating the accuracies for both the training and validation sets
         chi_training_acc.append(tree.calc_accuracy(X_train))
         chi_validation_acc.append(tree.calc_accuracy(X_test))
+
+        # finding the depth for each chi value
         nodes = [tree.root]
         max_depth = 0
         while len(nodes) > 0:
@@ -447,6 +455,7 @@ def chi_pruning(X_train, X_test):
                 max_depth = nodes[0].depth
             del nodes[0]
         depth.append(max_depth)
+
     return chi_training_acc, chi_validation_acc, depth
 
 
@@ -460,9 +469,11 @@ def count_nodes(node):
     Output: the number of node in the tree.
     """
     n_nodes = 0
+
     nodes = [node]
     while len(nodes) > 0:
         nodes.extend(nodes[0].children)
         del nodes[0]
         n_nodes += 1
+
     return n_nodes
