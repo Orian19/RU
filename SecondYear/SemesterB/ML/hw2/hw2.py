@@ -216,7 +216,6 @@ class DecisionNode:
                 max_goodness_of_split = goodness
                 best_feature_idx = feature_idx
         self.feature = best_feature_idx
-        self.calc_feature_importance(m)
         if self.feature is None:
             self.terminal = True
 
@@ -304,15 +303,18 @@ class DecisionTree:
             gain_ratio=self.gain_ratio
         )
 
+        m = self.root.data.shape[0]
         nodes = [self.root]
 
         while len(nodes) > 0:  # while there are still node to explore (split)
-            nodes[0].split()
-            # in case terminal?(max_dept/chi_value) or fully pure node
+            # in case terminal(max_dept/chi_value) or fully pure node
             if not nodes[0].terminal and self.is_pure(nodes[0]):
                 nodes[0].terminal = True
                 del nodes[0]
                 continue
+
+            nodes[0].split()
+            nodes[0].calc_feature_importance(m)
 
             if nodes[0].terminal or nodes[0].goodness_of_split(nodes[0].children[0].feature)[0] == 0:
                 del nodes[0]
@@ -331,7 +333,8 @@ class DecisionTree:
         Returns:
 
         """
-        unique_node_values, _ = np.unique(node.data[:, node.children[0].feature], return_counts=True)
+        # unique_node_values, _ = np.unique(node.data[:, node.children[0].feature], return_counts=True)
+        unique_node_values = np.unique(node.data[:, node.feature])
         if len(unique_node_values) == 1:
             return True
         return False
