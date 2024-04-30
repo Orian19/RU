@@ -152,6 +152,13 @@ class DecisionNode:
         goodness, groups = self.goodness_of_split(self.feature)
         self.feature_importance = (m / n_total_sample) * goodness
 
+        # feature_importance = (m / n_total_sample) * self.impurity_func(self.data)
+        # unique_values, counts = np.unique(self.data[:, self.feature], return_counts=True)
+        # for value in unique_values:
+        #     feature_data = self.data[self.data[:, self.feature] == value]
+        #     feature_importance -= (feature_data.shape[0] / n_total_sample) * self.impurity_func(feature_data)
+        # self.feature_importance = feature_importance
+
     def goodness_of_split(self, feature):
         """
         Calculate the goodness of split of a dataset given a feature and impurity function.
@@ -219,12 +226,12 @@ class DecisionNode:
         if self.feature is None:
             self.terminal = True
 
-        unique_feature_values, _ = np.unique(self.data[:, best_feature_idx], return_counts=True)
-        unique_curFeature_values, _ = np.unique(self.data[:, self.feature], return_counts=True)
+        unique_feature_values, _ = np.unique(self.data[:, self.feature], return_counts=True)
+        unique_cls_values, _ = np.unique(self.data[:, -1], return_counts=True)
 
-        if len(unique_curFeature_values) > 1:
+        if len(unique_feature_values) > 1 and len(unique_cls_values) > 1:
             # df = (#attributes - 1) * (#classes - 1)
-            degree_of_freedom = (len(unique_curFeature_values) - 1)  # * (len(unique_cls_values) - 1)
+            degree_of_freedom = (len(unique_feature_values) - 1) * (len(unique_cls_values) - 1)
         else:
             self.terminal = True
             return
@@ -239,7 +246,7 @@ class DecisionNode:
         chi_squared_value = calc_chi_squared(best_feature_idx, self.data)
 
         # (checking we didn't pass the max_depth) and (chi_squared_value is greater than the p_value)
-        if self.depth < self.max_depth and chi_squared_value >= p_value:
+        if self.depth < self.max_depth and chi_squared_value > p_value:
             for value in unique_feature_values:  # creating the children nodes (value/attributes of that feature)
                 new_child = DecisionNode(
                     data=self.data[self.data[:, best_feature_idx] == value],
@@ -332,8 +339,7 @@ class DecisionTree:
         Returns:
 
         """
-        # unique_node_values, _ = np.unique(node.data[:, node.children[0].feature], return_counts=True)
-        unique_node_values = np.unique(node.data[:, node.feature])
+        unique_node_values = np.unique(node.data[:, -1])
         if len(unique_node_values) == 1:
             return True
         return False
