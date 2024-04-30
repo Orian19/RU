@@ -284,7 +284,6 @@ class DecisionTree:
         self.max_depth = max_depth  # the maximum allowed depth of the tree
         self.gain_ratio = gain_ratio  #
         self.root = None  # the root node of the tree
-        self.total_samples = data.shape[0]  # n total samples - used for feature importance
 
     def build_tree(self):
         """
