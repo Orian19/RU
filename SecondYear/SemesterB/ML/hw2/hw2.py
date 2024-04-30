@@ -152,13 +152,6 @@ class DecisionNode:
         goodness, groups = self.goodness_of_split(self.feature)
         self.feature_importance = (m / n_total_sample) * goodness
 
-        # feature_importance = (m / n_total_sample) * self.impurity_func(self.data)
-        # unique_values, counts = np.unique(self.data[:, self.feature], return_counts=True)
-        # for value in unique_values:
-        #     feature_data = self.data[self.data[:, self.feature] == value]
-        #     feature_importance -= (feature_data.shape[0] / n_total_sample) * self.impurity_func(feature_data)
-        # self.feature_importance = feature_importance
-
     def goodness_of_split(self, feature):
         """
         Calculate the goodness of split of a dataset given a feature and impurity function.
