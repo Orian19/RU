@@ -172,9 +172,6 @@ class DecisionNode:
         impurity = self.impurity_func(self.data)  # impurity of the class
         unique_values, counts = np.unique(self.data[:, feature], return_counts=True)
 
-        # if len(unique_values) == 1:
-        #     self.gain_ratio = False
-
         if not self.gain_ratio:  # regular goodness of split
             for value in unique_values:
                 feature_data = self.data
@@ -207,6 +204,7 @@ class DecisionNode:
         """
         m, n = self.data.shape  # m - #instances, n - #features
 
+        # calculating the best_feature index
         best_feature_idx = -1
         max_goodness_of_split = -1
         for feature_idx in range(0, n - 1):  # finding the best feature
