@@ -133,7 +133,7 @@ def possion_analytic_mle(samples):
     return: the rate that maximizes the likelihood
     """
     mean = None
-    # after doing all the steps we get that MLE for poission dits is mean, namely: rate = 1/n * sum (samples)
+    # after doing all the steps we get that MLE for poission dist. is mean, namely: rate = 1/n * sum (samples)
     mean = np.mean(samples)
 
     return mean
@@ -234,7 +234,6 @@ class MAPClassifier():
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-
         pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
 
         return pred
@@ -351,7 +350,6 @@ class MaxPrior():
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-
         pred = 0 if self.ccd0.get_prior() > self.ccd1.get_prior() else 1
 
         return pred
@@ -381,7 +379,6 @@ class MaxLikelihood():
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-
         pred = 0 if self.ccd0.get_instance_likelihood(x) > self.ccd1.get_instance_likelihood(x) else 1
 
         return pred
@@ -425,7 +422,7 @@ class DiscreteNBClassDistribution():
         for i, feature_value in enumerate(x[:-1]):
             # case when the probability is zero -> P(x_j|A) = EPSILON
             if feature_value not in np.unique(self.class_data[:, i]):
-                likelihood *= EPSILLON  # TODO: check why do we need alpha and epsilon
+                likelihood *= EPSILLON  # TODO: check why do we need both alpha and epsilon
                 continue
             # when the probability is not zero we use the discrete func
             V_j = len(np.unique(self.class_data[:, i]))
