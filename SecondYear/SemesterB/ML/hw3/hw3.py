@@ -170,13 +170,11 @@ class NaiveNormalClassDistribution():
         - dataset: The dataset as a 2d numpy array, assuming the class label is the last column
         - class_value : The class to calculate the parameters for.
         """
-        self.dataset = dataset  # check if we use it
         self.class_value = class_value
-        self.class_data = self.dataset[self.dataset[:, -1] == self.class_value]
+        self.class_data = dataset[dataset[:, -1] == self.class_value]
         self.mean = np.mean(self.class_data, axis=0)  # axis=0 to calculate each feature independently.
         self.std = np.std(self.class_data, axis=0)
         self.num_instances = dataset.shape[0]
-        # num of features
 
     def get_prior(self):
         """
@@ -280,9 +278,10 @@ def multi_normal_pdf(x, mean, cov):
     Returns the normal distribution pdf according to the given mean and var for the given x.
     """
     pdf = None
-    pdf_one = (2 * np.pi)(-x.shape[0] - 1 / 2)
-    pdf_two = np.linalg.det(cov) - 0.5
-    pdf_three = np.exp(-0.5 * np.dot(np.transpose(x[:-1] - mean), np.dot(np.linalg.inv(cov), (x[:-1] - mean))))
+    pdf_one = (2 * np.pi) ** (-x.shape[0] - 1 / 2)
+    pdf_two = np.linalg.det(cov) ** -0.5
+    pdf_three = np.exp(
+        -0.5 * np.dot(np.transpose(x[:-1] - mean[:-1]), np.dot(np.linalg.inv(cov), (x[:-1] - mean[:-1]))))
     pdf = pdf_one * pdf_two * pdf_three
 
     return pdf
@@ -405,79 +404,64 @@ class DiscreteNBClassDistribution():
         - dataset: The dataset as a numpy array.
         - class_value: Compute the relevant parameters only for instances from the given class.
         """
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
-    
+        self.class_value = class_value
+        self.class_data = dataset[dataset[:, -1] == self.class_value]
+        self.n_i = self.class_data.shape[0]  # from the discrete formula (#instances of the current class)
+        self.num_instances = dataset.shape[0]
+
     def get_prior(self):
         """
-        Returns the prior porbability of the class 
+        Returns the prior porbability of the class
         according to the dataset distribution.
         """
         prior = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        prior = self.class_data.shape[0] / self.num_instances
         return prior
-    
+
     def get_instance_likelihood(self, x):
         """
-        Returns the likelihood of the instance under 
+        Returns the likelihood of the instance under
         the class according to the dataset distribution.
         """
         likelihood = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        likelihood = 1
+        alpha = 1  # from the Laplace smoothe function, we choose alpha=1
+        for i, feature_value in enumerate(x[:-1]):
+            # case when the probability is zero -> P(x_j|A) = EPSILON
+            if feature_value not in np.unique(self.class_data[:, i]):
+                likelihood *= EPSILLON  # TODO: check why do we need alpha and epsilon
+                continue
+            # when the probsability is not zero we use the discrete func
+            V_j = len(np.unique(self.class_data[:, i]))
+            n_ij = self.class_data[self.class_data[:, i] == feature_value].shape[0]
+            likelihood *= (n_ij + alpha) / (self.n_i + V_j)
+
         return likelihood
-        
+
     def get_instance_posterior(self, x):
         """
-        Returns the posterior porbability of the instance 
+        Returns the posterior porbability of the instance
         under the class according to the dataset distribution.
         * Ignoring p(x)
         """
         posterior = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        posterior = self.get_instance_likelihood(x) * self.get_prior()
         return posterior
 
 
 class MAPClassifier_DNB():
-    def __init__(self, ccd0 , ccd1):
+    def __init__(self, ccd0, ccd1):
         """
-        A Maximum a posteriori classifier. 
+        A Maximum a posteriori classifier.
         This class will hold 2 class distributions, one for class 0 and one for class 1, and will predict an instance
         by the class that outputs the highest posterior probability for the given instance.
-    
+
         Input
             - ccd0 : An object contating the relevant parameters and methods for the distribution of class 0.
             - ccd1 : An object contating the relevant parameters and methods for the distribution of class 1.
         """
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        self.ccd0 = ccd0
+        self.ccd1 = ccd1
 
     def predict(self, x):
         """
@@ -489,13 +473,11 @@ class MAPClassifier_DNB():
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        pred = None
+        if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x):
+            pred = 0
+        else:
+            pred = 1
         return pred
 
     def compute_accuracy(self, test_set):
@@ -508,13 +490,12 @@ class MAPClassifier_DNB():
             - Accuracy = #Correctly Classified / #test_set size
         """
         acc = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        test_size = test_set.shape[0]
+
+        acc = 0
+        for instance in test_set:
+            if self.predict(instance) == instance[-1]:
+                acc += 1
+
+        acc /= test_size
         return acc
-
-
