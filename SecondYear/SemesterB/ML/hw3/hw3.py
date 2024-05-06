@@ -145,18 +145,19 @@ def normal_pdf(x, mean, std):
     - x: A value we want to compute the distribution for.
     - mean: The mean value of the distribution.
     - std:  The standard deviation of the distribution.
- 
-    Returns the normal distribution pdf according to the given mean and std for the given x.    
+
+    Returns the normal distribution pdf according to the given mean and std for the given x.
     """
     p = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+
+    # denominator = np.sqrt(2 * np.pi * np.square(std))
+    # numerator = np.exp(-np.square((x - mean)) / 2 * np.square(std))
+    denominator = np.sqrt(2 * np.pi * np.square(std))
+    numerator = np.exp(np.divide(-np.square((x - mean)), 2 * np.square(std)))
+
+    p = numerator / denominator
     return p
+
 
 class NaiveNormalClassDistribution():
     def __init__(self, dataset, class_value):
@@ -168,139 +169,121 @@ class NaiveNormalClassDistribution():
         - dataset: The dataset as a 2d numpy array, assuming the class label is the last column
         - class_value : The class to calculate the parameters for.
         """
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
-    
+        self.dataset = dataset  # check if we use it
+        self.class_value = class_value
+        self.class_data = self.dataset[self.dataset[:, -1] == self.class_value]
+        self.mean = np.mean(self.class_data, axis=0)  # axis=0 to calculate each feature independently.
+        self.std = np.std(self.class_data, axis=0)
+        self.num_instances = dataset.shape[0]
+        # num of features
+
     def get_prior(self):
         """
         Returns the prior porbability of the class according to the dataset distribution.
         """
         prior = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        prior = self.class_data.shape[0] / self.num_instances
         return prior
-    
+
     def get_instance_likelihood(self, x):
         """
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
         likelihood = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        likelihood = 1
+        # likelihood = map(normal_pdf,x,self.mean,self.std)
+        for i, feature_value in enumerate(x[:-1]):  # x is a row vector (instance)
+            likelihood *= normal_pdf(feature_value, self.mean[i], self.std[i])
+
         return likelihood
-    
+
     def get_instance_posterior(self, x):
         """
         Returns the posterior porbability of the instance under the class according to the dataset distribution.
         * Ignoring p(x)
         """
         posterior = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+        posterior = self.get_instance_likelihood(x) * self.get_prior()
+
         return posterior
 
+
 class MAPClassifier():
-    def __init__(self, ccd0 , ccd1):
+    def __init__(self, ccd0, ccd1):
         """
-        A Maximum a posteriori classifier. 
-        This class will hold 2 class distributions. 
+        A Maximum a posteriori classifier.
+        This class will hold 2 class distributions.
         One for class 0 and one for class 1, and will predict an instance
-        using the class that outputs the highest posterior probability 
+        using the class that outputs the highest posterior probability
         for the given instance.
-    
+
         Input
-            - ccd0 : An object contating the relevant parameters and methods 
+            - ccd0 : An object contating the relevant parameters and methods
                      for the distribution of class 0.
-            - ccd1 : An object contating the relevant parameters and methods 
+            - ccd1 : An object contating the relevant parameters and methods
                      for the distribution of class 1.
         """
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
-    
+        self.ccd0 = ccd0
+        self.ccd1 = ccd1
+
     def predict(self, x):
         """
         Predicts the instance class using the 2 distribution objects given in the object constructor.
-    
+
         Input
             - An instance to predict.
         Output
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-        ###########################################################################
-        # TODO: Implement the function.                                           #
-        ###########################################################################
-        pass
-        ###########################################################################
-        #                             END OF YOUR CODE                            #
-        ###########################################################################
+
+        if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x):
+            pred = 0
+        else:
+            pred = 1
         return pred
+
 
 def compute_accuracy(test_set, map_classifier):
     """
     Compute the accuracy of a given a test_set using a MAP classifier object.
-    
+
     Input
         - test_set: The test_set for which to compute the accuracy (Numpy array). where the class label is the last column
         - map_classifier : A MAPClassifier object capable of prediciting the class for each instance in the testset.
-        
+
     Ouput
         - Accuracy = #Correctly Classified / test_set size
     """
     acc = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    test_size = test_set.shape[0]
+
+    acc = 0
+    for instance in test_set:
+        if map_classifier.predict(instance) == instance[-1]:
+            acc += 1
+
+    acc /= test_size
     return acc
+
 
 def multi_normal_pdf(x, mean, cov):
     """
     Calculate multi variable normal desnity function for a given x, mean and covarince matrix.
- 
+
     Input:
     - x: A value we want to compute the distribution for.
     - mean: The mean vector of the distribution.
     - cov:  The covariance matrix of the distribution.
- 
-    Returns the normal distribution pdf according to the given mean and var for the given x.    
+
+    Returns the normal distribution pdf according to the given mean and var for the given x.
     """
     pdf = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    pdf_one = (2 * np.pi)(-x.shape[0] - 1 / 2)
+    pdf_two = np.linalg.det(cov) - 0.5
+    pdf_three = np.exp(-0.5 * np.dot(np.transpose(x[:-1] - mean), np.dot(np.linalg.inv(cov), (x[:-1] - mean))))
+    pdf = pdf_one * pdf_two * pdf_three
+
     return pdf
 
 class MultiNormalClassDistribution():
