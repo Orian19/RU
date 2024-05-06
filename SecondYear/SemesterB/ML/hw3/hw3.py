@@ -189,7 +189,7 @@ class NaiveNormalClassDistribution():
         """
         likelihood = None
         likelihood = 1
-        # likelihood = map(normal_pdf,x,self.mean,self.std)
+
         for i, feature_value in enumerate(x[:-1]):  # x is a row vector (instance)
             likelihood *= normal_pdf(feature_value, self.mean[i], self.std[i])
 
