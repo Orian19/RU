@@ -72,8 +72,8 @@ class conditional_independence():
         XC_YC_mult = []
         X_Y_C_joint = []
         for key in X_Y_C.keys():
-            XC_YC_mult.append(X_C.get((key[0], key[2])) * Y_C.get((key[1], key[2])) / C.get(
-                key[2]))  # P(X=x|C=c) * P(Y=y|C=c) / P(C=c)
+            # P(X=x|C=c) * P(Y=y|C=c) / P(C=c)
+            XC_YC_mult.append(X_C.get((key[0], key[2])) * Y_C.get((key[1], key[2])) / C.get(key[2]))
             X_Y_C_joint.append(X_Y_C.get(key))
 
         return False not in np.isclose(XC_YC_mult, X_Y_C_joint)  # if there is one mismatch => X,Y dependent
@@ -89,7 +89,7 @@ def poisson_log_pmf(k, rate):
     log_p = None
 
     # pmf = (rate ** k) * (np.e ** -rate) / math.factorial(k)
-    pmf = (rate ** k) * np.exp(-rate) / factorial(k)
+    pmf = (rate ** k) * np.exp(-rate) / factorial(k)  # TODO: make sure we can use scipy for factorial (piazza)
     log_p = np.log(pmf)
 
     return log_p
@@ -133,10 +133,11 @@ def possion_analytic_mle(samples):
     return: the rate that maximizes the likelihood
     """
     mean = None
-    mean = np.mean(
-        samples)  # after doing all the steps we get that MLE for poission dits is mean, namely: rate = 1/n * sum (samples)
+    # after doing all the steps we get that MLE for poission dits is mean, namely: rate = 1/n * sum (samples)
+    mean = np.mean(samples)
 
     return mean
+
 
 def normal_pdf(x, mean, std):
     """
@@ -151,8 +152,6 @@ def normal_pdf(x, mean, std):
     """
     p = None
 
-    # denominator = np.sqrt(2 * np.pi * np.square(std))
-    # numerator = np.exp(-np.square((x - mean)) / 2 * np.square(std))
     denominator = np.sqrt(2 * np.pi * np.square(std))
     numerator = np.exp(np.divide(-np.square((x - mean)), 2 * np.square(std)))
 
@@ -236,10 +235,8 @@ class MAPClassifier():
         """
         pred = None
 
-        if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x):
-            pred = 0
-        else:
-            pred = 1
+        pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
+
         return pred
 
 
@@ -278,13 +275,14 @@ def multi_normal_pdf(x, mean, cov):
     Returns the normal distribution pdf according to the given mean and var for the given x.
     """
     pdf = None
-    pdf_one = (2 * np.pi) ** (-x.shape[0] - 1 / 2)
-    pdf_two = np.linalg.det(cov) ** -0.5
-    pdf_three = np.exp(
-        -0.5 * np.dot(np.transpose(x[:-1] - mean[:-1]), np.dot(np.linalg.inv(cov), (x[:-1] - mean[:-1]))))
+    pdf_one = (2 * np.pi) ** (-x.shape[0] - 1 / 2)  # (2pi)^(-d/2)
+    pdf_two = np.linalg.det(cov) ** -0.5  # det(Cov)^(-1/2)
+    # e^(-1/2 * (x-mean).T * inv(Cov) * (x-mean))
+    pdf_three = np.exp(-0.5 * np.dot(np.transpose(x[:-1] - mean[:-1]), np.dot(np.linalg.inv(cov), (x[:-1] - mean[:-1]))))
     pdf = pdf_one * pdf_two * pdf_three
 
     return pdf
+
 
 class MultiNormalClassDistribution():
 
@@ -353,10 +351,8 @@ class MaxPrior():
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-        if self.ccd0.get_prior() > self.ccd1.get_prior():
-            pred = 0
-        else:
-            pred = 1
+
+        pred = 0 if self.ccd0.get_prior() > self.ccd1.get_prior() else 1
 
         return pred
 
@@ -385,14 +381,14 @@ class MaxLikelihood():
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-        if self.ccd0.get_instance_likelihood(x) > self.ccd1.get_instance_likelihood(x):
-            pred = 0
-        else:
-            pred = 1
+
+        pred = 0 if self.ccd0.get_instance_likelihood(x) > self.ccd1.get_instance_likelihood(x) else 1
 
         return pred
 
-EPSILLON = 1e-6 # if a certain value only occurs in the test set, the probability for that value will be EPSILLON.
+
+EPSILLON = 1e-6  # if a certain value only occurs in the test set, the probability for that value will be EPSILLON.
+
 
 class DiscreteNBClassDistribution():
     def __init__(self, dataset, class_value):
@@ -425,13 +421,13 @@ class DiscreteNBClassDistribution():
         """
         likelihood = None
         likelihood = 1
-        alpha = 1  # from the Laplace smoothe function, we choose alpha=1
+        alpha = 1  # from the Laplace smooth function, we choose alpha=1
         for i, feature_value in enumerate(x[:-1]):
             # case when the probability is zero -> P(x_j|A) = EPSILON
             if feature_value not in np.unique(self.class_data[:, i]):
                 likelihood *= EPSILLON  # TODO: check why do we need alpha and epsilon
                 continue
-            # when the probsability is not zero we use the discrete func
+            # when the probability is not zero we use the discrete func
             V_j = len(np.unique(self.class_data[:, i]))
             n_ij = self.class_data[self.class_data[:, i] == feature_value].shape[0]
             likelihood *= (n_ij + alpha) / (self.n_i + V_j)
@@ -473,11 +469,8 @@ class MAPClassifier_DNB():
             - 0 if the posterior probability of class 0 is higher and 1 otherwise.
         """
         pred = None
-        pred = None
-        if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x):
-            pred = 0
-        else:
-            pred = 1
+        pred = 0 if self.ccd0.get_instance_posterior(x) > self.ccd1.get_instance_posterior(x) else 1
+
         return pred
 
     def compute_accuracy(self, test_set):
