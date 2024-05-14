@@ -88,7 +88,6 @@ def poisson_log_pmf(k, rate):
     """
     log_p = None
 
-    # pmf = (rate ** k) * (np.e ** -rate) / math.factorial(k)
     pmf = (rate ** k) * np.exp(-rate) / factorial(k)  # TODO: make sure we can use scipy for factorial (piazza)
     log_p = np.log(pmf)
 
