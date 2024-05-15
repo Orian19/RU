@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.special import factorial
 
 class conditional_independence():
 
@@ -87,8 +86,16 @@ def poisson_log_pmf(k, rate):
     return the log pmf value for instance k given the rate
     """
     log_p = None
+    k_factorial = np.ones_like(k)
+    # calculate factorial for each element in k
+    for i in range(len(k)):
+        if k[i] > 1:
+            factorial = 1
+            for j in range(1, k[i] + 1):
+                factorial *= j
+            k_factorial[i] = factorial
 
-    pmf = (rate ** k) * np.exp(-rate) / factorial(k)  # TODO: make sure we can use scipy for factorial (piazza)
+    pmf = (rate ** k) * np.exp(-rate) / k_factorial
     log_p = np.log(pmf)
 
     return log_p
@@ -421,7 +428,7 @@ class DiscreteNBClassDistribution():
         for i, feature_value in enumerate(x[:-1]):
             # case when the probability is zero -> P(x_j|A) = EPSILON
             if feature_value not in np.unique(self.class_data[:, i]):
-                likelihood *= EPSILLON  # TODO: check why do we need both alpha and epsilon
+                likelihood *= EPSILLON
                 continue
             # when the probability is not zero we use the discrete func
             V_j = len(np.unique(self.class_data[:, i]))
