@@ -1,5 +1,3 @@
-import java.util.Queue;
-
 /**
  * A synchronized bounded-size queue for multithreaded producer-consumer applications.
  * producers = threads(workers), create some data/ do some operation
@@ -60,7 +58,7 @@ public class SynchronizedQueue<T> {
         T item = this.buffer[this.OUT]; // getting the value of the next item
         this.OUT = (this.OUT + 1) % this.getCapacity();  // advancing OUT (cyclic queue/buffer)
         this.COUNT--;
-        this.notifyAll(); // todo: what? why?
+        this.notifyAll(); // notify all producers there is an empty spot in the buffer (scheduling determines which producer/thread will produce next)
         return item;
     }
 
@@ -79,7 +77,7 @@ public class SynchronizedQueue<T> {
         this.buffer[this.IN] = item; // inserting the item to the next spot in the buffer/queue
         this.IN = (this.OUT + 1) % this.getCapacity(); // advancing IN (cyclic queue/buffer)
 		this.COUNT++;
-		this.notifyAll();  // TODO: why notifying  all? what does this do?
+		this.notifyAll();  // notify all consumers there is an available item to consume
     }
 
     /**
