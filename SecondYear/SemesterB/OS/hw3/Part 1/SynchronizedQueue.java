@@ -46,12 +46,12 @@ public class SynchronizedQueue<T> {
      * @see #unregisterProducer()
      */
     public synchronized T dequeue() throws InterruptedException {
-		// waiting for a producer to produce an item, so we can consume it (queue/buffer ie empty)
+        // waiting for a producer to produce an item, so we can consume it (queue/buffer ie empty)
         while (this.producers > 0 && this.COUNT == 0) {
             this.wait();
         }
-		// Entering Critical Section
-		// the queue/buffer ie empty and no more items are planned to be added (no producers registered)
+        // Entering Critical Section
+        // the queue/buffer ie empty and no more items are planned to be added (no producers registered)
         if (this.producers == 0 && this.COUNT == 0) {
             return null;
         }
@@ -69,15 +69,15 @@ public class SynchronizedQueue<T> {
      * @param item Item to enqueue
      */
     public synchronized void enqueue(T item) throws InterruptedException {
-		// waiting for a consumer to consume an item, so we can produce new items
+        // waiting for a consumer to consume an item, so we can produce new items
         while (this.COUNT == this.getCapacity()) {
             this.wait();
         }
-		// Entering Critical Section
+        // Entering Critical Section
         this.buffer[this.IN] = item; // inserting the item to the next spot in the buffer/queue
         this.IN = (this.OUT + 1) % this.getCapacity(); // advancing IN (cyclic queue/buffer)
-		this.COUNT++;
-		this.notifyAll();  // notify all consumers there is an available item to consume
+        this.COUNT++;
+        this.notifyAll();  // notify all consumers there is an available item to consume
     }
 
     /**
