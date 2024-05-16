@@ -35,11 +35,12 @@ public class Copier implements Runnable {
         // the queue has more files, coping them to the destination directory
         while (this.resultsQueue.getSize() > 0) {
             try {
-                file = this.resultsQueue.dequeue();
-                if (file != null) { // ignoring if null
+                file = this.resultsQueue.dequeue(); // fetch file
+                if (file != null) {
+                    File fileCopy = new File(this.destination, file.getName()); // create new file to copy contents to
                     // copying a buffered_size buffer until the entire file is copied to the destination directory
                     try (FileInputStream fis = new FileInputStream(file);
-                         FileOutputStream fos = new FileOutputStream(this.destination)) {
+                         FileOutputStream fos = new FileOutputStream(fileCopy)) {
                         byte[] buffer = new byte[COPY_BUFFER_SIZE];
                         int bytesRead;
                         while ((bytesRead = fis.read(buffer)) != -1)
