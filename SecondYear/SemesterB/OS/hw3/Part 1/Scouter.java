@@ -1,7 +1,6 @@
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * A scouter thread This thread lists all sub-directories from a given root path.
@@ -33,7 +32,7 @@ public class Scouter implements Runnable {
     public void run() {
         this.directoryQueue.registerProducer(); // register new producer = new scouter thread
 
-        ArrayList<File> dirs = new ArrayList<>();
+        List<File> dirs = new ArrayList<>();
         dirs.add(this.root);
 
         File cur_dir;

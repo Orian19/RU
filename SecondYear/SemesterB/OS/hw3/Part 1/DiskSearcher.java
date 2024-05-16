@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Main application class. This application searches for all files under some given path that contain a given textual pattern.
@@ -36,7 +37,7 @@ public class DiskSearcher {
         String fileExtension = "txt";
         File root = Paths.get("C:\\testP1\\source").toRealPath().toFile();
         File destination = Paths.get("C:\\testP1\\dest").toRealPath().toFile();
-        int searchersNum = Integer.parseInt("10");
+        int searchersNum = Integer.parseInt("10");  // TODO: now working with 1,1
         int copiersNum = Integer.parseInt("5");
 
         // initializing a directory and results queues
@@ -48,7 +49,7 @@ public class DiskSearcher {
         scouterThread.start();
 
         // starting searchers threads
-        ArrayList<Thread> searcherThreads = new ArrayList<>();
+        List<Thread> searcherThreads = new ArrayList<>();
         for (int i = 0; i < searchersNum; i++) {
             Thread searcherThread = new Thread(new Searcher(filePattern, fileExtension, directoryQueue, resultsQueue));
             searcherThreads.add(searcherThread);
@@ -56,7 +57,7 @@ public class DiskSearcher {
         }
 
         // starting copiers threads
-        ArrayList<Thread> copierThreads = new ArrayList<>();
+        List<Thread> copierThreads = new ArrayList<>();
         for (int i = 0; i < copiersNum; i++) {
             Thread copierThread = new Thread(new Copier(destination, resultsQueue));
             copierThreads.add(copierThread);
