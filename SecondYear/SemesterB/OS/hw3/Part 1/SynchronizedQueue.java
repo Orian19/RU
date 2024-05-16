@@ -12,6 +12,7 @@ public class SynchronizedQueue<T> {
     private T[] buffer; // queue of jobs
     private int producers;
     // TODO: Add more private members here as necessary
+    private final Object lock;
     private int IN;  // index of the end of the queue (enqueue here)
     private int OUT; // index of next job/item (dequeue here)
     private int COUNT;  // number of available items
@@ -27,6 +28,7 @@ public class SynchronizedQueue<T> {
         this.buffer = (T[]) (new Object[capacity]);
         this.producers = 0;
         // TODO: Add more logic here as necessary
+        this.lock = new Object();
         this.IN = 0;
         this.OUT = 0;
         this.COUNT = 0;
@@ -45,21 +47,23 @@ public class SynchronizedQueue<T> {
      * @see #registerProducer()
      * @see #unregisterProducer()
      */
-    public synchronized T dequeue() throws InterruptedException {
-        // waiting for a producer to produce an item, so we can consume it (queue/buffer ie empty)
-        while (this.producers > 0 && this.COUNT == 0) {
-            this.wait();
+    public T dequeue() throws InterruptedException {
+        synchronized (this.lock) {
+            // waiting for a producer to produce an item, so we can consume it (queue/buffer ie empty)
+            while (this.producers > 0 && this.COUNT == 0) {
+                this.lock.wait();
+            }
+            // Entering Critical Section
+            // the queue/buffer ie empty and no more items are planned to be added (no producers registered)
+            if (this.producers == 0 && this.COUNT == 0) {
+                return null;
+            }
+            T item = this.buffer[this.OUT]; // getting the value of the next item
+            this.OUT = (this.OUT + 1) % this.getCapacity();  // advancing OUT (cyclic queue/buffer)
+            this.COUNT--;
+            this.lock.notifyAll(); // notify all producers there is an empty spot in the buffer (scheduling determines which producer/thread will produce next)
+            return item;
         }
-        // Entering Critical Section
-        // the queue/buffer ie empty and no more items are planned to be added (no producers registered)
-        if (this.producers == 0 && this.COUNT == 0) {
-            return null;
-        }
-        T item = this.buffer[this.OUT]; // getting the value of the next item
-        this.OUT = (this.OUT + 1) % this.getCapacity();  // advancing OUT (cyclic queue/buffer)
-        this.COUNT--;
-        this.notifyAll(); // notify all producers there is an empty spot in the buffer (scheduling determines which producer/thread will produce next)
-        return item;
     }
 
     /**
@@ -68,16 +72,18 @@ public class SynchronizedQueue<T> {
      *
      * @param item Item to enqueue
      */
-    public synchronized void enqueue(T item) throws InterruptedException {
-        // waiting for a consumer to consume an item, so we can produce new items
-        while (this.COUNT == this.getCapacity()) {
-            this.wait();
+    public void enqueue(T item) throws InterruptedException {
+        synchronized (this.lock) {
+            // waiting for a consumer to consume an item, so we can produce new items
+            while (this.COUNT == this.getCapacity()) {
+                this.lock.wait();
+            }
+            // Entering Critical Section
+            this.buffer[this.IN] = item; // inserting the item to the next spot in the buffer/queue
+            this.IN = (this.IN + 1) % this.getCapacity(); // advancing IN (cyclic queue/buffer)
+            this.COUNT++;
+            this.lock.notifyAll();  // notify all consumers there is an available item to consume
         }
-        // Entering Critical Section
-        this.buffer[this.IN] = item; // inserting the item to the next spot in the buffer/queue
-        this.IN = (this.IN + 1) % this.getCapacity(); // advancing IN (cyclic queue/buffer)
-        this.COUNT++;
-        this.notifyAll();  // notify all consumers there is an available item to consume
     }
 
     /**
@@ -113,7 +119,9 @@ public class SynchronizedQueue<T> {
      */
     public void registerProducer() {
         // TODO: This should be in a critical section
-        this.producers++;
+        synchronized (this.lock) {
+            this.producers++;
+        }
     }
 
     /**
@@ -122,8 +130,10 @@ public class SynchronizedQueue<T> {
      * @see #dequeue()
      * @see #registerProducer()
      */
-    public synchronized void unregisterProducer() {
+    public void unregisterProducer() {
         // TODO: This should be in a critical section
-        this.producers--;
+        synchronized (this.lock) {
+            this.producers--;
+        }
     }
 }
