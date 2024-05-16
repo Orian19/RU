@@ -75,7 +75,7 @@ public class SynchronizedQueue<T> {
         }
         // Entering Critical Section
         this.buffer[this.IN] = item; // inserting the item to the next spot in the buffer/queue
-        this.IN = (this.OUT + 1) % this.getCapacity(); // advancing IN (cyclic queue/buffer)
+        this.IN = (this.IN + 1) % this.getCapacity(); // advancing IN (cyclic queue/buffer)
         this.COUNT++;
         this.notifyAll();  // notify all consumers there is an available item to consume
     }
