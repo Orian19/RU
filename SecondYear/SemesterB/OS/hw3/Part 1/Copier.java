@@ -32,7 +32,7 @@ public class Copier implements Runnable {
     @Override
     public void run() {
         File file;
-        // the queue has more files, coping them to the destination directory
+        // while the queue has more files, coping them to the destination directory
         while (this.resultsQueue.getSize() > 0) {
             try {
                 file = this.resultsQueue.dequeue(); // fetch file

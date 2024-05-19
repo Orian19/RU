@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,21 +23,14 @@ public class DiskSearcher {
      *
      * @param args command line args
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         // parsing all user inputs
-//        String filePattern = args[0];
-//        String fileExtension = args[1];
-//        File root = new File(args[2]);
-//        File destination = new File(args[3]);
-//        int searchersNum = Integer.parseInt(args[4]);
-//        int copiersNum = Integer.parseInt(args[5]);
-
-        String filePattern = "solution";
-        String fileExtension = "txt";
-        File root = Paths.get("C:\\testP1\\source").toRealPath().toFile();
-        File destination = Paths.get("C:\\testP1\\dest").toRealPath().toFile();
-        int searchersNum = Integer.parseInt("10");  // TODO: now working with 1,1
-        int copiersNum = Integer.parseInt("5");
+        String filePattern = args[0];
+        String fileExtension = args[1];
+        File root = new File(args[2]);
+        File destination = new File(args[3]);
+        int searchersNum = Integer.parseInt(args[4]);
+        int copiersNum = Integer.parseInt(args[5]);
 
         // initializing a directory and results queues
         SynchronizedQueue<File> directoryQueue = new SynchronizedQueue<>(DIRECTORY_QUEUE_CAPACITY);
