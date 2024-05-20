@@ -1,7 +1,4 @@
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * A searcher thread.
@@ -43,7 +40,7 @@ public class Searcher implements Runnable {
 
         try {
             File dir = this.directoryQueue.dequeue(); // fetching a directory from the queue
-            if (dir != null) {
+            while (dir != null) {
                 File[] files = dir.listFiles();
                 if (files != null) { // ignoring if null
                     int dotPos;
@@ -61,6 +58,7 @@ public class Searcher implements Runnable {
                         }
                     }
                 }
+                dir = this.directoryQueue.dequeue();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

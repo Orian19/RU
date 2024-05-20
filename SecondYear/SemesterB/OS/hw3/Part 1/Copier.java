@@ -33,7 +33,7 @@ public class Copier implements Runnable {
     public void run() {
         File file;
         // while the queue has more files, coping them to the destination directory
-        while (this.resultsQueue.getSize() > 0) {
+        do {
             try {
                 file = this.resultsQueue.dequeue(); // fetch file
                 if (file != null) {
@@ -53,6 +53,6 @@ public class Copier implements Runnable {
                 throw new RuntimeException(e);
             }
 
-        }
+        } while (this.resultsQueue.getSize() > 0);
     }
 }
