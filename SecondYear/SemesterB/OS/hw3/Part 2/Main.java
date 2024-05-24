@@ -77,7 +77,7 @@ public class Main {
         //Read the shakespeare file provided from C:\Temp\Shakespeare.txt
         //and return an ArrayList<String> that contains each line read from the file.
 
-        String filePath = "C:\\Temp\\shakespear.txt";
+        String filePath = "C:\\Temp\\shakespeare.txt";
         List<String> lines = new ArrayList<>();
         String line;
         // reading line by line an adding to the list
