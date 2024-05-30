@@ -38,12 +38,16 @@ def feature_selection(X, y, n_features=5):
     best_features = []
     features_dict = {}
     m, n = X.shape
+    # getting rid of non-numeric columns
     X = X.drop(['id', 'date'], axis=1)
+    # calculating the pearson correlation per feature
     for feature in X:
         features_dict.update({feature: pearson_correlation(X[feature], y)})
+    # sorting the feature by descending pearson score
     features_score = list(sorted(features_dict.items(), key=lambda item: item[1], reverse=True))
+    # taking the best n features = features with highest score
     best_features = [feature[0] for feature in features_score[:n_features]]
-    return best_features  # TODO: make sure value are correct (compare)
+    return best_features
 
 
 class LogisticRegressionGD(object):
@@ -95,10 +99,9 @@ class LogisticRegressionGD(object):
           Target values.
 
         """
-        # TODO: X changes when running 2 in a row
         # set random seed
         np.random.seed(self.random_state)
-        # intializing n (# features + 1 for theta_0) random theta values
+        # initializing n (# features + 1 for theta_0) random theta values
         self.theta = np.random.random(size=X.shape[1] + 1)
         X = self.apply_bias_trick(X)
         self.theta, self.Js = self.efficient_gradient_descent(X, y)
@@ -113,38 +116,36 @@ class LogisticRegressionGD(object):
         preds = None
         X = self.apply_bias_trick(X)
         sigmoid = 1 / (1 + np.exp(-X.dot(self.theta.transpose())))
+        # predicting class 1 if the probability is larger than 0.5
         preds = [1 if prob >= 0.5 else 0 for prob in sigmoid]
         return np.asarray(preds)
 
     def efficient_gradient_descent(self, X, y):
         """
-      Learn the parameters of your model using the training set, but stop
-      the learning process once the improvement of the loss value is smaller
-      than 1e-8. This function is very similar to the gradient descent
-      function you already implemented.
+          Input:
+          - X: Input data (m instances over n features).
+          - y: True labels (m instances).
+          - theta: The parameters (weights) of the model being learned.
+          - etas: The learning rate of your model.
+          - n_iter: The number of updates performed.
 
-      Input:
-      - X: Input data (m instances over n features).
-      - y: True labels (m instances).
-      - theta: The parameters (weights) of the model being learned.
-      - alpha: The learning rate of your model.
-      - num_iters: The number of updates performed.
-
-      Returns:
-      - theta: The learned parameters of your model.
-      - J_history: the loss value for every iteration.
+          Returns:
+          - theta: The learned parameters of your model.
+          - J_history: the loss value for every iteration.
         """
-        theta = self.theta.copy()  # optional: theta outside the function will not change
-        # self.thetas.append(theta)
-        J_history = []  # Use a python list to save the cost value in every iteration
-        # J_history.append(self.compute_cost(X,y,theta))
+        theta = self.theta.copy()
+        J_history = []
         current = np.inf
-        i = 0
+
+        # sigmoid func, updating theta and js
         h_zero_vector = 1 / (1 + np.exp(-X.dot(theta.transpose())))
         deviation = h_zero_vector - y
         theta = theta + (-self.eta) * np.dot(X.transpose(), deviation)
         J_history.append(self.compute_cost(X, y, theta))
         self.thetas.append(theta)
+
+        i = 0
+        # todo: check if can go around is nan
         while i <= self.n_iter - 1 and (current - J_history[i] >= self.eps or np.isnan(J_history[i])):
             h_zero_vector = 1 / (1 + np.exp(-X.dot(theta.transpose())))
             deviation = h_zero_vector - y
@@ -160,7 +161,7 @@ class LogisticRegressionGD(object):
     def compute_cost(X, y, theta):
         """
       Computes the average squared difference between an observation's actual and
-      predicted values for linear regression.
+      predicted values for LoR
 
       Input:
       - X: Input data (m instances over n features).
@@ -172,11 +173,11 @@ class LogisticRegressionGD(object):
         """
         J = 0  # We use J for the cost.
 
-        # Creating the variables for the equation.
+        # creating the variables for the equation
         m = X.shape[0]
         h = 1 / (1 + np.exp(-X.dot(theta.transpose())))
 
-        # Calculate the value of the equation.
+        # calculate the value of the equation
         J = (1 / m) * np.sum((-y * np.log(h)) - (1 - y) * np.log(1 - h))
         return J
 
@@ -224,24 +225,30 @@ def cross_validation(X, y, folds, algo, random_state):
     cv_accuracy = None
     X_copy = X.copy()
     y_copy = y.copy()
+
     # set random seed
     np.random.seed(random_state)
-    data = np.column_stack((X, y))
+    data = np.column_stack((X_copy, y_copy))
+    # shuffling the data
     np.random.shuffle(data)
     X_copy = data[:, :-1]
     y_copy = data[:, -1]
+    # splitting the data to k folds (for validation)
     k_folds = np.split(X_copy, folds)
 
     accuracies = []
-
     for k, validation_set in enumerate(k_folds):
+        # getting the training set values for the k folds
         train_set_X = np.concatenate(k_folds[:k] + k_folds[k + 1:])
-        # train_set_X = k_folds[:k][:,-1]
-        # train_set_X.append(k_folds[k+1:][:,-1])
-        train_set_y = np.concatenate((y_copy[:k * validation_set.shape[0]], y_copy[(k + 1) * validation_set.shape[0]:]),
-                                     axis=0)
+        train_set_y = np.concatenate((y_copy[:k * validation_set.shape[0]],
+                                      y_copy[(k + 1) * validation_set.shape[0]:]), axis=0)
+
+        # getting the validation class values
         val_set_y = y_copy[k * validation_set.shape[0]:(k + 1) * validation_set.shape[0]]
+
+        # learning process
         algo.fit(train_set_X, train_set_y)
+        # calculating accuracies
         predictions = algo.predict(validation_set)
         accuracies.append(np.count_nonzero((predictions == val_set_y)) / validation_set.shape[0])
 
@@ -308,12 +315,13 @@ class EM(object):
         """
         # split the data to k different GM
         gmm_data = np.array_split(data, self.k)
-        # self.weights = np.array(self.k * [1/self.k])
-        # sum of weights is 1, intializing with random values
+        # sum of weights is 1, initializing with random values
         self.weights = np.random.random(size=self.k)
         self.weights /= self.weights.sum()
+
         self.mus = []
         self.sigmas = []
+        # getting the mean value and std of per feature
         for gm in gmm_data:
             self.mus.append(np.mean(gm))
             self.sigmas.append(np.std(gm))
@@ -324,7 +332,7 @@ class EM(object):
         """
         resp_numerator = self.weights * norm_pdf(data, self.mus, self.sigmas)  # dot product
         resp_denominator = np.sum(resp_numerator, axis=1)
-        resp_denominator = resp_denominator.reshape(-1, 1)  # TODO: check with k
+        resp_denominator = resp_denominator.reshape(-1, 1)
         self.responsibilities = resp_numerator / resp_denominator
 
     def maximization(self, data):
@@ -347,12 +355,15 @@ class EM(object):
         or when you reach n_iter.
         """
         self.init_params(data)
-        i = 0
-        self.costs = []
         current = np.inf
+
         self.expectation(data)
         self.maximization(data)
         self.costs.append(self.compute_cost(data))
+
+        self.costs = []
+        i = 0
+        # optimizing the learning parameters until reaching limit of iterations or threshold (eps)
         while i <= self.n_iter - 1 and (current - self.costs[i] >= self.eps):
             self.expectation(data)
             self.maximization(data)
@@ -365,7 +376,7 @@ class EM(object):
     def compute_cost(self, data):
         """
       Computes the average squared difference between an observation's actual and
-      predicted values for linear regression.
+      predicted values for EM
 
       Input:
       - X: Input data (m instances over n features).
@@ -375,7 +386,8 @@ class EM(object):
       Returns:
       - J: the cost associated with the current set of parameters (single number).
         """
-        J = 0  # We use J for the cost.
+        J = 0  # we use J for the cost
+        # using -log likelihood as the cost function
         J = np.sum(-np.log(np.sum(self.weights * norm_pdf(data, self.mus, self.sigmas), axis=1)))
         return J
 
@@ -429,17 +441,22 @@ class NaiveBayesGaussian(object):
         y : array-like, shape = [n_examples]
           Target values.
         """
-        data = np.column_stack((X, y))
         self.prior = {}
         self.gmms = {}
-        unique_class, counts = np.unique(y, return_counts=True)
 
+        # todo: try and change to look different from itay
+
+        # getting unique class values
+        unique_class, counts = np.unique(y, return_counts=True)
+        # calculating the prior probability for each class value
         for i, value in enumerate(unique_class):
             self.prior.update({value: counts[i] / X.shape[0]})
 
+        # defining EM for each feature in each class. {0: {0: EM, 1: EM}, 1: {0: EM, 1: EM}}
         for class_value in unique_class:
             self.gmms.update({class_value: {feature: EM(k=self.k) for feature in range(X.shape[1])}})
 
+        # training all EM's
         for class_value in self.gmms.keys():
             for feature in self.gmms[class_value].keys():
                 self.gmms[class_value][feature].fit(X[y == class_value][:, feature].reshape(-1, 1))
@@ -449,16 +466,20 @@ class NaiveBayesGaussian(object):
         Returns the likelihhod porbability of the instance under the class according to the dataset distribution.
         """
         likelihood = np.ones(X.shape[0])
+
+        # calculating the likelihood per feature, using GMM pdf as the likelihood function
         for feature in range(X.shape[1]):
             weights, mus, sigmas = self.gmms[class_value][feature].get_dist_params()
             gmm = gmm_pdf(X[:, feature], weights, mus, sigmas)
             likelihood *= gmm
+
         return likelihood
 
     def get_prior(self, class_label):
         return self.prior[class_label]
 
     def calc_posterior(self, X, class_value):
+        # calculating posterior = prior * likelihood
         return self.get_prior(class_value) * self.get_likelihood(X, class_value)
 
     def predict(self, X):
@@ -470,7 +491,10 @@ class NaiveBayesGaussian(object):
         """
         preds = None
         preds = []
+
         posteriors = np.zeros((X.shape[0], len(self.prior)))
+
+        # calculating posteriors feature by feature and predicting the class according to the max
         for i, class_value in enumerate(self.prior.keys()):
             posteriors[:, i] = self.calc_posterior(X, class_value)
         return np.array(list(self.prior.keys()))[np.argmax(posteriors, axis=1)]
@@ -506,27 +530,48 @@ def model_evaluation(x_train, y_train, x_test, y_test, k, best_eta, best_eps):
     bayes_train_acc = None
     bayes_test_acc = None
 
+    # training with LoR
     LoR_train = LogisticRegressionGD(eta=best_eta, eps=best_eps)
     LoR_train.fit(x_train, y_train)
+
+    # training with naive bayes
     gmms_train = NaiveBayesGaussian(k=k)
     gmms_train.fit(x_train, y_train)
+
+    # predicting by training data and test data for LoR
     predictions_LoRx_train = LoR_train.predict(x_train)
     predictions_LoRx_test = LoR_train.predict(x_test)
+
+    # predicting by training data and test data for naive bayes
     predictions_Gmmx_train = gmms_train.predict(x_train)
     predictions_Gmmx_test = gmms_train.predict(x_test)
+
+    # accuracies for LoR
     lor_train_acc = np.count_nonzero(predictions_LoRx_train.reshape(-1, 1) == y_train.reshape(-1, 1)) / len(y_train)
     lor_test_acc = np.count_nonzero(predictions_LoRx_test.reshape(-1, 1) == y_test.reshape(-1, 1)) / len(y_test)
+
+    # accuracies for naive bayes
     bayes_train_acc = np.count_nonzero(predictions_Gmmx_train.reshape(-1, 1) == y_train.reshape(-1, 1)) / len(y_train)
     bayes_test_acc = np.count_nonzero(predictions_Gmmx_test.reshape(-1, 1) == y_test.reshape(-1, 1)) / len(y_test)
 
-    plot_decision_regions(x_train, y_train, LoR_train)  # TODO: explain the graphs
+    # plotting the results with decision regions
+    plot_decision_regions(x_train, y_train, LoR_train)
     plot_decision_regions(x_train, y_train, gmms_train)
+
+    # todo: check explanation
+    # explaining the results
+    print("We can see in the graph that data is not linearly separable and Naive Bayes Algorithm works better and "
+          "produces more accurate results") # LoR
 
     plt.plot(np.arange(len(LoR_train.Js)), LoR_train.Js)
     plt.ylabel('cost')
     plt.xlabel('iteration')
     plt.title('cost Vs iteration of LoR model')
     plt.show()
+
+    # todo: check explanation
+    # explaining the results
+    print("")  # naive bayes
 
     return {'lor_train_acc': lor_train_acc,
             'lor_test_acc': lor_test_acc,
@@ -546,7 +591,7 @@ def generate_datasets():
     dataset_b_features = None
     dataset_b_labels = None
 
-    # Without correlation -> best for naive (features are independent)
+    # without correlation -> best for naive (features are independent)
     # 1th gaussian
     mean_class0_a1 = [6, 6, 6]
     cov_class0_a1 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
@@ -565,11 +610,12 @@ def generate_datasets():
     cov_class1_a2 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]  # identity covariance matrix
     class1_a2 = multivariate_normal.rvs(mean=mean_class1_a2, cov=cov_class1_a2, size=300)
 
-    # verticaly stacking classes to creade one big dataset
+    # vertically stacking classes to create one big dataset
     class0_a = np.vstack((class0_a1, class0_a2))
     class1_a = np.vstack((class1_a1, class1_a2))
     dataset_a_features = np.vstack((class0_a, class1_a))
 
+    # using 2 gaussians
     dataset_a_labels = np.hstack((np.zeros(600), np.ones(600)))
 
     # With correlation -> linear relationship between features (features are dependent)
@@ -581,7 +627,7 @@ def generate_datasets():
     cov_class1_b = [[1, 0.8, 0.8], [0.8, 1, 0.8], [0.8, 0.8, 1]]  # Correlated features
     class1_b = multivariate_normal.rvs(mean=mean_class1_b, cov=cov_class1_b, size=300)
 
-    # verticaly stacking classes to creade one big dataset
+    # vertically stacking classes to create one big dataset
     dataset_b_features = np.vstack((class0_b, class1_b))
 
     dataset_b_labels = np.hstack((np.zeros(300), np.ones(300)))
@@ -598,9 +644,10 @@ def generate_datasets():
             'dataset_b_labels': dataset_b_labels
             }
 
-
-# Function for ploting the decision boundaries of a model
 def plot_decision_regions(X, y, classifier, resolution=0.01, title=""):
+    """
+    Function for ploting the decision boundaries of a model
+    """
     # setup marker generator and color map
     markers = ('.', '.')
     colors = ['blue', 'red']
@@ -634,9 +681,12 @@ def visualize_datasets(data):
     dataset_b_features = data['dataset_b_features']
     dataset_b_labels = data['dataset_b_labels']
 
+    # figure will show each feature against all other features
     fig, axs = plt.subplots(2, 3, figsize=(18, 12))
 
-    # Dataset A
+    # dataset a
+
+    # feature 1 vs feature 2
     axs[0, 0].scatter(dataset_a_features[dataset_a_labels == 0][:, 0], dataset_a_features[dataset_a_labels == 0][:, 1],
                       color='r', label='Class 0')
     axs[0, 0].scatter(dataset_a_features[dataset_a_labels == 1][:, 0], dataset_a_features[dataset_a_labels == 1][:, 1],
@@ -646,6 +696,7 @@ def visualize_datasets(data):
     axs[0, 0].set_ylabel('Feature 2')
     axs[0, 0].legend()
 
+    # feature 1 vs feature 3
     axs[0, 1].scatter(dataset_a_features[dataset_a_labels == 0][:, 0], dataset_a_features[dataset_a_labels == 0][:, 2],
                       color='r', label='Class 0')
     axs[0, 1].scatter(dataset_a_features[dataset_a_labels == 1][:, 0], dataset_a_features[dataset_a_labels == 1][:, 2],
@@ -655,6 +706,7 @@ def visualize_datasets(data):
     axs[0, 1].set_ylabel('Feature 3')
     axs[0, 1].legend()
 
+    # feature 2 vs feature 3
     axs[0, 2].scatter(dataset_a_features[dataset_a_labels == 0][:, 1], dataset_a_features[dataset_a_labels == 0][:, 2],
                       color='r', label='Class 0')
     axs[0, 2].scatter(dataset_a_features[dataset_a_labels == 1][:, 1], dataset_a_features[dataset_a_labels == 1][:, 2],
@@ -664,7 +716,9 @@ def visualize_datasets(data):
     axs[0, 2].set_ylabel('Feature 3')
     axs[0, 2].legend()
 
-    # Dataset B
+    # dataset b
+
+    # feature 1 vs feature 2
     axs[1, 0].scatter(dataset_b_features[dataset_b_labels == 0][:, 0], dataset_b_features[dataset_b_labels == 0][:, 1],
                       color='r', label='Class 0')
     axs[1, 0].scatter(dataset_b_features[dataset_b_labels == 1][:, 0], dataset_b_features[dataset_b_labels == 1][:, 1],
@@ -674,6 +728,7 @@ def visualize_datasets(data):
     axs[1, 0].set_ylabel('Feature 2')
     axs[1, 0].legend()
 
+    # feature 1 vs feature 3
     axs[1, 1].scatter(dataset_b_features[dataset_b_labels == 0][:, 0], dataset_b_features[dataset_b_labels == 0][:, 2],
                       color='r', label='Class 0')
     axs[1, 1].scatter(dataset_b_features[dataset_b_labels == 1][:, 0], dataset_b_features[dataset_b_labels == 1][:, 2],
@@ -683,6 +738,7 @@ def visualize_datasets(data):
     axs[1, 1].set_ylabel('Feature 3')
     axs[1, 1].legend()
 
+    # feature 2 vs feature 3
     axs[1, 2].scatter(dataset_b_features[dataset_b_labels == 0][:, 1], dataset_b_features[dataset_b_labels == 0][:, 2],
                       color='r', label='Class 0')
     axs[1, 2].scatter(dataset_b_features[dataset_b_labels == 1][:, 1], dataset_b_features[dataset_b_labels == 1][:, 2],
