@@ -223,12 +223,9 @@ def cross_validation(X, y, folds, algo, random_state):
     """
 
     cv_accuracy = None
-    X_copy = X.copy()
-    y_copy = y.copy()
-
     # set random seed
     np.random.seed(random_state)
-    data = np.column_stack((X_copy, y_copy))
+    data = np.column_stack((X, y))
     # shuffling the data
     np.random.shuffle(data)
     X_copy = data[:, :-1]
@@ -356,12 +353,12 @@ class EM(object):
         """
         self.init_params(data)
         current = np.inf
+        self.costs = []
 
         self.expectation(data)
         self.maximization(data)
         self.costs.append(self.compute_cost(data))
 
-        self.costs = []
         i = 0
         # optimizing the learning parameters until reaching limit of iterations or threshold (eps)
         while i <= self.n_iter - 1 and (current - self.costs[i] >= self.eps):
@@ -561,7 +558,7 @@ def model_evaluation(x_train, y_train, x_test, y_test, k, best_eta, best_eps):
     # todo: check explanation
     # explaining the results
     print("We can see in the graph that data is not linearly separable and Naive Bayes Algorithm works better and "
-          "produces more accurate results") # LoR
+          "produces more accurate results")  # LoR
 
     plt.plot(np.arange(len(LoR_train.Js)), LoR_train.Js)
     plt.ylabel('cost')
@@ -643,6 +640,7 @@ def generate_datasets():
             'dataset_b_features': dataset_b_features,
             'dataset_b_labels': dataset_b_labels
             }
+
 
 def plot_decision_regions(X, y, classifier, resolution=0.01, title=""):
     """
