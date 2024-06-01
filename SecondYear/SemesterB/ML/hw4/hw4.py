@@ -309,8 +309,8 @@ class EM(object):
         Initialize distribution params
 
         """
-        self.sigmas = np.random.random(size=self.k)
-        self.weights = np.array([1 / self.k] * self.k)
+        self.sigmas = np.ones(self.k)
+        self.weights = np.ones(self.k) / self.k
         self.mus = np.random.choice(data.flatten(), self.k)
 
     def expectation(self, data):
@@ -460,12 +460,9 @@ class NaiveBayesGaussian(object):
 
         return likelihood
 
-    def get_prior(self, class_label):
-        return self.prior[class_label]
-
     def calc_posterior(self, X, class_value):
         # calculating posterior = prior * likelihood
-        return self.get_prior(class_value) * self.get_likelihood(X, class_value)
+        return self.prior[class_value] * self.get_likelihood(X, class_value)
 
     def predict(self, X):
         """
@@ -545,7 +542,7 @@ def model_evaluation(x_train, y_train, x_test, y_test, k, best_eta, best_eps):
 
     # explaining the results
     print("We can see in the graph that data is not linearly separable and Naive Bayes Algorithm works better and "
-          "produces more accurate results") # naive bayes
+          "produces more accurate results")  # naive bayes
 
     plt.plot(np.arange(len(LoR_train.Js)), LoR_train.Js)
     plt.ylabel('cost')
