@@ -431,8 +431,6 @@ class NaiveBayesGaussian(object):
         self.prior = {}
         self.gmms = {}
 
-        # todo: try and change to look different from itay
-
         # getting unique class values
         unique_class, counts = np.unique(y, return_counts=True)
         # calculating the prior probability for each class value
