@@ -310,18 +310,9 @@ class EM(object):
         Initialize distribution params
 
         """
-        # split the data to k different GM
-        gmm_data = np.array_split(data, self.k)
-        # sum of weights is 1, initializing with random values
-        self.weights = np.random.random(size=self.k)
-        self.weights /= self.weights.sum()
-
-        self.mus = []
-        self.sigmas = []
-        # getting the mean value and std of per feature
-        for gm in gmm_data:
-            self.mus.append(np.mean(gm))
-            self.sigmas.append(np.std(gm))
+        self.sigmas = np.random.random(size=self.k)
+        self.weights = np.array([1 / self.k] * self.k)
+        self.mus = np.random.choice(data.flatten(), self.k)
 
     def expectation(self, data):
         """
@@ -351,21 +342,21 @@ class EM(object):
         Stop the function when the difference between the previous cost and the current is less than eps
         or when you reach n_iter.
         """
+
         self.init_params(data)
         current = np.inf
         self.costs = []
-
         self.expectation(data)
         self.maximization(data)
         self.costs.append(self.compute_cost(data))
-
         i = 0
         # optimizing the learning parameters until reaching limit of iterations or threshold (eps)
-        while i <= self.n_iter - 1 and (current - self.costs[i] >= self.eps):
+        while i <= self.n_iter - 1 and abs(current - self.costs[i - 1]) >= self.eps:
             self.expectation(data)
             self.maximization(data)
             self.costs.append(self.compute_cost(data))
             i += 1
+            current = self.costs[i]
 
     def get_dist_params(self):
         return self.weights, self.mus, self.sigmas
