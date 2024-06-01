@@ -145,15 +145,14 @@ class LogisticRegressionGD(object):
         self.thetas.append(theta)
 
         i = 0
-        # todo: check if can go around is nan
-        while i <= self.n_iter - 1 and (current - J_history[i] >= self.eps or np.isnan(J_history[i])):
+        while i <= self.n_iter - 1 and (abs(current - J_history[i - 1]) >= self.eps or np.isnan(J_history[i])):
             h_zero_vector = 1 / (1 + np.exp(-X.dot(theta.transpose())))
             deviation = h_zero_vector - y
             theta = theta + (-self.eta) * np.dot(X.transpose(), deviation)
             J_history.append(self.compute_cost(X, y, theta))
             self.thetas.append(theta)
-            current = J_history[i]
             i += 1
+            current = J_history[i]
 
         return theta, J_history
 
@@ -546,10 +545,9 @@ def model_evaluation(x_train, y_train, x_test, y_test, k, best_eta, best_eps):
     plot_decision_regions(x_train, y_train, LoR_train)
     plot_decision_regions(x_train, y_train, gmms_train)
 
-    # todo: check explanation
     # explaining the results
     print("We can see in the graph that data is not linearly separable and Naive Bayes Algorithm works better and "
-          "produces more accurate results")  # LoR
+          "produces more accurate results") # naive bayes
 
     plt.plot(np.arange(len(LoR_train.Js)), LoR_train.Js)
     plt.ylabel('cost')
@@ -557,9 +555,8 @@ def model_evaluation(x_train, y_train, x_test, y_test, k, best_eta, best_eps):
     plt.title('cost Vs iteration of LoR model')
     plt.show()
 
-    # todo: check explanation
     # explaining the results
-    print("")  # naive bayes
+    print("We can see that LoR converges quickly in regrades to the cost vs the number of iterations")  # LoR
 
     return {'lor_train_acc': lor_train_acc,
             'lor_test_acc': lor_test_acc,
