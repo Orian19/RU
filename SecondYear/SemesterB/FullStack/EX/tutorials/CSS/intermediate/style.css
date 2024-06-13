@@ -1,0 +1,158 @@
+/*#top {
+    background-color: #ccc;
+    padding: 20px
+}
+
+.intro {
+    color: red;
+    font-weight: bold;
+}
+
+h2, .thisOtherClass, .yetAnotherClass {
+    color: red;
+}
+
+#top {
+    background-color: #ccc;
+    padding: 1em
+}*/
+
+/*#top h1 {
+    color: #ff0;
+}
+
+#top p {
+    color: red;
+    font-weight: bold;
+}*/
+
+
+/*a:link {
+    color: blue;
+}
+
+a:visited {
+    color: purple;
+}
+
+a:active {
+    color: red;
+}
+
+a:hover {
+    text-decoration: none;
+    color: blue;
+    background-color: yellow;
+}
+
+input:focus, textarea:focus {
+    background: #eee;
+}
+
+p:first-child {
+    font-weight: bold;
+    font-size: 40px;
+}
+
+
+p {
+    margin-top: 1px;
+    margin-right: 5px;
+    margin-bottom: 10px;
+    margin-left: 20px;
+}
+
+/*equivalent to the following: */
+
+/*p {
+    margin: 1px 5px 10px 20px;
+}
+
+p {
+    border: 1px red solid;
+}
+
+p {
+    font: italic bold 12px/2 courier;
+}
+
+/*combining everythin*/
+
+/*p {
+    font: 14px/1.5 "Times New Roman", times, serif;
+    padding: 30px 10px;
+    border: 1px black solid;
+    border-width: 1px 5px 5px 1px;
+    border-color: red green blue yellow;
+    margin: 10px 50px;
+}*/
+
+/*body {
+    background: white url(http://www.htmldog.com/images/bg.gif) no-repeat top right;
+}
+
+p { display: inline }
+p { display: block }
+/*p { display: none }*/
+
+/*p:first-letter {
+    font-size: 24px;
+    float: left;
+}
+
+/*p:first-line {
+    font-weight: bold;
+}*/
+
+/*blockquote:before {
+    content: open-quote;
+}
+
+blockquote:after {
+    content: close-quote;
+}
+
+li:before {
+    content: "POW! ";
+}
+
+p:before {
+    content: url(images/jam.jpg);
+}*/
+
+/*#navigation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+}
+
+#navigation2 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+}
+
+#content {
+    margin: 0 200px; /* setting top and bottom margin to 0 and right and left margin to 200px */
+/*}*/
+
+#navigation {
+    float: left;
+    width: 200px;
+}
+
+#navigation2 {
+    float: right;
+    width: 200px;
+}
+
+#content {
+    margin: 0 200px;
+}
+
+
+#footer {
+    clear: both;
+}
