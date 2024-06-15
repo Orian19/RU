@@ -184,3 +184,4 @@ fabric.properties
 *.csv
 *.ipynb
 node_modules
+*.jpg
