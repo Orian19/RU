@@ -9,15 +9,10 @@ def get_random_centroids(X, k):
     Output: Randomly chosen centroids of shape `(k,3)` as a numpy array. 
     '''
     centroids = []
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    points = np.random.randint(0,X.shape[0], k)
+    centroids = X[points, :]
     # make sure you return a numpy array
-    return np.asarray(centroids).astype(np.float) 
+    return np.asarray(centroids).astype(np.float64) 
 
 def lp_distance(X, centroids, p=2):
     '''
@@ -30,14 +25,13 @@ def lp_distance(X, centroids, p=2):
     all points in RGB space from all centroids
     '''
     distances = []
+    m, n = X.shape
     k = len(centroids)
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    for index in range(k):
+        c_sum = np.sum(np.abs(X - centroids[index] * np.ones((m,n))**p),axis=1)
+        distances.append(np.power(c_sum, 1 / p))
+
+    distances = np.asarray(distances).astype(np.float64)
     return distances
 
 def kmeans(X, k, p ,max_iter=100):
@@ -54,13 +48,28 @@ def kmeans(X, k, p ,max_iter=100):
     """
     classes = []
     centroids = get_random_centroids(X, k)
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    i = 0
+   
+    while i < max_iter:
+        distances = lp_distance(X,centroids,p)
+        # taking the index of the instance that has the minimum distance to some cluster
+        classes = np.argmin(distances,axis=0)
+        current_mus = centroids
+        new_centroids = np.ones_like(centroids)
+        for i in range(k):
+            # points of specific cluster
+            cluster_points = X[classes == i]
+            
+            if cluster_points.shape[0] > 0:
+                new_centroids[i] = np.mean(cluster_points, axis=0)
+            # in the case when we have less then 4 clusters
+            else:
+                new_centroids[i] = current_mus[i]
+        # updating centroids       
+        centroids = new_centroids
+        if (centroids == current_mus).all():
+            break
+        i += 1
     return centroids, classes
 
 def kmeans_pp(X, k, p ,max_iter=100):
@@ -76,13 +85,43 @@ def kmeans_pp(X, k, p ,max_iter=100):
     - The calculated centroids as a numpy array.
     - The final assignment of all RGB points to the closest centroids as a numpy array.
     """
-    classes = None
-    centroids = None
-    ###########################################################################
-    # TODO: Implement the function.                                           #
-    ###########################################################################
-    pass
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
+    X_copy = X.copy()
+    classes = []
+    centroids = []
+    rand = np.random.randint(0,X_copy.shape[0], 1)
+    centroid = X_copy[rand]
+    # initialize maximal distance to infinity to not affect the min operation for the first iteration
+    total_square_distance = np.full(X.shape[0], np.inf) 
+    for _ in range(k):
+        centroids.append(centroid)
+        # taking the minimum distance
+        total_square_distance = np.minimum(lp_distance(X.copy(),centroids,p),total_square_distance)[0]
+        # calculating the probability distribution weight
+        prob_weight = total_square_distance**2 / np.sum(total_square_distance**2)
+        centroid = X_copy[np.random.choice(len(X_copy), p=prob_weight)]
+
+
+    # running k-mean with the init cetroids we found
+    i = 0
+    centroids = np.vstack(centroids)
+    while i < max_iter:
+        distances = lp_distance(X,centroids,p)
+        # taking the index of the instance that has the minimum distance to some cluster
+        classes = np.argmin(distances,axis=0)
+        current_mus = centroids
+        new_centroids = np.ones_like(centroids)
+        for i in range(k):
+            # points of specific cluster
+            cluster_points = X[classes == i]
+            
+            if cluster_points.shape[0] > 0:
+                new_centroids[i] = np.mean(cluster_points, axis=0)
+            # in the case when we have less then 4 clusters
+            else:
+                new_centroids[i] = current_mus[i]
+        # updating centroids       
+        centroids = new_centroids
+        if (centroids == current_mus).all():
+            break
+        i += 1
     return centroids, classes
