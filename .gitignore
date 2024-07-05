@@ -185,3 +185,4 @@ fabric.properties
 *.ipynb
 node_modules
 *.jpg
+*.ipynb
