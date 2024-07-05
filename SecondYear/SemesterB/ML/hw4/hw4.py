@@ -230,7 +230,7 @@ def cross_validation(X, y, folds, algo, random_state):
     X_copy = data[:, :-1]
     y_copy = data[:, -1]
     # splitting the data to k folds (for validation)
-    k_folds = np.split(X_copy, folds)
+    k_folds = np.arraysplit(X_copy, folds)
 
     accuracies = []
     for k, validation_set in enumerate(k_folds):
