@@ -25,11 +25,12 @@ namespace Ex01_02
             for (int row = 1; row < 8; row++)
             {
                 treeOutput.Append(row);
+                treeOutput.Append("\t");
                 if (row < 6)
                 {
-                    int numberOfSpacesInEachSide = 5 - row;
-                    treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                     int lettersInRow = row * 2 - 1;
+                    int numberOfSpacesInEachSide = 9 - lettersInRow;
+                    treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                     for (int i = 0; i < lettersInRow; i++)
                     {
                         treeOutput.Append(letter + " ");
@@ -41,9 +42,9 @@ namespace Ex01_02
                 }
                 else
                 {
-                    treeOutput.Append(new string(' ', 4));
+                    treeOutput.Append(new string(' ', 9 - 2));
                     treeOutput.Append("|" + letter + "|");
-                    treeOutput.Append(new string(' ', 4));
+                    treeOutput.Append(new string(' ', 9 - 2));
                     treeOutput.AppendLine();
                     treeOutput.AppendLine();
                 }
@@ -58,12 +59,13 @@ namespace Ex01_02
 
             Console.Write(row);
             StringBuilder rowOutput = new StringBuilder();
+            rowOutput.Append("\t");
 
             if (row < 6)
             {
-                int numberOfSpacesInEachSide = 5 - row;
-                rowOutput.Append(new string(' ', numberOfSpacesInEachSide));
                 int lettersInRow = row * 2 - 1;
+                int numberOfSpacesInEachSide = 9 - lettersInRow;
+                rowOutput.Append(new string(' ', numberOfSpacesInEachSide));
                 for (int i = 0; i < lettersInRow; i++)
                 {
                     rowOutput.Append(letter + " ");
@@ -74,9 +76,9 @@ namespace Ex01_02
             }
             else
             {
-                rowOutput.Append(new string(' ', 4));
+                rowOutput.Append(new string(' ', 9 - 2));
                 rowOutput.Append("|" + letter + "|");
-                rowOutput.Append(new string(' ', 4));
+                rowOutput.Append(new string(' ', 9 - 2));
                 rowOutput.AppendLine();
             }
 
