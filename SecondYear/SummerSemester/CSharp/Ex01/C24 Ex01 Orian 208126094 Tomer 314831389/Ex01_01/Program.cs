@@ -6,7 +6,7 @@ namespace Ex01_01
 {
     class Program
     {
-        static void Main()
+        public static void Main()
         {
             string[] inputBinaryNumbers = new string[3];
 
