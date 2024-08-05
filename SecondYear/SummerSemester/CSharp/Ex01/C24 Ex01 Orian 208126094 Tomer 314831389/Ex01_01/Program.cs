@@ -51,7 +51,7 @@ namespace Ex01_01
             StringBuilder stringBuilderPrints = new StringBuilder();
             stringBuilderPrints.AppendLine(string.Format("Decimal Numbers in ascending order: {0}, {1}, {2}",
                 decimalNumbers[0], decimalNumbers[1], decimalNumbers[2]));
-            stringBuilderPrints.AppendLine(string.Format("Average: {0}", AverageOfArray(decimalNumbers)));
+            stringBuilderPrints.AppendLine(string.Format("Average: {0:00}", AverageOfArray(decimalNumbers)));
             stringBuilderPrints.AppendLine(string.Format("Longest bit sequence: {0}",
                 MaxNumberInArray(longestBitsSequence)));
             stringBuilderPrints.AppendLine(string.Format("Number of palindromes: {0}", palindromesCount));
