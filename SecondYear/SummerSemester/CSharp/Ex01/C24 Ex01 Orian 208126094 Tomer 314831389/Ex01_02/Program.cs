@@ -10,7 +10,7 @@ namespace Ex01_02
             Console.WriteLine("Iterative ABC tree");
             PrintABCTreeIterative(7);
             Console.WriteLine("Recursive ABC tree");
-            PrintABCTreeRecursive(1, 'A', 7);
+            PrintABCTreeRecursive(7);
             Console.ReadLine();
         }
 
@@ -26,7 +26,9 @@ namespace Ex01_02
                 if (row < i_Height - 1)
                 {
                     int lettersInRow = row * 2 - 1;
-                    int numberOfSpacesInEachSide = ((i_Height * 2 - 5) - lettersInRow);
+                    // The number of letters in row with max letter is:
+                    // a_heigth = a_1 + (height-3)d = 2*heigth - 5 ( d = 2 a_1 = 1 ) and +1 for |
+                    int numberOfSpacesInEachSide = ((i_Height * 2) - 5 - lettersInRow + 1);
                     treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                     for (int i = 0; i < lettersInRow; i++)
                     {
@@ -39,15 +41,20 @@ namespace Ex01_02
                 }
                 else
                 {
-                    treeOutput.Append(new string(' ', (i_Height * 2) - 7));
+                    treeOutput.Append(new string(' ', (i_Height * 2) - 6));
                     treeOutput.Append("|" + letter + "|");
-                    treeOutput.Append(new string(' ', (i_Height * 2) - 7));
+                    treeOutput.Append(new string(' ', (i_Height * 2) - 6));
                     treeOutput.AppendLine();
                     treeOutput.AppendLine();
                 }
             }
 
             Console.WriteLine(treeOutput.ToString());
+        }
+
+        public static void PrintABCTreeRecursive(int i_Height)
+        {
+            PrintABCTreeRecursive(1, 'A', i_Height);
         }
 
         public static void PrintABCTreeRecursive(int i_Row, char i_Letter, int i_Height)
@@ -63,7 +70,7 @@ namespace Ex01_02
                 int lettersInRow = i_Row * 2 - 1;
                 // The number of letters in row with max letter is:
                 // a_heigth = a_1 + (height-3)d = 2*heigth - 5 ( d = 2 a_1 = 1 ) 
-                int numberOfSpacesInEachSide = (i_Height * 2 - 5) - lettersInRow;
+                int numberOfSpacesInEachSide = (i_Height * 2) - 5 - lettersInRow + 1;
                 treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                 for (int i = 0; i < lettersInRow; i++)
                 {
@@ -75,9 +82,9 @@ namespace Ex01_02
             }
             else
             {
-                treeOutput.Append(new string(' ', (i_Height * 2) - 7));
+                treeOutput.Append(new string(' ', (i_Height * 2) - 6));
                 treeOutput.Append("|" + i_Letter + "|");
-                treeOutput.Append(new string(' ', (i_Height * 2) - 7));
+                treeOutput.Append(new string(' ', (i_Height * 2) - 6));
                 treeOutput.AppendLine();
             }
 
