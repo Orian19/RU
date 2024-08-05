@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 
 namespace Ex01_01
 {
-    class Program
+    public class Program
     {
         public static void Main()
         {
@@ -50,33 +49,34 @@ namespace Ex01_01
             }
             Array.Sort(decimalNumbers);
             StringBuilder stringBuilderPrints = new StringBuilder();
-            stringBuilderPrints.AppendLine(string.Format("Decimal Number in ascending order: {0}, {1}, {2}",
+            stringBuilderPrints.AppendLine(string.Format("Decimal Numbers in ascending order: {0}, {1}, {2}",
                 decimalNumbers[0], decimalNumbers[1], decimalNumbers[2]));
-            stringBuilderPrints.AppendLine(string.Format("Average: {0}", decimalNumbers.Average()));
+            stringBuilderPrints.AppendLine(string.Format("Average: {0}", AverageOfArray(decimalNumbers)));
             stringBuilderPrints.AppendLine(string.Format("Longest bit sequence: {0}",
-                longestBitsSequence.Max()));
+                MaxNumberInArray(longestBitsSequence)));
             stringBuilderPrints.AppendLine(string.Format("Number of palindromes: {0}", palindromesCount));
-            int maxMostOnes = mostOnesInBinaryNumbers.Max();
+            int maxMostOnes = MaxNumberInArray(mostOnesInBinaryNumbers);
+            int indexMaxOnes = IndexOf(mostOnesInBinaryNumbers, maxMostOnes);
             stringBuilderPrints.AppendLine(string.Format("The number with most 1's and least 0's: {0}",
-                BinaryToDecimal(i_Numbers[mostOnesInBinaryNumbers.ToList().IndexOf(maxMostOnes)]))); //needs to be checked
+                BinaryToDecimal(i_Numbers[indexMaxOnes])));
             Console.WriteLine(stringBuilderPrints.ToString());
         }
 
-        public static bool IsValidBinary(string i_FirstNumber)
+        public static bool IsValidBinary(string i_BinaryNumber)
         {
             bool isValid = true;
             string invalidMsg = "Invalid input, please enter new binary numbers of 7 digits";
 
-            if (i_FirstNumber.Length != 7)
+            if (i_BinaryNumber.Length != 7)
             {
                 Console.WriteLine(invalidMsg);
                 isValid = false;
             }
             else
             {
-                for (int i = 0; i < i_FirstNumber.Length; i++)
+                for (int i = 0; i < i_BinaryNumber.Length; i++)
                 {
-                    if (i_FirstNumber[i] != '0' && i_FirstNumber[i] != '1')
+                    if (i_BinaryNumber[i] != '0' && i_BinaryNumber[i] != '1')
                     {
                         Console.WriteLine(invalidMsg);
                         isValid = false;
@@ -115,7 +115,6 @@ namespace Ex01_01
         public static int LongestBitsSequence(string i_BinaryNumber)
         {
             int[] dpMaxSequence = new int[i_BinaryNumber.Length];
-
             dpMaxSequence[0] = 1;
 
             for (int i = 1; i < i_BinaryNumber.Length; i++)
@@ -129,7 +128,7 @@ namespace Ex01_01
                     dpMaxSequence[i] = 1;
                 }
             }
-            return dpMaxSequence.Max();
+            return MaxNumberInArray(dpMaxSequence);
         }
 
         public static int MostOnes(string i_BinaryNumber)
@@ -144,6 +143,46 @@ namespace Ex01_01
                 }
             }
             return maxOnes;
+        }
+
+        public static int MaxNumberInArray(int[] i_Numbers)
+        {
+            int maxNumber = int.MinValue;
+
+            for (int i = 0; i < i_Numbers.Length; i++)
+            {
+                if (i_Numbers[i] > maxNumber)
+                {
+                    maxNumber = i_Numbers[i];
+                }
+            }
+            return maxNumber;
+        }
+
+        public static int IndexOf(int[] i_Numbers, int i_Value)
+        {
+            int indexOf = -1;
+            for (int i = 0; i < i_Numbers.Length; i++)
+            {
+                if (i_Numbers[i] == i_Value)
+                {
+                    indexOf = i;
+                    break;
+                }
+            }
+            return indexOf;
+        }
+
+        public static double AverageOfArray(int[] i_Numbers)
+        {
+            double sumOfArray = 0;
+            int lengthOfArray = i_Numbers.Length;
+
+            for (int i = 0; i < lengthOfArray; i++)
+            {
+                sumOfArray += i_Numbers[i];
+            }
+            return sumOfArray / lengthOfArray;
         }
     }
 }

@@ -1,40 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Ex01_02
 {
-    class Program
+    public class Program
     {
         public static void Main()
         {
             Console.WriteLine("Iterative ABC tree");
-            PrintABCTreeIterative();
+            PrintABCTreeIterative(7);
             Console.WriteLine("Recursive ABC tree");
-            PrintABCTreeRecursive(1, 'A');
+            PrintABCTreeRecursive(1, 'A', 7);
             Console.ReadLine();
         }
 
-        public static void PrintABCTreeIterative()
+        public static void PrintABCTreeIterative(int i_Height)
         {
             char letter = 'A';
             StringBuilder treeOutput = new StringBuilder();
 
-            for (int row = 1; row < 8; row++)
+            for (int row = 1; row <= i_Height; row++)
             {
                 treeOutput.Append(row);
                 treeOutput.Append("\t");
-                if (row < 6)
+                if (row < i_Height - 1)
                 {
                     int lettersInRow = row * 2 - 1;
-                    int numberOfSpacesInEachSide = 9 - lettersInRow;
+                    int numberOfSpacesInEachSide = ((i_Height * 2 - 5) - lettersInRow);
                     treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                     for (int i = 0; i < lettersInRow; i++)
                     {
                         treeOutput.Append(letter + " ");
-                        letter++;
+                        letter = (char)((letter - 'A' + 1) % 26 + 'A');
                     }
                     treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                     treeOutput.AppendLine();
@@ -42,9 +39,9 @@ namespace Ex01_02
                 }
                 else
                 {
-                    treeOutput.Append(new string(' ', 9 - 2));
+                    treeOutput.Append(new string(' ', (i_Height * 2) - 7));
                     treeOutput.Append("|" + letter + "|");
-                    treeOutput.Append(new string(' ', 9 - 2));
+                    treeOutput.Append(new string(' ', (i_Height * 2) - 7));
                     treeOutput.AppendLine();
                     treeOutput.AppendLine();
                 }
@@ -53,37 +50,39 @@ namespace Ex01_02
             Console.WriteLine(treeOutput.ToString());
         }
 
-        public static void PrintABCTreeRecursive(int row, char letter)
+        public static void PrintABCTreeRecursive(int i_Row, char i_Letter, int i_Height)
         {
-            if (row > 7) return;
+            if (i_Row > i_Height) return;
 
-            Console.Write(row);
-            StringBuilder rowOutput = new StringBuilder();
-            rowOutput.Append("\t");
+            StringBuilder treeOutput = new StringBuilder();
+            treeOutput.Append(i_Row);
+            treeOutput.Append("\t");
 
-            if (row < 6)
+            if (i_Row < i_Height - 1)
             {
-                int lettersInRow = row * 2 - 1;
-                int numberOfSpacesInEachSide = 9 - lettersInRow;
-                rowOutput.Append(new string(' ', numberOfSpacesInEachSide));
+                int lettersInRow = i_Row * 2 - 1;
+                // The number of letters in row with max letter is:
+                // a_heigth = a_1 + (height-3)d = 2*heigth - 5 ( d = 2 a_1 = 1 ) 
+                int numberOfSpacesInEachSide = (i_Height * 2 - 5) - lettersInRow;
+                treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                 for (int i = 0; i < lettersInRow; i++)
                 {
-                    rowOutput.Append(letter + " ");
-                    letter++;
+                    treeOutput.Append(i_Letter + " ");
+                    i_Letter = (char)((i_Letter - 'A' + 1) % 26 + 'A');
                 }
-                rowOutput.Append(new string(' ', numberOfSpacesInEachSide));
-                rowOutput.AppendLine();
+                treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
+                treeOutput.AppendLine();
             }
             else
             {
-                rowOutput.Append(new string(' ', 9 - 2));
-                rowOutput.Append("|" + letter + "|");
-                rowOutput.Append(new string(' ', 9 - 2));
-                rowOutput.AppendLine();
+                treeOutput.Append(new string(' ', (i_Height * 2) - 7));
+                treeOutput.Append("|" + i_Letter + "|");
+                treeOutput.Append(new string(' ', (i_Height * 2) - 7));
+                treeOutput.AppendLine();
             }
 
-            Console.WriteLine(rowOutput.ToString());
-            PrintABCTreeRecursive(row + 1, letter);
+            Console.WriteLine(treeOutput.ToString());
+            PrintABCTreeRecursive(i_Row + 1, i_Letter, i_Height);
         }
     }
 }
