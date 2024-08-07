@@ -186,3 +186,6 @@ fabric.properties
 node_modules
 *.jpg
 *.ipynb
+*.rar
+obj
+*.doc
