@@ -28,22 +28,23 @@ namespace Ex01_02
                     int lettersInRow = row * 2 - 1;
                     // The number of letters in row with max letter is:
                     // a_heigth = a_1 + (height-3)d = 2*heigth - 5 ( d = 2 a_1 = 1 ) and +1 for |
-                    int numberOfSpacesInEachSide = ((i_Height * 2) - 5 - lettersInRow + 1);
+                    int numberOfSpacesInEachSide = (Math.Max((i_Height * 2) - 5, 0) - lettersInRow + 1);
                     treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                     for (int i = 0; i < lettersInRow; i++)
                     {
                         treeOutput.Append(letter + " ");
                         letter = (char)((letter - 'A' + 1) % 26 + 'A');
                     }
+
                     treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                     treeOutput.AppendLine();
                     treeOutput.AppendLine();
                 }
                 else
                 {
-                    treeOutput.Append(new string(' ', (i_Height * 2) - 6));
+                    treeOutput.Append(new string(' ', Math.Max((i_Height * 2) - 6, 0)));
                     treeOutput.Append("|" + letter + "|");
-                    treeOutput.Append(new string(' ', (i_Height * 2) - 6));
+                    treeOutput.Append(new string(' ', Math.Max((i_Height * 2) - 6, 0)));
                     treeOutput.AppendLine();
                     treeOutput.AppendLine();
                 }
@@ -69,22 +70,24 @@ namespace Ex01_02
             {
                 int lettersInRow = i_Row * 2 - 1;
                 // The number of letters in row with max letter is:
-                // a_heigth = a_1 + (height-3)d = 2*heigth - 5 ( d = 2 a_1 = 1 ) 
-                int numberOfSpacesInEachSide = (i_Height * 2) - 5 - lettersInRow + 1;
+                // a_heigth = a_1 + (height-3)d = 2*heigth - 5 ( d = 2 a_1 = 1 ) +1 for |
+                int numberOfSpacesInEachSide = Math.Max((i_Height * 2) - 5 - lettersInRow + 1, 0);
+
                 treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                 for (int i = 0; i < lettersInRow; i++)
                 {
                     treeOutput.Append(i_Letter + " ");
                     i_Letter = (char)((i_Letter - 'A' + 1) % 26 + 'A');
                 }
+
                 treeOutput.Append(new string(' ', numberOfSpacesInEachSide));
                 treeOutput.AppendLine();
             }
             else
             {
-                treeOutput.Append(new string(' ', (i_Height * 2) - 6));
+                treeOutput.Append(new string(' ', Math.Max((i_Height * 2) - 6, 0)));
                 treeOutput.Append("|" + i_Letter + "|");
-                treeOutput.Append(new string(' ', (i_Height * 2) - 6));
+                treeOutput.Append(new string(' ', Math.Max((i_Height * 2) - 6, 0)));
                 treeOutput.AppendLine();
             }
 

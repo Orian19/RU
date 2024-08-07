@@ -14,6 +14,7 @@ namespace Ex01_01
             {
                 inputBinaryNumbers[i] = ReadValidBinary();
             }
+
             BinarySeries(inputBinaryNumbers);
             Console.ReadLine();
         }
@@ -27,6 +28,7 @@ namespace Ex01_01
                 input = Console.ReadLine();
             }
             while (!IsValidBinary(input));
+
             return input;
         }
 
@@ -45,16 +47,20 @@ namespace Ex01_01
                 {
                     palindromesCount++;
                 }
+
                 mostOnesInBinaryNumbers[i] = MostOnes(i_Numbers[i]);
             }
-            Array.Sort(decimalNumbers);
+
+            BubbleSort(decimalNumbers);
             StringBuilder stringBuilderPrints = new StringBuilder();
             stringBuilderPrints.AppendLine(string.Format("Decimal Numbers in ascending order: {0}, {1}, {2}",
                 decimalNumbers[0], decimalNumbers[1], decimalNumbers[2]));
-            stringBuilderPrints.AppendLine(string.Format("Average: {0:00}", AverageOfArray(decimalNumbers)));
+            stringBuilderPrints.AppendLine(string.Format("Average: {0:0.##}",
+                AverageOfArray(decimalNumbers)));
             stringBuilderPrints.AppendLine(string.Format("Longest bit sequence: {0}",
                 MaxNumberInArray(longestBitsSequence)));
-            stringBuilderPrints.AppendLine(string.Format("Number of palindromes: {0}", palindromesCount));
+            stringBuilderPrints.AppendLine(string.Format("Number of palindromes: {0}",
+                palindromesCount));
             int maxMostOnes = MaxNumberInArray(mostOnesInBinaryNumbers);
             int indexMaxOnes = IndexOf(mostOnesInBinaryNumbers, maxMostOnes);
             stringBuilderPrints.AppendLine(string.Format("The number with most 1's and least 0's: {0}",
@@ -74,15 +80,17 @@ namespace Ex01_01
             }
             else
             {
-                for (int i = 0; i < i_BinaryNumber.Length; i++)
+                foreach (char c in i_BinaryNumber)
                 {
-                    if (i_BinaryNumber[i] != '0' && i_BinaryNumber[i] != '1')
+                    if (c != '0' && c != '1')
                     {
                         Console.WriteLine(invalidMsg);
                         isValid = false;
+                        break;
                     }
                 }
             }
+
             return isValid;
         }
 
@@ -94,6 +102,7 @@ namespace Ex01_01
             {
                 decimalNumber += (i_BinaryNumber[i] - '0') * (int)Math.Pow(2, i_BinaryNumber.Length - 1 - i);
             }
+
             return decimalNumber;
         }
 
@@ -109,6 +118,7 @@ namespace Ex01_01
                     break;
                 }
             }
+
             return isPalindrome;
         }
 
@@ -128,6 +138,7 @@ namespace Ex01_01
                     dpMaxSequence[i] = 1;
                 }
             }
+
             return MaxNumberInArray(dpMaxSequence);
         }
 
@@ -135,13 +146,14 @@ namespace Ex01_01
         {
             int maxOnes = 0;
 
-            for (int i = 0; i < i_BinaryNumber.Length; i++)
+            foreach (char c in i_BinaryNumber)
             {
-                if (i_BinaryNumber[i] == '1')
+                if (c == '1')
                 {
                     maxOnes++;
                 }
             }
+
             return maxOnes;
         }
 
@@ -156,12 +168,14 @@ namespace Ex01_01
                     maxNumber = i_Numbers[i];
                 }
             }
+
             return maxNumber;
         }
 
         public static int IndexOf(int[] i_Numbers, int i_Value)
         {
             int indexOf = -1;
+
             for (int i = 0; i < i_Numbers.Length; i++)
             {
                 if (i_Numbers[i] == i_Value)
@@ -170,6 +184,7 @@ namespace Ex01_01
                     break;
                 }
             }
+
             return indexOf;
         }
 
@@ -182,7 +197,24 @@ namespace Ex01_01
             {
                 sumOfArray += i_Numbers[i];
             }
+
             return sumOfArray / lengthOfArray;
+        }
+
+        public static void BubbleSort(int[] i_Array)
+        {
+            for (int i = 0; i < i_Array.Length - 1; i++)
+            {
+                for (int j = 0; j < i_Array.Length - i - 1; j++)
+                {
+                    if (i_Array[j] > i_Array[j + 1])
+                    {
+                        int swapTemp = i_Array[j];
+                        i_Array[j] = i_Array[j + 1];
+                        i_Array[j + 1] = swapTemp;
+                    }
+                }
+            }
         }
     }
 }

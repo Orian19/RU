@@ -9,23 +9,41 @@ namespace Ex01_05
 
         public static void Main()
         {
-            Console.WriteLine("Please enter an 8-digit number:");
-            string input = Console.ReadLine();
-
-            if (IsValidNumber(input))
-            {
-                AnalyzeNumber(input);
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Please enter an 8-digit number.");
-            }
+            Console.WriteLine(string.Format("Please enter an {0}-digit number:",
+                k_LengthOfNumber));
+            AnalyzeNumber(ReadValidString());
             Console.ReadLine();
+        }
+
+        public static string ReadValidString()
+        {
+            string input;
+
+            do
+            {
+                input = Console.ReadLine();
+            }
+            while (!IsValidNumber(input));
+
+            return input;
         }
 
         public static bool IsValidNumber(string i_InputNumber)
         {
-            return i_InputNumber.Length == k_LengthOfNumber && AllDigits(i_InputNumber);
+            bool isValid = false;
+
+            if (i_InputNumber.Length == k_LengthOfNumber && AllDigits(i_InputNumber))
+            {
+                isValid = true;
+            }
+            else
+            {
+                isValid = false;
+                Console.WriteLine(string.Format("Invalid input. Please enter an {0}-digit number.",
+                    k_LengthOfNumber));
+            }
+
+            return isValid;
         }
 
         public static bool AllDigits(string i_InputString)
@@ -37,6 +55,7 @@ namespace Ex01_05
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -81,6 +100,7 @@ namespace Ex01_05
                     maxDigit = currentDigit;
                 }
             }
+
             return maxDigit;
         }
 
@@ -96,6 +116,7 @@ namespace Ex01_05
                     minDigit = currentDigit;
                 }
             }
+
             return minDigit;
         }
 
@@ -113,6 +134,7 @@ namespace Ex01_05
                     uniqueCount++;
                 }
             }
+
             return uniqueCount;
         }
 
@@ -127,6 +149,7 @@ namespace Ex01_05
                     count++;
                 }
             }
+
             return count;
         }
 
@@ -141,6 +164,7 @@ namespace Ex01_05
                     count++;
                 }
             }
+
             return count;
         }
     }

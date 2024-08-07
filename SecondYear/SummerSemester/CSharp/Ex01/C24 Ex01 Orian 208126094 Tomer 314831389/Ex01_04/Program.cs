@@ -6,26 +6,43 @@ namespace Ex01_04
 {
     public class Program
     {
+        private const int k_LengthOfString = 8;
         public static void Main()
         {
-
-            Console.WriteLine("Please enter a string of 8 characters:");
-            string input = Console.ReadLine();
-
-            if (IsValidString(input))
-            {
-                AnalyzeString(input);
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Please enter 8 characters (only letters or only digits).");
-            }
+            Console.WriteLine(string.Format("Please enter a string of {0} characters:", k_LengthOfString));
+            AnalyzeString(ReadValidString());
             Console.ReadLine();
+        }
+
+        public static string ReadValidString()
+        {
+            string input;
+
+            do
+            {
+                input = Console.ReadLine();
+            }
+            while (!IsValidString(input));
+
+            return input;
         }
 
         public static bool IsValidString(string i_InputString)
         {
-            return i_InputString.Length == 8 && (AllLetters(i_InputString) || AllDigits(i_InputString));
+            bool isValid = false;
+
+            if (i_InputString.Length == k_LengthOfString && (AllLetters(i_InputString) || AllDigits(i_InputString)))
+            {
+                isValid = true;
+            }
+            else
+            {
+                Console.WriteLine(string.Format("Invalid input. Please enter {0} characters (only letters or only digits).",
+                    k_LengthOfString));
+                isValid = false;
+            }
+
+            return isValid;
         }
 
         public static bool AllDigits(string i_InputString)
@@ -37,6 +54,7 @@ namespace Ex01_04
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -54,6 +72,7 @@ namespace Ex01_04
                     return false;
                 }
             }
+
             return true;
         }
 
@@ -86,6 +105,7 @@ namespace Ex01_04
         public static bool IsPalindromeRecursive(string i_InputString, int i_Start, int i_End)
         {
             bool result;
+
             if (i_Start >= i_End)
             {
                 result = true;
@@ -98,6 +118,7 @@ namespace Ex01_04
             {
                 result = IsPalindromeRecursive(i_InputString, i_Start + 1, i_End - 1);
             }
+
             return result;
         }
 
@@ -109,16 +130,19 @@ namespace Ex01_04
         public static bool IsDivisibleByThree(string i_Number)
         {
             bool isDivisible = false;
-            if (int.TryParse(i_Number, out int result))
+
+            if (int.TryParse(i_Number, out int parsedNumber))
             {
-                isDivisible = int.Parse(i_Number) % 3 == 0;
+                isDivisible = parsedNumber % 3 == 0;
             }
+
             return isDivisible;
         }
 
         public static int CountUpperLetters(string i_StringLetters)
         {
             int count = 0;
+
             foreach (char c in i_StringLetters)
             {
                 if (IsUpper(c))
@@ -126,6 +150,7 @@ namespace Ex01_04
                     count++;
                 }
             }
+
             return count;
         }
 
@@ -134,16 +159,38 @@ namespace Ex01_04
             return i_Char >= 65 && i_Char <= 90;
         }
 
-        public static bool IsAlphabeticalOrder(string i_Str)
+        public static bool IsAlphabeticalOrder(string i_InputString)
         {
-            for (int i = 0; i < i_Str.Length - 1; i++)
+            string normalizedStr = ToUpper(i_InputString);
+
+            for (int i = 0; i < normalizedStr.Length - 1; i++)
             {
-                if (i_Str[i] > i_Str[i + 1])
+                if (normalizedStr[i] > normalizedStr[i + 1])
                 {
                     return false;
                 }
             }
+
             return true;
+        }
+
+        public static string ToUpper(string i_InputString)
+        {
+            StringBuilder result = new StringBuilder(i_InputString.Length);
+
+            foreach (char c in i_InputString)
+            {
+                if (c >= 'a' && c <= 'z')
+                {
+                    result.Append((char)(c - 'a' + 'A'));
+                }
+                else
+                {
+                    result.Append(c);
+                }
+            }
+
+            return result.ToString();
         }
     }
 }
