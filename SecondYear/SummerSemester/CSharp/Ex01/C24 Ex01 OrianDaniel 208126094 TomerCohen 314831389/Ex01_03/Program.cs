@@ -18,6 +18,8 @@ namespace Ex01_03
 
             Console.WriteLine(string.Format("The height is: {0}", 9));
             Ex01_02.Program.PrintABCTreeIterative(9);
+
+            Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
     }

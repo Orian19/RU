@@ -11,6 +11,8 @@ namespace Ex01_02
             PrintABCTreeIterative(7);
             Console.WriteLine("Recursive ABC tree");
             PrintABCTreeRecursive(7);
+
+            Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
 

@@ -12,6 +12,8 @@ namespace Ex01_05
             Console.WriteLine(string.Format("Please enter an {0}-digit number:",
                 k_LengthOfNumber));
             AnalyzeNumber(ReadValidString());
+
+            Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
 

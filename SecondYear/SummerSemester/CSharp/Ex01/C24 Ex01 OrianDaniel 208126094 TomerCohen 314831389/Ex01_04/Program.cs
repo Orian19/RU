@@ -11,6 +11,8 @@ namespace Ex01_04
         {
             Console.WriteLine(string.Format("Please enter a string of {0} characters:", k_LengthOfString));
             AnalyzeString(ReadValidString());
+
+            Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
 

@@ -16,6 +16,8 @@ namespace Ex01_01
             }
 
             BinarySeries(inputBinaryNumbers);
+
+            Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
 
