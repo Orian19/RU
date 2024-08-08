@@ -7,6 +7,7 @@ namespace Ex01_04
     public class Program
     {
         private const int k_LengthOfString = 8;
+
         public static void Main()
         {
             Console.WriteLine(string.Format("Please enter a string of {0} characters:", k_LengthOfString));
