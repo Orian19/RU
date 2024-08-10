@@ -189,3 +189,4 @@ node_modules
 *.rar
 obj
 *.doc
+.vs
