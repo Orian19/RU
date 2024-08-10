@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 
 namespace Ex01_05
@@ -125,20 +126,17 @@ namespace Ex01_05
 
         public static int GetUniqueDigitsCount(string i_Number)
         {
-            bool[] seenDigits = new bool[10];
-            int uniqueCount = 0;
+            string uniqueDigits = string.Empty;
 
             foreach (char digit in i_Number)
             {
-                int digitValue = digit - '0';
-                if (!seenDigits[digitValue])
+                if (uniqueDigits.IndexOf(digit) == -1) 
                 {
-                    seenDigits[digitValue] = true;
-                    uniqueCount++;
+                    uniqueDigits += digit;
                 }
             }
 
-            return uniqueCount;
+            return uniqueDigits.Length;
         }
 
         public static int CountDigitsSmallerThanUnitsDigit(string i_Number, int i_UnitsDigit)

@@ -73,7 +73,7 @@ namespace Ex01_01
         public static bool IsValidBinary(string i_BinaryNumber)
         {
             bool isValid = true;
-            string invalidMsg = "Invalid input, please enter new binary numbers of 7 digits";
+            string invalidMsg = "Invalid input, please enter new binary number of 7 digits";
 
             if (i_BinaryNumber.Length != 7)
             {
@@ -159,6 +159,7 @@ namespace Ex01_01
             return maxOnes;
         }
 
+        // All of the following methods are built in methods that we have decided to implement as we havent learned array yet
         public static int MaxNumberInArray(int[] i_Numbers)
         {
             int maxNumber = int.MinValue;
