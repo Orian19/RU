@@ -10,9 +10,9 @@ namespace Ex02_Othelo
     {
         public static void Main() 
         {
-            Board board = new Board(8, 8);
-            board.DisplayBoard();
-            Console.ReadLine();
+            //Board board = new Board(8, 8);
+            //board.DisplayBoard();
+            //Console.ReadLine();
 
             Game game = new Game();
         }

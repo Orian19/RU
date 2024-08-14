@@ -13,8 +13,6 @@ namespace Ex02_Othelo
         private Player m_PlayerTwo;
         private Board m_BoardGame;
 
-        private const char k_Quit = 'Q';
-
         public Game()
         {
             initGame();

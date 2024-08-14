@@ -36,5 +36,19 @@ namespace Ex02_Othelo
             get { return m_IsComputer; }
             set { m_IsComputer = value; }
         }
+
+        public void MakeMove(Move i_Move, Board i_Board)
+        {
+            string move = i_Move.GameMove;
+            int col = move[0] - 'A';
+            bool rowParsed = int.TryParse(move[1].ToString(), out int row);
+
+            if (rowParsed)
+            {
+                row--;
+            }
+
+            i_Board.UpdateBoard(i_Move, row, col, this);
+        }
     }
 }
