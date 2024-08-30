@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ex03.GarageLogic
+namespace Ex03.ConsoleUI
 {
-    public abstract class Engine
+    class Program
     {
+        static void Main(string[] args)
+        {
+            return;
+        }
     }
 }

@@ -6,11 +6,11 @@ namespace Ex03.GarageLogic
     {
         protected readonly string r_ModelName;
         protected readonly string r_LicenseNumber;
-        protected readonly Engine r_Engine;
+        protected readonly EnergySource r_Engine;
         protected float m_RemainingEnergyPercentage;
         protected List<Wheel> m_Wheels;
 
-        protected Vehicle(int i_NumOfWheels, string i_ModelName, string i_LicenseNumber, Engine i_Engine)
+        protected Vehicle(int i_NumOfWheels, string i_ModelName, string i_LicenseNumber, EnergySource i_Engine)
         {
             r_LicenseNumber = i_LicenseNumber;
             r_ModelName = i_ModelName; 
@@ -35,5 +35,6 @@ namespace Ex03.GarageLogic
         }
 
         protected abstract float RemainingEnergyPercentage();
+
     }
 }

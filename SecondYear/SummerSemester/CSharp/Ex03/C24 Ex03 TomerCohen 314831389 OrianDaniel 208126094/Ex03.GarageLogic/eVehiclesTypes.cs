@@ -1,6 +1,6 @@
 ﻿namespace Ex03.GarageLogic
 {
-    public enum VehiclesTypes
+    public enum eVehiclesTypes
     {
         RegularBike,
         ElectricBike,

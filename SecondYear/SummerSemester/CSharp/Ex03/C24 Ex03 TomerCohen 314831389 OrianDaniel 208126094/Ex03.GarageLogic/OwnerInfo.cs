@@ -41,5 +41,19 @@ namespace Ex03.GarageLogic
             get { return m_VehicleState; }
             set { m_VehicleState = value; }
         }
+
+        public override string ToString()
+        {
+            return string.Format(
+@"
+License Number: {0}
+Model Name: {1}
+Owner Name: {2}
+Vehicle State: {3}
+Wheels Info: {4}
+Energy State + Type: {5}
+More Info: {6}
+", m_Vehicle.ModelName, r_OwnerName, m_VehicleState, string.Join(", ", m_Vehicle.Wheels), energy, moreInfo);
+        }
     }
 }

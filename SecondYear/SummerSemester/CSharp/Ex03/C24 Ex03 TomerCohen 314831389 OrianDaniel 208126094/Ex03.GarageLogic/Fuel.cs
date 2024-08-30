@@ -6,24 +6,22 @@ using System.Threading.Tasks;
 
 namespace Ex03.GarageLogic
 {
-    public class FuelEngine : Engine
+    public class Fuel : EnergySource
     {
-        private readonly float r_MaxFuelTank;
         private readonly eFuelType r_FuelType;
         private float m_CurrentFuel;
 
-        public FuelEngine(eFuelType i_FuelType, float i_CurrentFuel, float i_MaxFuelTank)
+        public Fuel(float i_MaxEnergyCapacity, eFuelType i_FuelType, float i_CurrentFuel) : base(i_MaxEnergyCapacity)
         {
             r_FuelType = i_FuelType;
             m_CurrentFuel = i_CurrentFuel;
-            r_MaxFuelTank = i_MaxFuelTank;
         }
 
-        protected void ReFuel(float i_LiterFuel, eFuelType i_FuelType)
+        protected void Refuel(float i_LiterFuel, eFuelType i_FuelType)
         {
-            if (m_CurrentFuel + i_LiterFuel > r_MaxFuelTank)
+            if (m_CurrentFuel + i_LiterFuel > base.r_MaxEnergyCapacity)
             {
-                throw new ValueOutOfRangeException(0, r_MaxFuelTank);
+                throw new ValueOutOfRangeException(0, base.r_MaxEnergyCapacity);
             }
 
             m_CurrentFuel += i_LiterFuel;

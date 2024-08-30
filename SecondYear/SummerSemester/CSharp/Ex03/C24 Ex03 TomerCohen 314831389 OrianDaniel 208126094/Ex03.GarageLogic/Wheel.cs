@@ -26,7 +26,7 @@
             get { return r_MaxAirPressure; }
         }
 
-        private void inflate(float i_AirToAdd)
+        public void inflate(float i_AirToAdd)
         {
             if (m_CurrentAirPressure + i_AirToAdd > r_MaxAirPressure)
             {
