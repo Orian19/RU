@@ -10,9 +10,8 @@ namespace Ex03.ConsoleUI
     {
         static void Main(string[] args)
         {
-            return;
+            ConsoleUI garageConsole = new ConsoleUI();
+            garageConsole.GarageManager();
         }
-
-
     }
 }

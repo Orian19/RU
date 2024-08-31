@@ -11,22 +11,9 @@ namespace Ex03.ConsoleUI
     {
         private readonly Garage r_Garage;
 
-        public ConsoleUI(Garage i_Garage)
+        public ConsoleUI()
         {
-            r_Garage = i_Garage;
-        }
-
-        public void GarageManager()
-        {
-            bool quit = false;
-            int userChoice;
-
-            while(!quit)
-            {
-                userChoice = displayMenuAndGetChoice();
-
-
-            }
+            r_Garage = new Garage();
         }
 
         private int displayMenuAndGetChoice()
@@ -92,44 +79,109 @@ Please choose an option:
             return userChoice;
         }
 
-        private void garageActions(int i_UserChoice)
+        public void GarageManager()
         {
-            switch(i_UserChoice)
+            bool quit = false;
+            int userChoice;
+
+            while (!quit)
             {
-                case 1:
-                    AddVehicle();
-                    break;
-                case 2:
-                    displayLicensesByFilter();
-                    break;
-                case 3:
-                    changeVehicleState();
-                    break;
-                case 4:
-                    inflateWheels();
-                    break;
-                case 5:
-                    break;
-                case 6:
-                    break;
-                case 7:
-                    break;
-                case 8:
-                    break;
-                default:
-                    throw new ArgumentException("Choice not valid");
+                userChoice = displayMenuAndGetChoice();
+
+                switch (userChoice)
+                {
+                    case 1:
+                        AddVehicle();
+                        break;
+                    case 2:
+                        displayLicensesByFilter();
+                        break;
+                    case 3:
+                        changeVehicleState();
+                        break;
+                    case 4:
+                        inflateWheels();
+                        break;
+                    case 5:
+                        fillGasTank();
+                        break;
+                    case 6:
+                        chargeBattery();
+                        break;
+                    case 7:
+                        showVehicleDetails();
+                        break;
+                    case 8:
+                        quit = true;
+                        break;
+                    default:
+                        throw new ArgumentException("Choice not valid");
+                }
             }
+        }
+
+        private string getLicenseNumber()
+        {
+            Console.WriteLine("Enter vehicle license number:");
+            return Console.ReadLine();
+        }
+
+        private void showVehicleDetails()
+        {
+            string licenseNumber = getLicenseNumber();
+            r_Garage.DisplayFullVehicleInfo(licenseNumber);
+        }
+
+        private void chargeBattery()
+        {
+            string licenseNumber = getLicenseNumber();
+
+            Console.WriteLine("Enter number of minutes to charge:");
+            if (!float.TryParse(Console.ReadLine(), out float minutesToCharge))
+            {
+                throw new FormatException("invalid minutes input");
+            }
+
+            r_Garage.RechargeVehicle(licenseNumber, minutesToCharge);
+        }
+
+        private void fillGasTank()
+        {
+            string licenseNumber = getLicenseNumber();
+
+            int maxChoice = Enum.GetValues(typeof(eFuelType)).Length;
+            Console.WriteLine("Choose a fuel type for the vehicle:");
+            DisplayEnumValues<eFuelType>();
+
+            int fuelType;
+            while (!int.TryParse(Console.ReadLine(), out fuelType) || fuelType < 1 || fuelType > maxChoice)
+            {
+                Console.WriteLine($"Please enter a valid choice between 1 and {maxChoice}.");
+                Console.WriteLine("Choose a fuel type for the vehicle:");
+                DisplayEnumValues<eFuelType>();
+            }
+
+            eFuelType fuelTypeEnum = (eFuelType)(fuelType - 1);
+
+            Console.WriteLine("Enter amount of fuel for the refuel:");
+            if(!float.TryParse(Console.ReadLine(), out float fuelAmount))
+            {
+                throw new FormatException("invalid fuel input");
+            }
+
+            r_Garage.RefuelVehicle(licenseNumber, fuelTypeEnum, fuelAmount);
         }
 
         private void inflateWheels()
         {
+            string licenseNumber = getLicenseNumber();
 
+            r_Garage.InflateToMax(licenseNumber);
         }
 
         private void changeVehicleState()
         {
-            Console.WriteLine("Enter vehicle license number:");
-            string licenseNumber = Console.ReadLine();
+            string licenseNumber = getLicenseNumber();
 
             int maxChoice = Enum.GetValues(typeof(eVehicleState)).Length;
             Console.WriteLine("Choose a status for the vehicle:");
@@ -199,8 +251,7 @@ Please choose an option:
 
         private Vehicle getVehicleInfo()
         {
-            Console.WriteLine("Please enter vehicle license number:");
-            string licenseNumber = Console.ReadLine();
+            string licenseNumber = getLicenseNumber();
 
             Console.WriteLine("Please enter model name:");
             string modelName = Console.ReadLine();
@@ -219,6 +270,8 @@ Please choose an option:
 
             eVehiclesTypes vehicleTypeEnum = (eVehiclesTypes)(vehicleType - 1);
             Dictionary<eOptions, object> options = r_Garage.GetOptions(vehicleTypeEnum);
+
+
 
             return r_Garage.CreateVehicle(vehicleTypeEnum, licenseNumber, options, modelName);
         }

@@ -8,6 +8,7 @@ namespace Ex03.GarageLogic
     public class Garage
     {
         private readonly Dictionary<string, OwnerInfo> r_Vehicles;
+        private const string k_LicenseErrorMsg = "No vehicle with this license number was found";
 
         public Garage()
         {
@@ -213,7 +214,7 @@ namespace Ex03.GarageLogic
 
             if (licensesList.Length == 0)
             {
-                licensesList.Append("No vehicles in the garage.");
+                licensesList.Append(k_LicenseErrorMsg);
             }
 
             return licensesList.ToString();
@@ -227,7 +228,7 @@ namespace Ex03.GarageLogic
             }
             else
             {
-                throw new ArgumentException("No vehicle with this license number was found");
+                throw new ArgumentException(k_LicenseErrorMsg);
             }
         }
 
@@ -242,7 +243,7 @@ namespace Ex03.GarageLogic
             }
             else
             {
-                throw new ArgumentException("No vehicle with this license number was found");
+                throw new ArgumentException(k_LicenseErrorMsg);
             }
         }
 
@@ -264,7 +265,7 @@ namespace Ex03.GarageLogic
             }
             else
             {
-                throw new ArgumentException("No vehicle with this license number was found");
+                throw new ArgumentException(k_LicenseErrorMsg);
             }
         }
 
@@ -285,7 +286,7 @@ namespace Ex03.GarageLogic
             }
             else
             {
-                throw new ArgumentException("No vehicle with this license number was found");
+                throw new ArgumentException(k_LicenseErrorMsg);
             }
         }
 
@@ -297,7 +298,7 @@ namespace Ex03.GarageLogic
             }
             else
             {
-                throw new ArgumentException("No vehicle with this license number was found");
+                throw new ArgumentException(k_LicenseErrorMsg);
             }
         }
     }
