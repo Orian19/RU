@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Ex03.GarageLogic
+﻿namespace Ex03.GarageLogic
 {
     public class OwnerInfo
     {
@@ -44,16 +38,14 @@ namespace Ex03.GarageLogic
 
         public override string ToString()
         {
-            return string.Format(
-@"
-License Number: {0}
-Model Name: {1}
-Owner Name: {2}
-Vehicle State: {3}
-Wheels Info: {4}
-Energy State + Type: {5}
-More Info: {6}
-", m_Vehicle.ModelName, r_OwnerName, m_VehicleState, string.Join(", ", m_Vehicle.Wheels), energy, moreInfo);
-        }
+            return $@"
+License Number: {m_Vehicle.LicenseNumber}
+Model Name: {m_Vehicle.ModelName}
+Owner Name: {r_OwnerName}
+Vehicle State: {m_VehicleState}
+Wheels Info: {string.Join(", ", m_Vehicle.Wheels)}
+Energy State + Type: {m_Vehicle.RemainingEnergyPercentage}%, {m_Vehicle.Enegry}
+";
+        } // more info?
     }
 }

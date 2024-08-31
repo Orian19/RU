@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Ex03.GarageLogic.Fuel;
-
-namespace Ex03.GarageLogic
+﻿namespace Ex03.GarageLogic
 {
     public class Electricity : EnergySource
     {
@@ -16,7 +9,23 @@ namespace Ex03.GarageLogic
             m_BatteryTimeRemaining = i_BatteryTimeRemaining;
         }
 
-        protected void Recharge(float i_HoursChargeBattery)
+        public float BatteryTimeRemaining
+        {
+            get { return m_BatteryTimeRemaining; }
+            set
+            {
+                if (value >= 0 && value <= r_MaxEnergyCapacity)
+                {
+                    m_BatteryTimeRemaining = value;
+                }
+                else
+                {
+                    throw new ValueOutOfRangeException(0f, r_MaxEnergyCapacity);
+                }
+            }
+        }
+
+        public void Recharge(float i_HoursChargeBattery)
         {
             if (m_BatteryTimeRemaining + i_HoursChargeBattery > base.r_MaxEnergyCapacity)
             {

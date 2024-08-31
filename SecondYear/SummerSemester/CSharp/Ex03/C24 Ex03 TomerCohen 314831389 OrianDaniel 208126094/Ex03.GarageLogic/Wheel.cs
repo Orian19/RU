@@ -35,5 +35,12 @@
 
             m_CurrentAirPressure += i_AirToAdd;
         }
+
+        public override string ToString()
+        {
+            return $@"
+Manufacturer is {ManufacturerName}, current air pressure is {CurrentAirPressure} out of {MaxAirPressure}.
+";
+        }
     }
 }

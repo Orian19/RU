@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ex03.GarageLogic
 {
@@ -10,6 +6,7 @@ namespace Ex03.GarageLogic
     {
         private bool m_CarryDangerousMaterials;
         private float m_CargoVolume;
+        private const float k_MaxAirPressure = 28f;
 
         public Truck(int i_NumOfWheels, string i_ModelName, string i_LicenseNumber, EnergySource i_Engine, bool i_CarryDangerousMaterials, float i_CargoVolume)
             : base(i_NumOfWheels, i_ModelName, i_LicenseNumber, i_Engine)
@@ -17,10 +14,38 @@ namespace Ex03.GarageLogic
             m_CarryDangerousMaterials = i_CarryDangerousMaterials;
             m_CargoVolume = i_CargoVolume;
         }
-        
-        protected override float RemainingEnergyPercentage()
+
+        public bool HazardousMaterials
         {
-            throw new NotImplementedException();
+            get { return m_CarryDangerousMaterials; }
+            set { m_CarryDangerousMaterials = value; }
         }
+
+        public float CargoVolume
+        {
+            get { return m_CargoVolume; }
+            set
+            {
+                if (value >= 0)
+                {
+                    m_CargoVolume = value;
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid Cargo volume input");
+                }
+            }
+        }
+
+        public override string ToString()
+        {
+            string hazardousMsg = HazardousMaterials ? "does" : "does not";
+
+            return $@"{
+base.ToString()}
+The truck {hazardousMsg} contain hazardous materials, and its cargo capacity is {CargoVolume}.{Environment.NewLine}";
+        }
+
     }
 }
+

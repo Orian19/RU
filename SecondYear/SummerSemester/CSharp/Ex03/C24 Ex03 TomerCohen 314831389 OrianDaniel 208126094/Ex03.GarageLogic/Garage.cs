@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Ex03.GarageLogic
 {
@@ -174,9 +175,35 @@ namespace Ex03.GarageLogic
             i_Options.Add(eOptions.MaxBatteryTime, typeof(float));
         }
 
-        public void DisplayListOfLicesnseNumbers()
+        public string DisplayListOfLicenseNumbers(bool i_InRepair, bool i_Fixed, bool i_Paid)
         {
-            return;
+            int indexInList = 1;
+            StringBuilder licensesList = new StringBuilder();
+
+            foreach (KeyValuePair<string, OwnerInfo> ownerEntry in r_Vehicles)
+            {
+                if (i_InRepair && ownerEntry.Value.VehicleState.Equals(eVehicleState.InRepair))
+                {
+                    licensesList.Append($"{indexInList++}. {ownerEntry.Key}{Environment.NewLine}");
+                }
+
+                if (i_Fixed && ownerEntry.Value.VehicleState.Equals(eVehicleState.Repaired))
+                {
+                    licensesList.Append($"{indexInList++}. {ownerEntry.Key}{Environment.NewLine}");
+                }
+
+                if (i_Paid && ownerEntry.Value.VehicleState.Equals(eVehicleState.Paid))
+                {
+                    licensesList.Append($"{indexInList++}. {ownerEntry.Key}{Environment.NewLine}");
+                }
+            }
+
+            if (licensesList.Length == 0)
+            {
+                licensesList.Append("No vehicles in the garage.");
+            }
+
+            return licensesList.ToString();
         }
 
         public void ChangeVehicleState(string i_LicenseNumber, eVehicleState i_VehicleState)
@@ -210,7 +237,17 @@ namespace Ex03.GarageLogic
         {
             if (r_Vehicles.TryGetValue(i_LicenseNumber, out OwnerInfo ownerInfo))
             {
-                if ()
+                if (ownerInfo.Vehicle.Enegry is Fuel fueledVehicle)
+                {
+                    fueledVehicle.Refuel(i_FuelAmount, i_FuelType);
+                    fueledVehicle.CurrentFuel += i_FuelAmount;
+                    ownerInfo.Vehicle.RemainingEnergyPercentage = (fueledVehicle.CurrentFuel / fueledVehicle.MaxEnergyCapacity) * 100;
+                }
+                else
+                {
+                    throw new ArgumentException("Vehicle energy is fuel");
+                }
+
             }
             else
             {
@@ -222,7 +259,16 @@ namespace Ex03.GarageLogic
         {
             if (r_Vehicles.TryGetValue(i_LicenseNumber, out OwnerInfo ownerInfo))
             {
-                if()
+                if (ownerInfo.Vehicle.Enegry is Electricity electricVehicle)
+                {
+                    electricVehicle.Recharge(i_minutesToCharge);
+                    electricVehicle.BatteryTimeRemaining += i_minutesToCharge;
+                    ownerInfo.Vehicle.RemainingEnergyPercentage = (electricVehicle.BatteryTimeRemaining / electricVehicle.MaxEnergyCapacity) * 100;
+                }
+                else
+                {
+                    throw new ArgumentException("Vehicle energy is electricity");
+                }
             }
             else
             {

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ex03.GarageLogic
 {
@@ -17,14 +13,44 @@ namespace Ex03.GarageLogic
             m_CurrentFuel = i_CurrentFuel;
         }
 
-        protected void Refuel(float i_LiterFuel, eFuelType i_FuelType)
+        public eFuelType FuelType
         {
-            if (m_CurrentFuel + i_LiterFuel > base.r_MaxEnergyCapacity)
-            {
-                throw new ValueOutOfRangeException(0, base.r_MaxEnergyCapacity);
-            }
+            get { return r_FuelType; }
+        }
 
-            m_CurrentFuel += i_LiterFuel;
+        public float CurrentFuel
+        {
+            get { return m_CurrentFuel; }
+            set
+            {
+                if (value >= 0 && value <= r_MaxEnergyCapacity)
+                {
+                    m_CurrentFuel = value;
+                }
+                else
+                {
+                    throw new ValueOutOfRangeException(0f, r_MaxEnergyCapacity);
+                }
+            }
+        }
+
+        public void Refuel(float i_LiterToAdd, eFuelType i_FuelType)
+        {
+            if (i_FuelType.Equals(FuelType))
+            {
+                if (i_LiterToAdd + m_CurrentFuel <= r_MaxEnergyCapacity)
+                {
+                    m_CurrentFuel += i_LiterToAdd;
+                }
+                else
+                {
+                    throw new ValueOutOfRangeException(0f, r_MaxEnergyCapacity);
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Fuel Type does not match");
+            }
         }
     }
 }
