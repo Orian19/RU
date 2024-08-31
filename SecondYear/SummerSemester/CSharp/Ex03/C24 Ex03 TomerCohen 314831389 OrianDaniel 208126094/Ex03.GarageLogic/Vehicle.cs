@@ -19,7 +19,7 @@ namespace Ex03.GarageLogic
             m_Wheels = new List<Wheel>(i_NumOfWheels);
         }
 
-        public EnergySource Enegry
+        public EnergySource EnegrySource
         {
             get { return r_EnergySource; }
         }

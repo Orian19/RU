@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace Ex03.GarageLogic
@@ -13,8 +14,10 @@ namespace Ex03.GarageLogic
             r_Vehicles = new Dictionary<string, OwnerInfo>();
         }
 
-        public void AddVehicle(OwnerInfo i_OwnerInfo)
+        public bool AddVehicle(OwnerInfo i_OwnerInfo)
         {
+            bool vehicleAdded = false;
+
             if (r_Vehicles.ContainsKey(i_OwnerInfo.Vehicle.LicenseNumber))
             {
                 try
@@ -29,10 +32,13 @@ namespace Ex03.GarageLogic
             else
             {
                 r_Vehicles.Add(i_OwnerInfo.Vehicle.LicenseNumber, i_OwnerInfo);
+                vehicleAdded = true;
             }
+
+            return vehicleAdded;
         }
 
-        public static Vehicle CreateVehicle(eVehiclesTypes i_VehicleTypes, string i_LicenseNumber, List<Wheel> i_Wheels, Dictionary<eOptions, object> i_Options, string i_ModelName)
+        public Vehicle CreateVehicle(eVehiclesTypes i_VehicleTypes, string i_LicenseNumber, Dictionary<eOptions, object> i_Options, string i_ModelName)
         {
             Vehicle newVehicle = null;
 
@@ -122,79 +128,86 @@ namespace Ex03.GarageLogic
             return newVehicle;
         }
 
-        public Dictionary<eOptions, Type> GetOptions(Vehicle vehicle)
+        public Dictionary<eOptions, object> GetOptions(eVehiclesTypes i_VehicleType)
         {
-            Dictionary<eOptions, Type> options = new Dictionary<eOptions, Type>();
+            Dictionary<eOptions, object> options = new Dictionary<eOptions, object>();
 
-            if (vehicle is Bike)
+            switch (i_VehicleType)
             {
-                options.Add(eOptions.LicenseType, typeof(eLicenseType));
-                options.Add(eOptions.EngineVolume, typeof(int));
-                if (vehicle.Enegry is Electricity)
-                {
-                    addElectricityOptions(options);
-                }
-                else
-                {
+                case eVehiclesTypes.RegularBike:
+                    addBikeOptions(options);
                     addFuelOptions(options);
-                }
-            }
-            else if (vehicle is Car)
-            {
-                options.Add(eOptions.Color, typeof(eColors));
-                options.Add(eOptions.Doors, typeof(eDoors));
-                if (vehicle.Enegry is Electricity)
-                {
+                    break;
+
+                case eVehiclesTypes.ElectricBike:
+                    addBikeOptions(options);
                     addElectricityOptions(options);
-                }
-                else
-                {
+                    break;
+
+                case eVehiclesTypes.RegularCar:
+                    addCarOptions(options);
                     addFuelOptions(options);
-                }
-            }
-            else if (vehicle is Truck)
-            {
-                options.Add(eOptions.CarryDangerousMaterialsDang, typeof(bool));
-                options.Add(eOptions.CargoVolume, typeof(float));
-                addFuelOptions(options);
+                    break;
+
+                case eVehiclesTypes.ElectricCar:
+                    addCarOptions(options);
+                    addElectricityOptions(options);
+                    break;
+
+                case eVehiclesTypes.Truck:
+                    options.Add(eOptions.CarryDangerousMaterialsDang, typeof(bool));
+                    options.Add(eOptions.CargoVolume, typeof(float));
+                    addFuelOptions(options);
+                    break;
             }
 
             return options;
         }
 
-        private void addFuelOptions(Dictionary<eOptions, Type> i_Options)
+        private void addBikeOptions(Dictionary<eOptions, object> i_Options)
+        {
+            i_Options.Add(eOptions.LicenseType, typeof(eLicenseType));
+            i_Options.Add(eOptions.EngineVolume, typeof(int));
+        }
+
+        private void addCarOptions(Dictionary<eOptions, object> i_Options)
+        {
+            i_Options.Add(eOptions.Color, typeof(eColors));
+            i_Options.Add(eOptions.Doors, typeof(eDoors));
+        }
+
+        private void addFuelOptions(Dictionary<eOptions, object> i_Options)
         {
             i_Options.Add(eOptions.FuelType, typeof(eFuelType));
             i_Options.Add(eOptions.CurrentFuel, typeof(float));
             i_Options.Add(eOptions.MaxFuel, typeof(float));
         }
 
-        private void addElectricityOptions(Dictionary<eOptions, Type> i_Options)
+        private void addElectricityOptions(Dictionary<eOptions, object> i_Options)
         {
             i_Options.Add(eOptions.BatteryTimeRemaining, typeof(float));
             i_Options.Add(eOptions.MaxBatteryTime, typeof(float));
         }
 
-        public string DisplayListOfLicenseNumbers(bool i_InRepair, bool i_Fixed, bool i_Paid)
+        public string DisplayListOfLicenseNumbers(bool i_InRepair, bool i_Repaired, bool i_Paid)
         {
-            int indexInList = 1;
             StringBuilder licensesList = new StringBuilder();
 
             foreach (KeyValuePair<string, OwnerInfo> ownerEntry in r_Vehicles)
             {
                 if (i_InRepair && ownerEntry.Value.VehicleState.Equals(eVehicleState.InRepair))
                 {
-                    licensesList.Append($"{indexInList++}. {ownerEntry.Key}{Environment.NewLine}");
+                    licensesList.AppendLine($"{ownerEntry.Key}");
                 }
 
-                if (i_Fixed && ownerEntry.Value.VehicleState.Equals(eVehicleState.Repaired))
+                if (i_Repaired && ownerEntry.Value.VehicleState.Equals(eVehicleState.Repaired))
                 {
-                    licensesList.Append($"{indexInList++}. {ownerEntry.Key}{Environment.NewLine}");
+                    licensesList.AppendLine($"{ownerEntry.Key}");
                 }
 
                 if (i_Paid && ownerEntry.Value.VehicleState.Equals(eVehicleState.Paid))
                 {
-                    licensesList.Append($"{indexInList++}. {ownerEntry.Key}{Environment.NewLine}");
+                    licensesList.AppendLine($"{ownerEntry.Key}");
                 }
             }
 
@@ -237,7 +250,7 @@ namespace Ex03.GarageLogic
         {
             if (r_Vehicles.TryGetValue(i_LicenseNumber, out OwnerInfo ownerInfo))
             {
-                if (ownerInfo.Vehicle.Enegry is Fuel fueledVehicle)
+                if (ownerInfo.Vehicle.EnegrySource is Fuel fueledVehicle)
                 {
                     fueledVehicle.Refuel(i_FuelAmount, i_FuelType);
                     fueledVehicle.CurrentFuel += i_FuelAmount;
@@ -259,7 +272,7 @@ namespace Ex03.GarageLogic
         {
             if (r_Vehicles.TryGetValue(i_LicenseNumber, out OwnerInfo ownerInfo))
             {
-                if (ownerInfo.Vehicle.Enegry is Electricity electricVehicle)
+                if (ownerInfo.Vehicle.EnegrySource is Electricity electricVehicle)
                 {
                     electricVehicle.Recharge(i_minutesToCharge);
                     electricVehicle.BatteryTimeRemaining += i_minutesToCharge;

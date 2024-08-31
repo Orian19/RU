@@ -39,13 +39,12 @@
         public override string ToString()
         {
             return $@"
-License Number: {m_Vehicle.LicenseNumber}
-Model Name: {m_Vehicle.ModelName}
-Owner Name: {r_OwnerName}
+Name: {r_OwnerName}
+Phone Number: {r_TelephoneNumber}
 Vehicle State: {m_VehicleState}
-Wheels Info: {string.Join(", ", m_Vehicle.Wheels)}
-Energy State + Type: {m_Vehicle.RemainingEnergyPercentage}%, {m_Vehicle.Enegry}
+Vehicle Info: {m_Vehicle.ToString()}
+Energy State + Type: {m_Vehicle.RemainingEnergyPercentage}%, {m_Vehicle.EnegrySource}
 ";
-        } // more info?
+        }
     }
 }
