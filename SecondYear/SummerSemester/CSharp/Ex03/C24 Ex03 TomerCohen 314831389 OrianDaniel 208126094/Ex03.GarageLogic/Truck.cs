@@ -41,11 +41,9 @@ namespace Ex03.GarageLogic
         {
             string hazardousMsg = HazardousMaterials ? "does" : "does not";
 
-            return $@"{
-base.ToString()}
-The truck {hazardousMsg} contain hazardous materials, and its cargo capacity is {CargoVolume}.{Environment.NewLine}";
+            return $@"{base.ToString()}
+The truck {hazardousMsg} contain hazardous materials, and its cargo capacity is {CargoVolume}.";
         }
 
     }
 }
-

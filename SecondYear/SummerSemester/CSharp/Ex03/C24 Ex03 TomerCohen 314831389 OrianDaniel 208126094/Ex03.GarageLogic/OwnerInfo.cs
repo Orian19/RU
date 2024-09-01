@@ -43,7 +43,7 @@ Name: {r_OwnerName}
 Phone Number: {r_TelephoneNumber}
 Vehicle State: {m_VehicleState}
 Vehicle Info: {m_Vehicle.ToString()}
-Energy State + Type: {m_Vehicle.RemainingEnergyPercentage}%, {m_Vehicle.EnegrySource}
+Energy percentage: {m_Vehicle.RemainingEnergyPercentage:F2}%
 ";
         }
     }

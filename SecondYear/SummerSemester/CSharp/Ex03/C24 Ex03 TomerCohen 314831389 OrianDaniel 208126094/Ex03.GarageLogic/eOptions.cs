@@ -12,6 +12,8 @@
         CurrentFuel,
         MaxFuel,
         BatteryTimeRemaining,
-        MaxBatteryTime
+        MaxBatteryTime,
+        CurrentWheelPressure,
+        ManufacturerWheelName
     }
 }

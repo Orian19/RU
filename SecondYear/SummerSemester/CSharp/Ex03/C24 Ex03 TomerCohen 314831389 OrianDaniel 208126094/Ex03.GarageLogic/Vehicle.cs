@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Ex03.GarageLogic
@@ -51,7 +52,8 @@ namespace Ex03.GarageLogic
                 }
                 else
                 {
-                    throw new ValueOutOfRangeException(0f, 100f);
+                    Exception ex = new Exception("Invalid input for the percentage of remaining energy.");
+                    throw new ValueOutOfRangeException(0f, 100f, ex);
                 }
             }
         }
@@ -68,11 +70,10 @@ Wheels info:
 
             foreach (Wheel wheel in Wheels)
             {
-                vehicle.Append($@"Wheel #{wheelIndex++}: {wheel}
-");
+                vehicle.AppendLine($"Wheel {wheelIndex++}: {wheel.ToString()}");
             }
 
-            vehicle.Append(r_EnergySource.ToString());
+            vehicle.AppendLine(r_EnergySource.ToString());
 
             return vehicle.ToString();
         }

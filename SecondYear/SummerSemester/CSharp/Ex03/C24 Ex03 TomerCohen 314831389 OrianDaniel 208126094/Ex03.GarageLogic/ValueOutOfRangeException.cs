@@ -5,13 +5,13 @@ namespace Ex03.GarageLogic
     public class ValueOutOfRangeException : Exception
     {
         private readonly float r_MinValue;
-        private readonly float r_MaxValue;
+        private readonly float r_MaxValuer;
 
-        public ValueOutOfRangeException(float i_MinValue, float i_MaxValue)
-            : base($"Value out of range. Should be between {i_MinValue} and {i_MaxValue}.")
+        public ValueOutOfRangeException(float i_MinValue, float i_MaxValue, Exception i_InnerException)
+            : base($"Value out of range. Should be between {i_MinValue} and {i_MaxValue}.", i_InnerException)
         {
             r_MinValue = i_MinValue;
-            r_MaxValue = i_MaxValue;
+            r_MaxValuer = i_MaxValue;
         }
 
         public float MinValue
@@ -21,7 +21,7 @@ namespace Ex03.GarageLogic
 
         public float MaxValue
         {
-            get { return r_MaxValue; }
+            get { return r_MaxValuer; }
         }
     }
 }

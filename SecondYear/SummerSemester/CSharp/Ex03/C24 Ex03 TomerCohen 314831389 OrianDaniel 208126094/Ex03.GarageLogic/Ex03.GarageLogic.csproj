@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Bike.cs" />
     <Compile Include="Car.cs" />
+    <Compile Include="VehicleCreator.cs" />
     <Compile Include="eDoors.cs" />
     <Compile Include="eColors.cs" />
     <Compile Include="eFuelType.cs" />
