@@ -234,7 +234,7 @@ Please choose an option:
             if (r_Garage.AddVehicle(ownerInfo))
             {
                 Console.WriteLine(ownerInfo.ToString());
-                Console.WriteLine("This vehicle added successfuly to garage.");
+                Console.WriteLine("This vehicle was added successfuly to the garage.");
             }
             else
             {
