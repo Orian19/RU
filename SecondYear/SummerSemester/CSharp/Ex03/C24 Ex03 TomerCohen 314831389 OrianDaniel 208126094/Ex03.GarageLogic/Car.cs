@@ -22,7 +22,6 @@
             get { return r_Doors; }
         }
 
-
         public override string ToString()
         {
             return $@"

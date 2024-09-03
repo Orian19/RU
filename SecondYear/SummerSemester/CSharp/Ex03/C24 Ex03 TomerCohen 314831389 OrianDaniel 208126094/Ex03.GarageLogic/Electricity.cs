@@ -47,7 +47,7 @@ namespace Ex03.GarageLogic
 
         public override string ToString()
         {
-            return $@"The battery has {BatteryTimeRemaining} hours remaining out of a total capacity of {r_MaxEnergyCapacity} hours.";
+            return $"The battery has {BatteryTimeRemaining} hours remaining out of a total capacity of {r_MaxEnergyCapacity} hours.";
         }
     }
 }

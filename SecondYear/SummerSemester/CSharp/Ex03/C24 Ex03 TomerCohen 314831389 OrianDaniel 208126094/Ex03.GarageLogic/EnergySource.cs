@@ -13,7 +13,5 @@
         {
             get { return r_MaxEnergyCapacity; }
         }
-
-        public abstract override string ToString();
     }
 }

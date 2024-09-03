@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Ex03.GarageLogic
@@ -125,7 +126,7 @@ namespace Ex03.GarageLogic
                 }
                 else
                 {
-                    throw new ArgumentException("To refuel Vehicle energy must be fuel");
+                    throw new ArgumentException("Refueling failed! To refuel, the vehicle must have fuel as its energy source.");
                 }
 
             }
@@ -146,7 +147,7 @@ namespace Ex03.GarageLogic
                 }
                 else
                 {
-                    throw new ArgumentException("To recharge Vehicle energy must be electricity");
+                    throw new ArgumentException("Charge failed! To charge, the vehicle must have electricity as its energy source.");
                 }
             }
             else

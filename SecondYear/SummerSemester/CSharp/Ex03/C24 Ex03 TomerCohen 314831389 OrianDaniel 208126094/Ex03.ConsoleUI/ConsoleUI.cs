@@ -8,13 +8,11 @@ namespace Ex03.ConsoleUI
     {
         private readonly Garage r_Garage;
         private readonly VehicleCreator r_VehicleCreator;
-
         public ConsoleUI()
         {
             r_Garage = new Garage();
             r_VehicleCreator = new VehicleCreator();
         }
-
         private int displayMenuAndGetChoice()
         {
             const int minOption = 1;
@@ -25,7 +23,7 @@ namespace Ex03.ConsoleUI
 Welcome to the best garage!
 
 Please choose an option:
-1. Enter a new vehicle into the garage.
+1. Insert a new vehicle into the garage.
 2. Show license numbers of vehicles by filter.
 3. Change the status of a vehicle.
 4. Inflate air in wheels.
@@ -34,7 +32,6 @@ Please choose an option:
 7. Show vehicle details.
 8. Exit garage
 ";
-
             Console.WriteLine(menu);
 
             do
@@ -61,7 +58,7 @@ Please choose an option:
                     Console.WriteLine($"Invalid input: {ex.Message}");
                     isValidChoice = false;
                 }
-                catch (ArgumentOutOfRangeException ex)
+                catch (ArgumentException ex)
                 {
                     Console.WriteLine($"Invalid input: {ex.Message}");
                     isValidChoice = false;
@@ -135,7 +132,6 @@ Please choose an option:
             Console.WriteLine("Enter vehicle license number:");
             return Console.ReadLine();
         }
-
         private void showVehicleDetails()
         {
             string licenseNumber = getLicenseNumber();
@@ -183,7 +179,6 @@ Please choose an option:
             r_Garage.RefuelVehicle(licenseNumber, fuelTypeEnum, fuelAmount);
             Console.WriteLine("The fuel tank has been filled.");
         }
-
         private void inflateWheels()
         {
             string licenseNumber = getLicenseNumber();
@@ -191,7 +186,6 @@ Please choose an option:
             r_Garage.InflateToMax(licenseNumber);
             Console.WriteLine("All the wheels are now full of air.");
         }
-
         private void changeVehicleState()
         {
             string licenseNumber = getLicenseNumber();
@@ -212,7 +206,6 @@ Please choose an option:
             r_Garage.ChangeVehicleState(licenseNumber, vehicleStateEnum);
             Console.WriteLine("State has been updated.");
         }
-
         private void displayLicensesByFilter()
         {
             bool inRepair = ConvertYesNoToBool("Do you want to see vehicles in repair? (Y/N): ");
@@ -234,7 +227,6 @@ Please choose an option:
 
             return choice == "Y";
         }
-
         private void AddVehicle()
         {
             OwnerInfo ownerInfo = getOwnerInfo();
@@ -249,7 +241,6 @@ Please choose an option:
                 Console.WriteLine("This vehicle is already in the garage.");
             }
         }
-
         private OwnerInfo getOwnerInfo()
         {
             Console.WriteLine("Please enter customer's name:");
@@ -262,7 +253,6 @@ Please choose an option:
 
             return new OwnerInfo(name, phoneNumber, eVehicleState.InRepair, vehicle);
         }
-
         private Vehicle getVehicleInfo()
         {
             string licenseNumber = getLicenseNumber();
@@ -288,7 +278,6 @@ Please choose an option:
 
             return r_VehicleCreator.CreateVehicle(vehicleTypeEnum, licenseNumber, options, modelName);
         }
-
         private void DisplayEnumValues<T>() where T : Enum
         {
             int index = 1;
@@ -297,7 +286,6 @@ Please choose an option:
                 Console.WriteLine($"{index++}. {value}");
             }
         }
-
         private void getInfoForOptions(Dictionary<eOptions, object> i_Options)
         {
             if (i_Options.ContainsKey(eOptions.LicenseType))
@@ -397,7 +385,6 @@ Please choose an option:
                 }
             }
         }
-
 
         private TEnum getEnumValueFromUser<TEnum>() where TEnum : Enum
         {

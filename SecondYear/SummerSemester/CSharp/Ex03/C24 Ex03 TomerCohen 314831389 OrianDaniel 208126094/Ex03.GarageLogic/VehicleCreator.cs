@@ -91,23 +91,21 @@ namespace Ex03.GarageLogic
                         throw new ArgumentException("Unknown vehicle type.");
                 }
 
-                if (newVehicle == null)
-                {
-                    throw new ArgumentException("Vehicle creation failed due to invalid or incomplete options.");
-                }
-
                 for (int i = 0; i < numberOfWheels; i++)
                 {
-                    Wheel wheel = new Wheel(manufacturerName, maxAirPressure)
-                    {
-                        CurrentAirPressure = currentWheelPressure
-                    };
+                    Wheel wheel = new Wheel(manufacturerName, maxAirPressure);
+                    wheel.CurrentAirPressure = currentWheelPressure;
                     newVehicle.Wheels.Add(wheel);
                 }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to create vehicle: {ex.Message}", ex);
+                if (ex is ValueOutOfRangeException)
+                {
+                    Console.WriteLine((ex as ValueOutOfRangeException).InnerException.Message);
+                }
+
+                throw new InvalidOperationException($"{ex.Message}", ex);
             }
 
             return newVehicle;
