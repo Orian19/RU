@@ -142,7 +142,7 @@ Please choose an option:
         {
             string licenseNumber = getLicenseNumber();
 
-            Console.WriteLine("Enter number of minutes to charge:");
+            Console.WriteLine("Enter number of hours to charge:");
             if (!float.TryParse(Console.ReadLine(), out float hoursToCharge))
             {
                 throw new FormatException("invalid hours input");

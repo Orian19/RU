@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace Ex03.GarageLogic
@@ -122,7 +121,7 @@ namespace Ex03.GarageLogic
                 if (ownerInfo.Vehicle.EnegrySource is Fuel fueledVehicle)
                 {
                     fueledVehicle.Refuel(i_FuelAmount, i_FuelType);
-                    ownerInfo.Vehicle.RemainingEnergyPercentage = (fueledVehicle.CurrentFuel / fueledVehicle.MaxEnergyCapacity) * 100;
+                    ownerInfo.Vehicle.EnegrySource.RemainingEnergyPercentage = (fueledVehicle.CurrentFuel / fueledVehicle.MaxEnergyCapacity) * 100;
                 }
                 else
                 {
@@ -136,14 +135,14 @@ namespace Ex03.GarageLogic
             }
         }
 
-        public void RechargeVehicle(string i_LicenseNumber, float i_minutesToCharge)
+        public void RechargeVehicle(string i_LicenseNumber, float i_hoursToCharge)
         {
             if (r_Vehicles.TryGetValue(i_LicenseNumber, out OwnerInfo ownerInfo))
             {
                 if (ownerInfo.Vehicle.EnegrySource is Electricity electricVehicle)
                 {
-                    electricVehicle.Recharge(i_minutesToCharge);
-                    ownerInfo.Vehicle.RemainingEnergyPercentage = (electricVehicle.BatteryTimeRemaining / electricVehicle.MaxEnergyCapacity) * 100;
+                    electricVehicle.Recharge(i_hoursToCharge);
+                    ownerInfo.Vehicle.EnegrySource.RemainingEnergyPercentage = (electricVehicle.BatteryTimeRemaining / electricVehicle.MaxEnergyCapacity) * 100;
                 }
                 else
                 {

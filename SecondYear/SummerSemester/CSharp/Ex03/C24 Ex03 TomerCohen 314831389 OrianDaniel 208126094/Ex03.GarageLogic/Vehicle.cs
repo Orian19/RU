@@ -9,7 +9,6 @@ namespace Ex03.GarageLogic
         protected readonly string r_ModelName;
         protected readonly string r_LicenseNumber;
         protected readonly EnergySource r_EnergySource;
-        protected float m_RemainingEnergyPercentage;
         protected List<Wheel> m_Wheels;
 
         protected Vehicle(int i_NumOfWheels, string i_ModelName, string i_LicenseNumber, EnergySource i_Energy)
@@ -39,23 +38,6 @@ namespace Ex03.GarageLogic
         {
             get { return m_Wheels; }
             set { m_Wheels = value; }
-        }
-
-        public float RemainingEnergyPercentage
-        {
-            get { return m_RemainingEnergyPercentage; }
-            set
-            {
-                if (value >= 0 && value <= 100)
-                {
-                    m_RemainingEnergyPercentage = value;
-                }
-                else
-                {
-                    Exception ex = new Exception("Invalid input for the percentage of remaining energy.");
-                    throw new ValueOutOfRangeException(0f, 100f, ex);
-                }
-            }
         }
 
         public override string ToString()

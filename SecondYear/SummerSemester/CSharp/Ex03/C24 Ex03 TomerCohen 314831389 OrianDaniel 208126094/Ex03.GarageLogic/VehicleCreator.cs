@@ -29,7 +29,7 @@ namespace Ex03.GarageLogic
                         {
                             energySource = new Fuel(6, eFuelType.Octan98, bikeFuel);
                             newVehicle = new Bike(2, i_ModelName, i_LicenseNumber, energySource, bikeLicenseType, bikeEngineVolume);
-                            newVehicle.RemainingEnergyPercentage = (bikeFuel / energySource.MaxEnergyCapacity) * 100;
+                            energySource.RemainingEnergyPercentage = (bikeFuel / energySource.MaxEnergyCapacity) * 100;
                             numberOfWheels = 2;
                             maxAirPressure = 31;
                         }
@@ -42,7 +42,7 @@ namespace Ex03.GarageLogic
                         {
                             energySource = new Electricity(2.7f, bikeBatteryTime);
                             newVehicle = new Bike(2, i_ModelName, i_LicenseNumber, energySource, eBikeLicenseType, eBikeEngineVolume);
-                            newVehicle.RemainingEnergyPercentage = (bikeBatteryTime / energySource.MaxEnergyCapacity) * 100;
+                            energySource.RemainingEnergyPercentage = (bikeBatteryTime / energySource.MaxEnergyCapacity) * 100;
                             numberOfWheels = 2;
                             maxAirPressure = 31;
                         }
@@ -55,7 +55,7 @@ namespace Ex03.GarageLogic
                         {
                             energySource = new Fuel(49, eFuelType.Octan95, carFuel);
                             newVehicle = new Car(5, i_ModelName, i_LicenseNumber, energySource, carColor, carDoors);
-                            newVehicle.RemainingEnergyPercentage = (carFuel / energySource.MaxEnergyCapacity) * 100;
+                            energySource.RemainingEnergyPercentage = (carFuel / energySource.MaxEnergyCapacity) * 100;
                             numberOfWheels = 5;
                             maxAirPressure = 33;
                         }
@@ -68,7 +68,7 @@ namespace Ex03.GarageLogic
                         {
                             energySource = new Electricity(5f, carBatteryTime);
                             newVehicle = new Car(5, i_ModelName, i_LicenseNumber, energySource, eCarColor, eCarDoors);
-                            newVehicle.RemainingEnergyPercentage = (carBatteryTime / energySource.MaxEnergyCapacity) * 100;
+                            energySource.RemainingEnergyPercentage = (carBatteryTime / energySource.MaxEnergyCapacity) * 100;
                             numberOfWheels = 5;
                             maxAirPressure = 33;
                         }
@@ -81,7 +81,7 @@ namespace Ex03.GarageLogic
                         {
                             energySource = new Fuel(130, eFuelType.Soler, truckFuel);
                             newVehicle = new Truck(14, i_ModelName, i_LicenseNumber, energySource, truckDangerous, truckCargo);
-                            newVehicle.RemainingEnergyPercentage = (truckFuel / energySource.MaxEnergyCapacity) * 100;
+                            energySource.RemainingEnergyPercentage = (truckFuel / energySource.MaxEnergyCapacity) * 100;
                             numberOfWheels = 14;
                             maxAirPressure = 28;
                         }
