@@ -1,43 +1,31 @@
-﻿using Ex04.Menus.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Ex04.Menus.Events
+namespace Ex04.Menus.Interfaces
 {
-    public class MenuItem: IMenuItem
+    public class MenuItem : IMenuItem
     {
-        private string m_Title;
-        private readonly List<MenuItem> r_SubMenuItems;
+        public string Title { get; private set; }
+        public List<IMenuItem> SubMenuItems { get; private set; }
 
-        public MenuItem(string i_Title)
+        public MenuItem(string title)
         {
-            m_Title = i_Title;
-            r_SubMenuItems = new List<MenuItem>();
+            Title = title;
+            SubMenuItems = new List<IMenuItem>();
         }
 
-        public string Title
+        public void AddSubMenuItem(IMenuItem item)
         {
-            get { return m_Title; }
-        }
-
-        public List<MenuItem> SubMenuItems
-        {
-            get { return r_SubMenuItems; }
-        }
-
-        public void AddSubMenuItem(MenuItem i_Item)
-        {
-            r_SubMenuItems.Add(i_Item);
+            SubMenuItems.Add(item);
         }
 
         public bool IsSubMenu()
         {
-            return r_SubMenuItems.Count > 0;
+            return SubMenuItems.Count > 0;
         }
 
         public virtual void Execute()
         {
-            // Default behavior: does nothing.
         }
     }
 }
