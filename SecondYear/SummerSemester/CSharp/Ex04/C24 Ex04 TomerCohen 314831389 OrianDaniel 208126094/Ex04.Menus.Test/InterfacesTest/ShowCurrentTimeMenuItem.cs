@@ -1,15 +1,15 @@
 ﻿using Ex04.Menus.Interfaces;
 using System;
 
-namespace Ex04.Menus.Test
+namespace Ex04.Menus.Test.InterfacesTest
 {
     public class ShowCurrentTimeMenuItem : IMenuItem
     {
-        private string m_Title = "Show Current Time";
+        private readonly string r_Title = "Show Current Time";
 
         public string Title
         {
-            get { return m_Title; }
+            get { return r_Title; }
         }
 
         public void Show()

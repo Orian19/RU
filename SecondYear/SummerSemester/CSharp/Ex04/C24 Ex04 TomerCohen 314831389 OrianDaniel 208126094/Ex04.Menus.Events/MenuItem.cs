@@ -1,40 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Ex04.Menus.Interfaces
+namespace Ex04.Menus.Events
 {
     public class MenuItem
     {
-        private string m_Title;
-        private readonly List<MenuItem> r_SubMenuItems;
+        public event Action<string, string> OnShow;
+        public string Title { get; private set; }
+        public List<MenuItem> SubMenuItems { get; private set; }
 
-        public MenuItem(string i_Title)
+        public MenuItem(string title)
         {
-            m_Title = i_Title;
-            r_SubMenuItems = new List<MenuItem>();
+            Title = title;
+            SubMenuItems = new List<MenuItem>();
         }
 
-        public string Title
+        public void AddSubMenuItem(MenuItem item)
         {
-            get { return m_Title; }
-        }
-
-        public List<MenuItem> SubMenuItems
-        {
-            get { return r_SubMenuItems; }
-        }
-
-        public void AddSubMenuItem(MenuItem i_Item)
-        {
-            r_SubMenuItems.Add(i_Item);
+            SubMenuItems.Add(item);
         }
 
         public bool IsSubMenu()
         {
-            return r_SubMenuItems.Count > 0;
+            return SubMenuItems.Count > 0;
+        }
+
+        public void Show()
+        {
+            if (IsSubMenu())
+            {
+                foreach (MenuItem subItem in SubMenuItems)
+                {
+                    subItem.Show();
+                }
+            }
+            else
+            {
+                OnShow?.Invoke(Title, "");
+            }
         }
     }
 }
