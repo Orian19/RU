@@ -1,15 +1,14 @@
 ﻿using Ex04.Menus.Interfaces;
-using Ex04.Menus.Events;
 using System;
 
 namespace Ex04.Menus.Test
 {
-    public class ShowVersionMenuItem : IMenuItemOperation
+    public class ShowVersionInterfaces : IMenuItemOperation
     {
-        private string m_Title = "Show Version";
+        private readonly string r_Title = "Show Version";
         public string Title
         {
-            get { return m_Title; }
+            get { return r_Title; }
         }
 
         public void Execute()

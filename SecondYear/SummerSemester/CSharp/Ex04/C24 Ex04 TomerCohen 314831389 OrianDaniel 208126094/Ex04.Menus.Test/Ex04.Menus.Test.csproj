@@ -36,11 +36,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CountCapitalsMenuItem.cs" />
+    <Compile Include="EventsTest\CountCapitalsEvents.cs" />
+    <Compile Include="EventsTest\ShowCurrentDateEvents.cs" />
+    <Compile Include="EventsTest\ShowCurrentTimeEvents.cs" />
+    <Compile Include="EventsTest\ShowVersionEvents.cs" />
+    <Compile Include="InterfacesTest\CountCapitalsInterfaces.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ShowCurrentDateMenuItem.cs" />
-    <Compile Include="ShowCurrentTimeMenuItem.cs" />
-    <Compile Include="ShowVersionMenuItem.cs" />
+    <Compile Include="InterfacesTest\ShowCurrentDateInterfaces.cs" />
+    <Compile Include="InterfacesTest\ShowCurrentTimeInterfaces.cs" />
+    <Compile Include="InterfacesTest\ShowVersionInterfaces.cs" />
     <Compile Include="Test.cs" />
   </ItemGroup>
   <ItemGroup>

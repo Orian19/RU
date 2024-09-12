@@ -1,10 +1,13 @@
-﻿namespace Ex04.Menus.Test
+﻿using System;
+
+namespace Ex04.Menus.Test
 {
     public class Program
     {
         public static void Main()
         {
-            Test.InterfaceTest();
+            Test.InterfacesTest();
+            Console.Clear();
             Test.EventsTest();
         }
     }

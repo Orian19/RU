@@ -6,10 +6,8 @@
     {
         public event MenuItemSelectedOperation SelectedOperation;
 
-        public MenuItemOperation(string i_Title, MenuItemSelectedOperation i_Operation)
-            : base(i_Title)
+        public MenuItemOperation(string i_Title) : base(i_Title)
         {
-            SelectedOperation = i_Operation;
         }
 
         public void DoOnSelectedOperation()

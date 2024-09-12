@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace Ex04.Menus.Test
 {
-    public class CountCapitalsMenuItem : IMenuItemOperation
+    public class CountCapitalsEvents
     {
-        private string m_Title = "Count Capitals";
+        private readonly string r_Title = "Count Capitals";
 
         public string Title
         {
-            get { return m_Title; }
+            get { return r_Title; }
         }
 
         public void Execute()
