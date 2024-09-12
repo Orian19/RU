@@ -1,9 +1,10 @@
 ﻿using Ex04.Menus.Interfaces;
+using Ex04.Menus.Events;
 using System;
 
 namespace Ex04.Menus.Test
 {
-    public class ShowCurrentTimeMenuItem : IMenuItem
+    public class ShowCurrentTimeMenuItem : IMenuItemOperation
     {
         private string m_Title = "Show Current Time";
 
@@ -12,10 +13,9 @@ namespace Ex04.Menus.Test
             get { return m_Title; }
         }
 
-        public void Show()
+        public void Execute()
         {
             Console.WriteLine($"Current Time is {DateTime.Now:HH:mm:ss}");
-            Console.ReadLine();
         }
     }
 }

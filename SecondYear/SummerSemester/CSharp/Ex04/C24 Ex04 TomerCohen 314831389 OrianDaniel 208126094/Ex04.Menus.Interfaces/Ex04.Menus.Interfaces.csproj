@@ -40,8 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IMenuItem.cs" />
+    <Compile Include="IMenuItemOperation.cs" />
     <Compile Include="MainMenu.cs" />
-    <Compile Include="Menu.cs" />
     <Compile Include="MenuItem.cs" />
   </ItemGroup>
   <ItemGroup>

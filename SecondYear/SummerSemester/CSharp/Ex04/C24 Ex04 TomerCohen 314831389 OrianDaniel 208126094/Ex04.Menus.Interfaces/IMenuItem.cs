@@ -4,5 +4,7 @@
     {
         string Title { get; }
         void Show();
+        IMenuItem AddMenuItem(string i_Title);
+        void AddOperation(IMenuItemOperation i_Opertation);
     }
 }

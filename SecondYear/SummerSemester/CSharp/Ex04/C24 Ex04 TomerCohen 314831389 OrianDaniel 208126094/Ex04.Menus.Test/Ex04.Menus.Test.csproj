@@ -36,12 +36,12 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InterfacesTest\CountCapitalsMenuItem.cs" />
+    <Compile Include="CountCapitalsMenuItem.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="InterfacesTest\ShowCurrentDateMenuItem.cs" />
-    <Compile Include="InterfacesTest\ShowCurrentTimeMenuItem.cs" />
-    <Compile Include="InterfacesTest\ShowVersionMenuItem.cs" />
-    <Compile Include="InterfacesTest\Test.cs" />
+    <Compile Include="ShowCurrentDateMenuItem.cs" />
+    <Compile Include="ShowCurrentTimeMenuItem.cs" />
+    <Compile Include="ShowVersionMenuItem.cs" />
+    <Compile Include="Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ex04.Menus.Events\Ex04.Menus.Events.csproj">
