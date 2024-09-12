@@ -5,72 +5,26 @@ namespace Ex04.Menus.Events
 {
     public class MainMenu
     {
-        private readonly List<MenuItem> m_MenuItems;
-        private readonly string m_Title;
+        private readonly MenuItem r_MainMenu;
 
-        public MainMenu(string title)
+        public MainMenu(string i_Title)
         {
-            m_Title = title;
-            m_MenuItems = new List<MenuItem>();
+            r_MainMenu = new MenuItem(i_Title, true);
         }
 
-        public void AddMenuItem(MenuItem item)
+        public string Title
         {
-            m_MenuItems.Add(item);
+            get { return r_MainMenu.Title; }
         }
 
         public void Show()
         {
-            while (true)
-            {
-                DisplayCurrentMenu();
-
-                int choice = GetUserChoice();
-
-                if (choice == 0)
-                {
-                    break;
-                }
-                else
-                {
-                    MenuItem selectedItem = m_MenuItems[choice - 1];
-                    if (selectedItem.IsSubMenu())
-                    {
-                        selectedItem.Show();
-                    }
-                    else
-                    {
-                    }
-                }
-            }
+            r_MainMenu.Show();
         }
 
-        private void DisplayCurrentMenu()
+        public MenuItem AddMenuItem(string i_Title)
         {
-            Console.Clear();
-            Console.WriteLine($"** {m_Title} **");
-            Console.WriteLine(new string('-', m_Title.Length + 6));
-
-            for (int i = 0; i < m_MenuItems.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {m_MenuItems[i].Title}");
-            }
-
-            Console.WriteLine("0. Exit");
-        }
-
-        private int GetUserChoice()
-        {
-            while (true)
-            {
-                Console.WriteLine($"Please enter your choice (1-{m_MenuItems.Count} or 0 to exit):");
-                if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice <= m_MenuItems.Count)
-                {
-                    return choice;
-                }
-
-                Console.WriteLine("Invalid input, please try again.");
-            }
+            return r_MainMenu.AddMenuItem(i_Title);
         }
     }
 }

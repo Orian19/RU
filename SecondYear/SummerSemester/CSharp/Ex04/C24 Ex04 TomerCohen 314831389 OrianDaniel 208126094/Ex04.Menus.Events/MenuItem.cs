@@ -5,38 +5,92 @@ namespace Ex04.Menus.Events
 {
     public class MenuItem
     {
-        public event Action<string, string> OnShow;
-        public string Title { get; private set; }
-        public List<MenuItem> SubMenuItems { get; private set; }
+        private readonly string r_Title;
+        private readonly List<MenuItem> r_SubMenuItems;
+        private MenuItemOperation m_Operation;
+        private readonly bool r_IsMainMenu;
 
-        public MenuItem(string title)
+        public MenuItem(string i_Title, bool i_IsMainMenu = false)
         {
-            Title = title;
-            SubMenuItems = new List<MenuItem>();
+            r_Title = i_Title;
+            r_SubMenuItems = new List<MenuItem>();
+            r_IsMainMenu = i_IsMainMenu;
         }
 
-        public void AddSubMenuItem(MenuItem item)
+        public string Title
         {
-            SubMenuItems.Add(item);
-        }
-
-        public bool IsSubMenu()
-        {
-            return SubMenuItems.Count > 0;
+            get { return r_Title; }
         }
 
         public void Show()
         {
-            if (IsSubMenu())
+            while (true)
             {
-                foreach (MenuItem subItem in SubMenuItems)
+                DisplayCurrentMenu();
+
+                int choice = GetUserChoice();
+
+                if (choice == 0)
                 {
-                    subItem.Show();
+                    break;
+                }
+                else if (choice > 0 && choice <= r_SubMenuItems.Count)
+                {
+                    MenuItem selectedItem = r_SubMenuItems[choice - 1];
+                    if (selectedItem.m_Operation != null)
+                    {
+                        // This is a leaf item (operation)
+                        selectedItem.m_Operation.DoOnSelectedOperation();
+                        Console.WriteLine("\nPress Enter to continue...");
+                        Console.ReadLine();
+                    }
+                    else
+                    {
+                        // This is a submenu
+                        selectedItem.Show();
+                    }
                 }
             }
-            else
+        }
+
+        public MenuItem AddMenuItem(string i_Title)
+        {
+            MenuItem newItem = new MenuItem(i_Title);
+            r_SubMenuItems.Add(newItem);
+
+            return newItem;
+        }
+
+        public void AddOperation(MenuItemOperation i_Operation)
+        {
+            m_Operation = i_Operation;
+        }
+
+        private void DisplayCurrentMenu()
+        {
+            Console.Clear();
+            Console.WriteLine($"** {r_Title} **");
+            Console.WriteLine(new string('-', r_Title.Length + 6));
+
+            for (int i = 0; i < r_SubMenuItems.Count; i++)
             {
-                OnShow?.Invoke(Title, "");
+                Console.WriteLine($"{i + 1}. {r_SubMenuItems[i].Title}");
+            }
+
+            Console.WriteLine(r_IsMainMenu ? "0. Exit" : "0. Back");
+        }
+
+        private int GetUserChoice()
+        {
+            while (true)
+            {
+                Console.WriteLine($"Please enter your choice (1-{r_SubMenuItems.Count} or 0 to {(r_IsMainMenu ? "exit" : "go back")}):");
+                if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice <= r_SubMenuItems.Count)
+                {
+                    return choice;
+                }
+
+                Console.WriteLine("Invalid input, please try again.");
             }
         }
     }
