@@ -1,6 +1,4 @@
 ﻿using Ex04.Menus.Interfaces;
-using Ex04.Menus.Events;
-using System.Collections.Generic;
 
 namespace Ex04.Menus.Test
 {

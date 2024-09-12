@@ -39,14 +39,12 @@ namespace Ex04.Menus.Events
                     MenuItem selectedItem = r_SubMenuItems[choice - 1];
                     if (selectedItem.m_Operation != null)
                     {
-                        // This is a leaf item (operation)
                         selectedItem.m_Operation.DoOnSelectedOperation();
                         Console.WriteLine("\nPress Enter to continue...");
                         Console.ReadLine();
                     }
                     else
                     {
-                        // This is a submenu
                         selectedItem.Show();
                     }
                 }

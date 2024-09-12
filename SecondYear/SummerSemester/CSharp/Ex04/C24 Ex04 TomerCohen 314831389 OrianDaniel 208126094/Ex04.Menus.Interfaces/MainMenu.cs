@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Ex04.Menus.Interfaces
+﻿namespace Ex04.Menus.Interfaces
 {
     public class MainMenu: IMenuItem
     {

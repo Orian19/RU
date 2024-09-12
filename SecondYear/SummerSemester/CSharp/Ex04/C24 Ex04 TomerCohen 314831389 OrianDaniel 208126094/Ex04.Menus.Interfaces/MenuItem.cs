@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ex04.Menus.Interfaces
 {
@@ -39,14 +38,12 @@ namespace Ex04.Menus.Interfaces
                 {
                     if (r_SubMenuItems[choice - 1] is MenuItem subMenuItem && subMenuItem.m_Operation != null)
                     {
-                        // This is a leaf item (operation)
                         subMenuItem.m_Operation.Execute();
                         Console.WriteLine("\nPress Enter to continue...");
                         Console.ReadLine();
                     }
                     else
                     {
-                        // This is a submenu
                         r_SubMenuItems[choice - 1].Show();
                     }
                 }
