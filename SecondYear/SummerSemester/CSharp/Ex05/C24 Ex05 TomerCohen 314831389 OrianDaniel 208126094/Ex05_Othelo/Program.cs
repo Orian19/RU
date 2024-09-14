@@ -6,10 +6,7 @@ namespace Ex05_Othelo
     {
         public static void Main()
         {
-            Game game = new Game();
-
-            game.StartGame();
-            Console.ReadLine();
+            GameManager.Run();
         }
     }
 }

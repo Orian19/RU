@@ -100,25 +100,31 @@ namespace Ex05_Othelo
             Console.WriteLine();
         }
 
-        public void DisplayComputerMove(string i_Move)
+        public string GetPlayerMove(Player i_Player, string i_ValidMoves)
         {
-            Console.WriteLine($"Computer chose: {i_Move}");
+            Console.WriteLine($"{i_Player.Name}, what is your next move from the following valid moves: {i_ValidMoves}");
+            return Console.ReadLine();
         }
 
-        public void DisplayQuitMessage()
+        public void DisplayWinner(string i_WinnerName, int i_WinnerScore, string i_LoserName, int i_LoserScore)
         {
-            Console.WriteLine("Game has been quit.");
+            Console.WriteLine($"Congratulations, {i_WinnerName}! You are the winner with {i_WinnerScore} points.");
+            Console.WriteLine($"Better luck next time {i_LoserName}. You had {i_LoserScore} points.");
+        }
+
+        public void DisplayTie(int i_Score)
+        {
+            Console.WriteLine($"It's a tie! Both players ended with {i_Score} pieces each.");
         }
 
         public bool AskToPlayAgain()
         {
             Console.WriteLine("Would you like to play another round? (Y/N)");
-            string response = "";
-
+            string response;
             do
             {
                 response = Console.ReadLine();
-            } while (response != "Y" && response != "N" && response != "Q");
+            } while (response != "Y" && response != "N");
 
             return response == "Y";
         }
@@ -126,6 +132,11 @@ namespace Ex05_Othelo
         public void DisplayNewGameMessage()
         {
             Console.WriteLine("Starting a new game...");
+        }
+
+        public void DisplayQuitMessage()
+        {
+            Console.WriteLine("Game has been quit.");
         }
 
         public void DisplayGoodbyeMessage()
@@ -139,11 +150,9 @@ namespace Ex05_Othelo
             Console.WriteLine($"{i_PlayerName} has no valid moves. Skipping turn.");
         }
 
-        public string GetPlayerMove(Player i_Player, string i_ValidMoves)
+        public void DisplayComputerMove(string i_Move)
         {
-            Console.WriteLine($"{i_Player.Name}, what is your next move from the following valid moves: {i_ValidMoves}");
-
-            return Console.ReadLine();
+            Console.WriteLine($"Computer chose: {i_Move}");
         }
 
         public string GetValidMove(string i_ValidMoves, string i_Move, bool i_IsValidFormat)
@@ -153,19 +162,7 @@ namespace Ex05_Othelo
                         : $"The move '{i_Move}' is not valid. Please choose one of the following valid moves: {i_ValidMoves}";
 
             Console.WriteLine(feedback);
-
             return Console.ReadLine();
-        }
-
-        public void DisplayWinner(string i_WinnerName, int i_WinnerScore, string i_LoserName, int i_LoserScore)
-        {
-            Console.WriteLine($"Congratulations, {i_WinnerName}! You are the winner with {i_WinnerScore} points.");
-            Console.WriteLine($"Better luck next time {i_LoserName}. You had {i_LoserScore} points.");
-        }
-
-        public void DisplayTie(int i_Score)
-        {
-            Console.WriteLine($"It's a tie! Both players ended with {i_Score} pieces each.");
         }
     }
 }
