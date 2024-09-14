@@ -1,28 +1,32 @@
-﻿namespace Ex02_Othelo
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Ex02_Othelo
 {
     public class Player
     {
-        private string m_Name;
-        private char m_Color;
+        private readonly string r_Name;
+        private readonly char r_Color;
         private bool m_IsComputer;
 
         public Player(string i_Name, char i_Color, bool i_IsComputer)
         {
-            m_Name = i_Name;
-            m_Color = i_Color;
+            r_Name = i_Name;
+            r_Color = i_Color;
             m_IsComputer = i_IsComputer;
         }
 
         public string Name
         {
-            get { return m_Name; }
-            set { m_Name = value; }
+            get { return r_Name; }
         }
 
         public char Color
         {
-            get { return m_Color; }
-            set { m_Color = value; }
+            get { return r_Color; }
         }
 
         public bool IsComputer
@@ -37,6 +41,7 @@
         {
             int col = i_Move[0] - 'A';
             int row = i_Move[1] - '0' - 1;
+
             i_Board.UpdateBoard(row, col, this);
         }
     }

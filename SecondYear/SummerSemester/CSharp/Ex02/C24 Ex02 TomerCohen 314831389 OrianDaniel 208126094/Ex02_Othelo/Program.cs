@@ -4,12 +4,11 @@ namespace Ex02_Othelo
 {
     public class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
             Game game = new Game();
-            game.GamePlay();
 
-            Console.WriteLine("Press enter to exit...");
+            game.StartGame();
             Console.ReadLine();
         }
     }

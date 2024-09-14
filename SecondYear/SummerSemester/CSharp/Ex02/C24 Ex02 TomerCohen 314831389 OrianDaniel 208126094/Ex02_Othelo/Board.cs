@@ -33,47 +33,6 @@ namespace Ex02_Othelo
             m_Grid[midRow, midCol] = k_White;
         }
 
-        public void DisplayBoard()
-        {
-            StringBuilder displayBoard = new StringBuilder();
-            int rows = m_Grid.GetLength(0);
-            int cols = m_Grid.GetLength(1);
-
-            displayBoard.Append(" ");
-            for (int col = 0; col < cols; col++)
-            {
-                displayBoard.Append($"   {(char)('A' + col)}");
-            }
-
-            displayBoard.AppendLine();
-            borderEqualSymbols(displayBoard, cols);
-            for (int row = 0; row < rows; row++)
-            {
-                displayBoard.Append($"{row + 1} |");
-                for (int col = 0; col < cols; col++)
-                {
-                    char cellValue = m_Grid[row, col] == '\0' ? ' ' : m_Grid[row, col];
-                    displayBoard.Append($" {cellValue} |");
-                }
-
-                displayBoard.AppendLine();
-                borderEqualSymbols(displayBoard, cols);
-            }
-
-            Console.WriteLine(displayBoard.ToString());
-        }
-
-        private void borderEqualSymbols(StringBuilder i_DisplayBoard, int i_Cols)
-        {
-            i_DisplayBoard.Append("  ");
-            for (int col = 0; col < i_Cols; col++)
-            {
-                i_DisplayBoard.Append("====");
-            }
-
-            i_DisplayBoard.AppendLine("=");
-        }
-
         public void UpdateBoard(int i_Row, int i_Col, Player i_Player)
         {
             foreach (int[] direction in Moves.sr_ValidDirections)

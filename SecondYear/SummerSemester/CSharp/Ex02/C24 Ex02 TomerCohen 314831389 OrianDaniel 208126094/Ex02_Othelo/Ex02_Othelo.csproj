@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E70ED631-1C4E-45F8-B2FC-016BB619A5D0}</ProjectGuid>
+    <ProjectGuid>{7EDB0E15-01A2-4132-BBDD-084F72BA60D8}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Ex02_Othelo</RootNamespace>
     <AssemblyName>Ex02_Othelo</AssemblyName>
@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="AI.cs" />
     <Compile Include="Board.cs" />
+    <Compile Include="GameDisplay.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Moves.cs" />
     <Compile Include="Player.cs" />
