@@ -8,13 +8,11 @@ namespace Ex04.Menus.Interfaces
         private readonly string r_Title;
         private readonly List<IMenuItem> r_SubMenuItems;
         private IMenuItemOperation m_Operation;
-        private readonly bool r_IsMainMenu;
 
-        public MenuItem(string i_Title, bool i_IsMainMenu = false)
+        public MenuItem(string i_Title)
         {
             r_Title = i_Title;
             r_SubMenuItems = new List<IMenuItem>();
-            r_IsMainMenu = i_IsMainMenu;
         }
 
         public string Title
@@ -26,7 +24,7 @@ namespace Ex04.Menus.Interfaces
         {
             while (true)
             {
-                DisplayCurrentMenu();
+                DisplayMenu();
 
                 int choice = GetUserChoice();
 
@@ -64,7 +62,17 @@ namespace Ex04.Menus.Interfaces
             m_Operation = i_Operation;
         }
 
-        private void DisplayCurrentMenu()
+        protected virtual void DisplayMenu()
+        {
+            DisplayMenuContent("0. Back");
+        }
+
+        protected virtual int GetUserChoice()
+        {
+            return GetUserChoiceInput("go back");
+        }
+
+        protected virtual void DisplayMenuContent(string i_ExitOption)
         {
             Console.Clear();
             Console.WriteLine($"** {r_Title} **");
@@ -75,14 +83,14 @@ namespace Ex04.Menus.Interfaces
                 Console.WriteLine($"{i + 1}. {r_SubMenuItems[i].Title}");
             }
 
-            Console.WriteLine(r_IsMainMenu ? "0. Exit" : "0. Back");
+            Console.WriteLine(i_ExitOption);
         }
 
-        private int GetUserChoice()
+        protected virtual int GetUserChoiceInput(string i_ExitAction)
         {
             while (true)
             {
-                Console.WriteLine($"Please enter your choice (1-{r_SubMenuItems.Count} or 0 to {(r_IsMainMenu ? "exit" : "go back")}):");
+                Console.WriteLine($"Please enter your choice (1-{r_SubMenuItems.Count} or 0 to {i_ExitAction}):");
                 if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 0 && choice <= r_SubMenuItems.Count)
                 {
                     return choice;

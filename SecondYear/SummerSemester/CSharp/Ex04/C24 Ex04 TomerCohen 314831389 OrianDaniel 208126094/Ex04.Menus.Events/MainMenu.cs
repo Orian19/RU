@@ -3,28 +3,20 @@ using System.Collections.Generic;
 
 namespace Ex04.Menus.Events
 {
-    public class MainMenu
+    public class MainMenu : MenuItem
     {
-        private readonly MenuItem r_MainMenu;
-
-        public MainMenu(string i_Title)
+        public MainMenu(string i_Title) : base(i_Title)
         {
-            r_MainMenu = new MenuItem(i_Title, true);
         }
 
-        public string Title
+        protected override void DisplayMenu()
         {
-            get { return r_MainMenu.Title; }
+            base.DisplayMenuContent("0. Exit");
         }
 
-        public void Show()
+        protected override int GetUserChoice()
         {
-            r_MainMenu.Show();
-        }
-
-        public MenuItem AddMenuItem(string i_Title)
-        {
-            return r_MainMenu.AddMenuItem(i_Title);
+            return base.GetUserChoiceInput("exit");
         }
     }
 }

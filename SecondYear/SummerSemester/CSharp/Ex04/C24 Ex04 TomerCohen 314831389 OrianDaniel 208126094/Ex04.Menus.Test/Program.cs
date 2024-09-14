@@ -6,9 +6,16 @@ namespace Ex04.Menus.Test
     {
         public static void Main()
         {
-            Test.InterfacesTest();
+            RunTests();
+        }
+
+        public static void RunTests()
+        {
+            Test test = new Test();
+
+            test.InterfacesTest();
             Console.Clear();
-            Test.EventsTest();
+            test.EventsTest();
         }
     }
 }

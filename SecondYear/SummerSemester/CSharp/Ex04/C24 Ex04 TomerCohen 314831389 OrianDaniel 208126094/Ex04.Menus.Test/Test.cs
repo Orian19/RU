@@ -4,7 +4,7 @@ namespace Ex04.Menus.Test
 {
     public class Test
     {
-        public static void InterfacesTest()
+        public void InterfacesTest()
         {
             Interfaces.MainMenu mainMenu = new Interfaces.MainMenu("Interfaces Main Menu");
             IMenuItem versionAndCapitals = mainMenu.AddMenuItem("Version and Capitals");
@@ -17,7 +17,7 @@ namespace Ex04.Menus.Test
             mainMenu.Show();
         }
 
-        public static void EventsTest()
+        public void EventsTest()
         {
             Events.MainMenu mainMenu = new Events.MainMenu("Delegates Main Menu");
             Events.MenuItem versionAndCapitals = mainMenu.AddMenuItem("Version and Capitals");

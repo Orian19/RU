@@ -1,32 +1,21 @@
-﻿namespace Ex04.Menus.Interfaces
+﻿using System;
+
+namespace Ex04.Menus.Interfaces
 {
-    public class MainMenu : IMenuItem
+    public class MainMenu : MenuItem
     {
-        private readonly MenuItem r_MainMenu;
-
-        public MainMenu(string i_Title)
+        public MainMenu(string i_Title) : base(i_Title)
         {
-            r_MainMenu = new MenuItem(i_Title, true);
         }
 
-        public string Title
+        protected override void DisplayMenu()
         {
-            get { return r_MainMenu.Title; }
+            base.DisplayMenuContent("0. Exit");
         }
 
-        public void Show()
+        protected override int GetUserChoice()
         {
-            r_MainMenu.Show();
-        }
-
-        public IMenuItem AddMenuItem(string i_Title)
-        {
-            return r_MainMenu.AddMenuItem(i_Title);
-        }
-
-        public void AddOperation(IMenuItemOperation i_Operation)
-        {
-            r_MainMenu.AddOperation(i_Operation);
+            return base.GetUserChoiceInput("exit");
         }
     }
 }
