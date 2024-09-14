@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ex04.Menus.Interfaces
 {
-    public class MenuItem: IMenuItem
+    public class MenuItem : IMenuItem
     {
         private readonly string r_Title;
         private readonly List<IMenuItem> r_SubMenuItems;
@@ -39,7 +39,8 @@ namespace Ex04.Menus.Interfaces
                     if (r_SubMenuItems[choice - 1] is MenuItem subMenuItem && subMenuItem.m_Operation != null)
                     {
                         subMenuItem.m_Operation.Execute();
-                        Console.WriteLine("\nPress Enter to continue...");
+                        Console.WriteLine();
+                        Console.WriteLine("Press Enter to continue...");
                         Console.ReadLine();
                     }
                     else

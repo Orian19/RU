@@ -1,8 +1,8 @@
 ﻿namespace Ex04.Menus.Interfaces
 {
-    public class MainMenu: IMenuItem
+    public class MainMenu : IMenuItem
     {
-        private readonly IMenuItem r_MainMenu;
+        private readonly MenuItem r_MainMenu;
 
         public MainMenu(string i_Title)
         {

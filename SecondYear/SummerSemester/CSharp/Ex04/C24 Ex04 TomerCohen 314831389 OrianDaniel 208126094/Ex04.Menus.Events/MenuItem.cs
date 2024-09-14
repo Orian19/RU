@@ -40,7 +40,8 @@ namespace Ex04.Menus.Events
                     if (selectedItem.m_Operation != null)
                     {
                         selectedItem.m_Operation.DoOnSelectedOperation();
-                        Console.WriteLine("\nPress Enter to continue...");
+                        Console.WriteLine();
+                        Console.WriteLine("Press Enter to continue...");
                         Console.ReadLine();
                     }
                     else
