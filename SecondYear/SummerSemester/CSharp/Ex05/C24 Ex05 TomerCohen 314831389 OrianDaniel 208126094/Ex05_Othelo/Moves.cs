@@ -106,23 +106,5 @@ namespace Ex05_Othelo
         {
             return i_Row >= 0 && i_Row < i_Grid.GetLength(0) && i_Col >= 0 && i_Col < i_Grid.GetLength(1);
         }
-
-        public bool IsValidMoveFormat(string i_Move, Board i_Board)
-        {
-            bool isValidFormat = false;
-
-            if (i_Move.Length == 2)
-            {
-                char column = i_Move[0];
-                char row = i_Move[1];
-                char maxColumnChar = (char)('A' + i_Board.Grid.GetLength(0) - 1);
-                bool isValidColumn = column >= 'A' && column <= maxColumnChar;
-                bool isValidRow = row >= '1' && row <= (char)('1' + i_Board.Grid.GetLength(0) - 1);
-
-                isValidFormat = isValidColumn && isValidRow;
-            }
-
-            return isValidFormat;
-        }
     }
 }

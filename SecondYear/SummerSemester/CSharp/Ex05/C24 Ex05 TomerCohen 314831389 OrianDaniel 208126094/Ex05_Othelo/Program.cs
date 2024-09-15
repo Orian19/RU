@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ex05_Othelo
+﻿namespace Ex05_Othelo
 {
     public class Program
     {

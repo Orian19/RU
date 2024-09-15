@@ -6,20 +6,24 @@ namespace Ex05_Othelo
     {
         private Player m_PlayerOne;
         private Player m_PlayerTwo;
+        private AIPlayer m_AIPlayer;
         private Board m_Board;
-        private bool m_IsGameQuit;
-        private bool m_IsComputer;
+        private bool m_IsAgainstComputer;
         public int RoundsPlayed { get; private set; } = 1;
 
-        private const string k_QuitGame = "Q";
+        public Game(string i_PlayerOneName, string i_PlayerTwoName, bool i_IsAgainstComputer, int i_BoardSize)
+        {
+            m_IsAgainstComputer = i_IsAgainstComputer;
+            m_AIPlayer = new AIPlayer();
+            InitializeGame(i_PlayerOneName, i_PlayerTwoName, i_BoardSize);
+        }
 
-        public Game(string i_PlayerOneName, string i_PlayerTwoName, bool i_IsComputer, int i_BoardSize)
+        private void InitializeGame(string i_PlayerOneName, string i_PlayerTwoName, int i_BoardSize)
         {
             m_PlayerOne = new Player(i_PlayerOneName, 'X', false);
-            m_PlayerTwo = new Player(i_PlayerTwoName, 'O', i_IsComputer);
+            m_PlayerTwo = new Player(i_PlayerTwoName, 'O', m_IsAgainstComputer);
             m_Board = new Board(i_BoardSize);
-            m_IsComputer = i_IsComputer;
-            CurrentPlayer = m_PlayerOne;
+            CurrentPlayer = PlayerOne;
         }
 
         public Board Board
@@ -39,18 +43,38 @@ namespace Ex05_Othelo
             get { return m_PlayerTwo; }
         }
 
-        public bool IsGameQuit
+        public void Reset()
         {
-            get { return m_IsGameQuit; }
+            InitializeGame(PlayerOne.Name, PlayerTwo.Name, Board.Grid.GetLength(0));
+        }
+
+        public bool IsGameOver()
+        {
+            return m_Board.IsBoardFull() ||
+                   (!HasValidMoves(m_PlayerOne) && !HasValidMoves(m_PlayerTwo));
+        }
+
+        public string MakeComputerMove()
+        {
+            Moves validMoves = new Moves(Board, CurrentPlayer);
+            return m_AIPlayer.GetBestMove(Board, CurrentPlayer, validMoves.ValidMoves);
+        }
+
+        public void HandleNextTurn()
+        {
+            do
+            {
+                if (HasValidMoves(CurrentPlayer))
+                {
+                    break;
+                }
+                SwitchPlayer();
+            } while (!IsGameOver());
         }
 
         public void IncrementRoundsPlayed()
         {
-            RoundsPlayed++;
-            if (RoundsPlayed > 3)
-            {
-                RoundsPlayed = 1;
-            }
+            RoundsPlayed = (RoundsPlayed % 3) + 1;
         }
 
         public bool HasValidMoves(Player i_Player)
@@ -74,55 +98,6 @@ namespace Ex05_Othelo
         public void SwitchPlayer()
         {
             CurrentPlayer = (CurrentPlayer == PlayerOne) ? PlayerTwo : PlayerOne;
-        }
-
-        public void StartGameRound(AIPlayer i_AIPlayer)
-        {
-            int noMovesPlayerCounter = 0;
-            bool isPlayerOneTurn = true;
-
-            while (noMovesPlayerCounter < 2)
-            {
-                CurrentPlayer = isPlayerOneTurn ? m_PlayerOne : m_PlayerTwo;
-                Moves allValidMoves = new Moves(m_Board, CurrentPlayer);
-
-                if (allValidMoves.ValidMoves.Any())
-                {
-                    noMovesPlayerCounter = 0;
-                }
-                else
-                {
-                    noMovesPlayerCounter++;
-                }
-
-                isPlayerOneTurn = !isPlayerOneTurn;
-            }
-        }
-
-        public string GetValidMoveForPlayer(string i_Move, Moves i_AllValidMoves)
-        {
-            while (true)
-            {
-                if (i_Move == k_QuitGame)
-                {
-                    m_IsGameQuit = true;
-                    break;
-                }
-
-                bool isValidMove = i_AllValidMoves.ValidMoves.Contains(i_Move);
-                bool isValidFormat = i_AllValidMoves.IsValidMoveFormat(i_Move, m_Board);
-
-                if (isValidMove)
-                {
-                    break;
-                }
-                else
-                {
-                    i_Move = "";
-                }
-            }
-
-            return i_Move;
         }
 
         public (string winnerName, int winnerScore, string loserName, int loserScore, bool isTie) DetermineWinner()

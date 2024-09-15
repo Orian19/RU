@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Linq;
 
 namespace Ex05_Othelo
 {
@@ -144,48 +143,24 @@ namespace Ex05_Othelo
 
         private void handleNextTurn()
         {
-            do
-            {
-                if (m_Game.HasValidMoves(m_Game.CurrentPlayer))
-                {
-                    if (m_Game.CurrentPlayer.IsComputer)
-                    {
-                        makeComputerMove();
-                    }
-                    break;
-                }
-                else
-                {
-                    m_Game.SwitchPlayer();
-                    updateUI();
-
-                    if (!m_Game.HasValidMoves(m_Game.CurrentPlayer))
-                    {
-                        showGameOverMessage();
-                        return;
-                    }
-                }
-            } while (true);
-
+            m_Game.HandleNextTurn();
             updateUI();
-        }
-
-        private bool isGameOver()
-        {
-            return m_Game.Board.IsBoardFull() ||
-                   (!m_Game.HasValidMoves(m_Game.PlayerOne) &&
-                    !m_Game.HasValidMoves(m_Game.PlayerTwo));
+            if (m_Game.IsGameOver())
+            {
+                showGameOverMessage();
+            }
+            else if (m_Game.CurrentPlayer.IsComputer)
+            {
+                makeComputerMove();
+            }
         }
 
         private void makeComputerMove()
         {
-            AIPlayer aiPlayer = new AIPlayer();
-            Moves validMoves = new Moves(m_Game.Board, m_Game.CurrentPlayer);
-            string computerMove = aiPlayer.GetBestMove(m_Game.Board, m_Game.CurrentPlayer, validMoves.ValidMoves);
-
-            if (computerMove != null)
+            string move = m_Game.MakeComputerMove();
+            if (move != null)
             {
-                m_Game.TryMakeMove(computerMove);
+                m_Game.TryMakeMove(move);
                 updateUI();
                 handleNextTurn();
             }
@@ -222,7 +197,7 @@ namespace Ex05_Othelo
         private void restartGame()
         {
             m_Game.IncrementRoundsPlayed();
-            m_Game = new Game(m_Game.PlayerOne.Name, m_Game.PlayerTwo.Name, m_Game.PlayerTwo.IsComputer, m_Game.Board.Grid.GetLength(0));
+            m_Game.Reset();
             updateUI();
         }
     }

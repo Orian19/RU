@@ -26,7 +26,6 @@
         public bool IsComputer
         {
             get { return m_IsComputer; }
-            set { m_IsComputer = value; }
         }
 
         // The input is always validated before calling MakeMove, so there's no need to use TryParse.
