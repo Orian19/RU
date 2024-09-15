@@ -9,6 +9,7 @@ namespace Ex05_Othelo
         private Board m_Board;
         private bool m_IsGameQuit;
         private bool m_IsComputer;
+        public int RoundsPlayed { get; private set; } = 1;
 
         private const string k_QuitGame = "Q";
 
@@ -18,9 +19,13 @@ namespace Ex05_Othelo
             m_PlayerTwo = new Player(i_PlayerTwoName, 'O', i_IsComputer);
             m_Board = new Board(i_BoardSize);
             m_IsComputer = i_IsComputer;
+            CurrentPlayer = m_PlayerOne;
         }
 
-        public Board Board => m_Board;
+        public Board Board
+        {
+            get { return m_Board; }
+        }
 
         public Player CurrentPlayer { get; private set; }
 
@@ -34,7 +39,42 @@ namespace Ex05_Othelo
             get { return m_PlayerTwo; }
         }
 
-        public bool IsGameQuit => m_IsGameQuit;
+        public bool IsGameQuit
+        {
+            get { return m_IsGameQuit; }
+        }
+
+        public void IncrementRoundsPlayed()
+        {
+            RoundsPlayed++;
+            if (RoundsPlayed > 3)
+            {
+                RoundsPlayed = 1;
+            }
+        }
+
+        public bool HasValidMoves(Player i_Player)
+        {
+            Moves moves = new Moves(m_Board, i_Player);
+            return moves.ValidMoves.Any();
+        }
+
+        public bool TryMakeMove(string i_Move)
+        {
+            Moves validMoves = new Moves(Board, CurrentPlayer);
+            if (validMoves.ValidMoves.Contains(i_Move))
+            {
+                CurrentPlayer.MakeMove(i_Move, Board);
+                SwitchPlayer();
+                return true;
+            }
+            return false;
+        }
+
+        public void SwitchPlayer()
+        {
+            CurrentPlayer = (CurrentPlayer == PlayerOne) ? PlayerTwo : PlayerOne;
+        }
 
         public void StartGameRound(AIPlayer i_AIPlayer)
         {
@@ -59,18 +99,18 @@ namespace Ex05_Othelo
             }
         }
 
-        public string GetValidMoveForPlayer(string move, Moves allValidMoves)
+        public string GetValidMoveForPlayer(string i_Move, Moves i_AllValidMoves)
         {
             while (true)
             {
-                if (move == k_QuitGame)
+                if (i_Move == k_QuitGame)
                 {
                     m_IsGameQuit = true;
                     break;
                 }
 
-                bool isValidMove = allValidMoves.ValidMoves.Contains(move);
-                bool isValidFormat = allValidMoves.IsValidMoveFormat(move, m_Board);
+                bool isValidMove = i_AllValidMoves.ValidMoves.Contains(i_Move);
+                bool isValidFormat = i_AllValidMoves.IsValidMoveFormat(i_Move, m_Board);
 
                 if (isValidMove)
                 {
@@ -78,11 +118,11 @@ namespace Ex05_Othelo
                 }
                 else
                 {
-                    move = "";
+                    i_Move = "";
                 }
             }
 
-            return move;
+            return i_Move;
         }
 
         public (string winnerName, int winnerScore, string loserName, int loserScore, bool isTie) DetermineWinner()

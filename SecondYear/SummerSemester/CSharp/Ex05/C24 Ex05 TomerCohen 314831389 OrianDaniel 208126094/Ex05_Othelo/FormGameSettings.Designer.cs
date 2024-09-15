@@ -1,6 +1,6 @@
 ﻿namespace Ex05_Othelo
 {
-    partial class GameSettings
+    partial class FormGameSettings
     {
         /// <summary>
         /// Required designer variable.
@@ -45,12 +45,13 @@
             // 
             // buttonPlayComputer
             // 
-            this.buttonPlayComputer.Location = new System.Drawing.Point(15, 84);
+            this.buttonPlayComputer.Location = new System.Drawing.Point(12, 84);
             this.buttonPlayComputer.Name = "buttonPlayComputer";
-            this.buttonPlayComputer.Size = new System.Drawing.Size(127, 49);
+            this.buttonPlayComputer.Size = new System.Drawing.Size(130, 49);
             this.buttonPlayComputer.TabIndex = 1;
             this.buttonPlayComputer.Text = "Play against the computer";
             this.buttonPlayComputer.UseVisualStyleBackColor = true;
+            this.buttonPlayComputer.Click += new System.EventHandler(this.buttonPlayComputer_Click);
             // 
             // buttonPlayFriend
             // 
@@ -60,8 +61,9 @@
             this.buttonPlayFriend.TabIndex = 2;
             this.buttonPlayFriend.Text = "Play against your friend";
             this.buttonPlayFriend.UseVisualStyleBackColor = true;
+            this.buttonPlayFriend.Click += new System.EventHandler(this.buttonPlayFriend_Click);
             // 
-            // GameSettings
+            // FormGameSettings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -70,7 +72,9 @@
             this.Controls.Add(this.buttonPlayComputer);
             this.Controls.Add(this.buttonBoardSize);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Name = "GameSettings";
+            this.MinimizeBox = false;
+            this.Name = "FormGameSettings";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "GameSettings";
             this.ResumeLayout(false);
 

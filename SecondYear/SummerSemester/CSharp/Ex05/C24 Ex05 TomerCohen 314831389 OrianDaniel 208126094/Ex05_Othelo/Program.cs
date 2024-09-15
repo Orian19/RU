@@ -6,7 +6,8 @@ namespace Ex05_Othelo
     {
         public static void Main()
         {
-            GameManager.Run();
+            FormGameSettings formGameSettings = new FormGameSettings();
+            formGameSettings.ShowDialog();
         }
     }
 }
