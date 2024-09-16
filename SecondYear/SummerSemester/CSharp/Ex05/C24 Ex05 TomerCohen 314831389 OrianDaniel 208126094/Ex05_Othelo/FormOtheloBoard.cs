@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Ex05_Othelo
@@ -7,17 +8,42 @@ namespace Ex05_Othelo
     public partial class FormOtheloBoard : Form
     {
         private Game m_Game;
-        private Button[,] m_BoardButtons;
-        private const int k_ButtonSize = 35;
+        private PictureBox[,] m_BoardCells;
+        private const int k_CellSize = 35;
         private const int k_Margin = 30;
+        private Image m_RedCoinImage;
+        private Image m_YellowCoinImage;
 
         public FormOtheloBoard(int i_BoardSize, bool i_IsAgainstComputer)
         {
             InitializeComponent();
+            LoadImages();
             initGame(i_BoardSize, i_IsAgainstComputer);
-            createBoardButtons();
+            createBoardCells();
             updateUI();
             adjustFormSize();
+        }
+
+        private void LoadImages()
+        {
+            string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
+            string redCoinPath = Path.Combine(projectDirectory, "CoinRed.png");
+            string yellowCoinPath = Path.Combine(projectDirectory, "CoinYellow.png");
+
+            try
+            {
+                m_RedCoinImage = Image.FromFile(redCoinPath);
+                m_YellowCoinImage = Image.FromFile(yellowCoinPath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading coin images: {ex.Message}\nPlease ensure the image files are in the correct location.",
+                                "Image Load Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+
+                Environment.Exit(1);
+            }
         }
 
         private void initGame(int i_BoardSize, bool i_IsAgainstComputer)
@@ -27,23 +53,26 @@ namespace Ex05_Othelo
             m_Game = new Game(playerOneName, playerTwoName, i_IsAgainstComputer, i_BoardSize);
         }
 
-        private void createBoardButtons()
+        private void createBoardCells()
         {
             int boardSize = m_Game.Board.Grid.GetLength(0);
-            m_BoardButtons = new Button[boardSize, boardSize];
+            m_BoardCells = new PictureBox[boardSize, boardSize];
 
             for (int row = 0; row < boardSize; row++)
             {
                 for (int col = 0; col < boardSize; col++)
                 {
-                    Button button = new Button
+                    PictureBox pictureBox = new PictureBox
                     {
-                        Size = new Size(k_ButtonSize, k_ButtonSize),
-                        Tag = $"{(char)('A' + col)}{row + 1}"
+                        Size = new Size(k_CellSize, k_CellSize),
+                        Location = new Point(col * k_CellSize, row * k_CellSize),
+                        Tag = $"{(char)('A' + col)}{row + 1}",
+                        SizeMode = PictureBoxSizeMode.StretchImage,
+                        BorderStyle = BorderStyle.FixedSingle
                     };
-                    button.Click += BoardButton_Click;
-                    m_BoardButtons[row, col] = button;
-                    Controls.Add(button);
+                    pictureBox.Click += BoardCell_Click;
+                    m_BoardCells[row, col] = pictureBox;
+                    Controls.Add(pictureBox);
                 }
             }
         }
@@ -61,7 +90,7 @@ namespace Ex05_Othelo
             {
                 for (int col = 0; col < m_Game.Board.Grid.GetLength(1); col++)
                 {
-                    updateButtonAppearance(m_BoardButtons[row, col], m_Game.Board.Grid[row, col]);
+                    updateCellAppearance(m_BoardCells[row, col], m_Game.Board.Grid[row, col]);
                 }
             }
         }
@@ -69,49 +98,48 @@ namespace Ex05_Othelo
         private void centerBoard()
         {
             int boardSize = m_Game.Board.Grid.GetLength(0);
-            int leftMargin = (ClientSize.Width - (boardSize * k_ButtonSize)) / 2;
+            int leftMargin = (ClientSize.Width - (boardSize * k_CellSize)) / 2;
             int topMargin = k_Margin;
 
             for (int row = 0; row < boardSize; row++)
             {
                 for (int col = 0; col < boardSize; col++)
                 {
-                    m_BoardButtons[row, col].Location = new Point(leftMargin + col * k_ButtonSize, topMargin + row * k_ButtonSize);
+                    m_BoardCells[row, col].Location = new Point(leftMargin + col * k_CellSize, topMargin + row * k_CellSize);
                 }
             }
         }
 
-        private void updateButtonAppearance(Button i_Button, char i_CellValue)
+        private void updateCellAppearance(PictureBox i_PictureBox, char i_CellValue)
         {
             if (i_CellValue == 'X')
             {
-                i_Button.BackColor = Color.Black;
-                i_Button.ForeColor = Color.White;
-                i_Button.Text = "O";
+                i_PictureBox.Image = m_RedCoinImage;
             }
             else if (i_CellValue == 'O')
             {
-                i_Button.BackColor = Color.White;
-                i_Button.ForeColor = Color.Black;
-                i_Button.Text = "O";
+                i_PictureBox.Image = m_YellowCoinImage;
             }
             else
             {
-                i_Button.BackColor = SystemColors.Control;
-                i_Button.ForeColor = SystemColors.ControlText;
-                i_Button.Text = "";
+                i_PictureBox.Image = null;
             }
         }
 
         private void highlightValidMoves()
         {
             Moves validMoves = new Moves(m_Game.Board, m_Game.CurrentPlayer);
-            foreach (Button button in m_BoardButtons)
+            foreach (PictureBox pictureBox in m_BoardCells)
             {
-                button.Enabled = validMoves.ValidMoves.Contains((string)button.Tag);
-                if (button.Enabled && m_Game.Board.Grid[button.Location.Y / k_ButtonSize, button.Location.X / k_ButtonSize] == '\0')
+                bool isValidMove = validMoves.ValidMoves.Contains((string)pictureBox.Tag);
+                pictureBox.Enabled = isValidMove;
+                if (isValidMove && pictureBox.Image == null)
                 {
-                    button.BackColor = Color.LightGreen;
+                    pictureBox.BackColor = Color.LightGreen;
+                }
+                else
+                {
+                    pictureBox.BackColor = SystemColors.Control;
                 }
             }
         }
@@ -123,16 +151,16 @@ namespace Ex05_Othelo
 
         private void adjustFormSize()
         {
-            int boardPixelSize = m_Game.Board.Grid.GetLength(0) * k_ButtonSize;
+            int boardPixelSize = m_Game.Board.Grid.GetLength(0) * k_CellSize;
             ClientSize = new Size(boardPixelSize + k_Margin * 2, boardPixelSize + k_Margin * 2);
             centerBoard();
             updateTitleBar();
         }
 
-        private void BoardButton_Click(object sender, EventArgs e)
+        private void BoardCell_Click(object sender, EventArgs e)
         {
-            Button clickedButton = (Button)sender;
-            string move = (string)clickedButton.Tag;
+            PictureBox clickedCell = (PictureBox)sender;
+            string move = (string)clickedCell.Tag;
 
             if (m_Game.TryMakeMove(move))
             {

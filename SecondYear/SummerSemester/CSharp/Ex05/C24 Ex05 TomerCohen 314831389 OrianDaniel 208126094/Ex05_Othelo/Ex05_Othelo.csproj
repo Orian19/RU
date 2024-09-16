@@ -76,5 +76,9 @@
       <DependentUpon>FormOtheloBoard.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="CoinRed.png" />
+    <Content Include="CoinYellow.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
