@@ -9,22 +9,24 @@ namespace Ex05_Othelo
     {
         private Game m_Game;
         private PictureBox[,] m_BoardCells;
-        private const int k_CellSize = 35;
-        private const int k_Margin = 30;
         private Image m_RedCoinImage;
         private Image m_YellowCoinImage;
+        private const int k_MinCellSize = 20;
+        private const int k_MaxCellSize = 80;
+        private const int k_Margin = 20;
+        private int m_CurrentCellSize;
 
         public FormOtheloBoard(int i_BoardSize, bool i_IsAgainstComputer)
         {
             InitializeComponent();
-            LoadImages();
+            loadImages();
             initGame(i_BoardSize, i_IsAgainstComputer);
+            setupFormSizeAndResize(i_BoardSize);
             createBoardCells();
             updateUI();
-            adjustFormSize();
         }
 
-        private void LoadImages()
+        private void loadImages()
         {
             string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
             string redCoinPath = Path.Combine(projectDirectory, "CoinRed.png");
@@ -46,6 +48,54 @@ namespace Ex05_Othelo
             }
         }
 
+        private void setupFormSizeAndResize(int i_BoardSize)
+        {
+            this.MinimumSize = new Size(i_BoardSize * k_MinCellSize + 2 * k_Margin,
+                                        i_BoardSize * k_MinCellSize + 2 * k_Margin + 40);
+            this.MaximumSize = new Size(i_BoardSize * k_MaxCellSize + 2 * k_Margin,
+                                        i_BoardSize * k_MaxCellSize + 2 * k_Margin + 40);
+
+            this.Resize += formOtheloBoard_Resize;
+        }
+
+        private int calculateCellSize()
+        {
+            int boardSize = m_Game.Board.Grid.GetLength(0);
+            int maxWidth = (ClientSize.Width - 2 * k_Margin) / boardSize;
+            int maxHeight = (ClientSize.Height - 2 * k_Margin) / boardSize;
+            int cellSize = Math.Min(maxWidth, maxHeight);
+            return limitCellSizeToRangelamp(cellSize, k_MinCellSize, k_MaxCellSize);
+        }
+
+        private int limitCellSizeToRangelamp(int i_Value, int i_Min, int i_Max)
+        {
+            return Math.Max(i_Min, Math.Min(i_Value, i_Max));
+        }
+
+        private void formOtheloBoard_Resize(object sender, EventArgs e)
+        {
+            m_CurrentCellSize = calculateCellSize();
+            updateBoardLayout();
+            updateUI();
+        }
+
+        private void updateBoardLayout()
+        {
+            int boardSize = m_Game.Board.Grid.GetLength(0);
+            int leftMargin = (ClientSize.Width - (boardSize * m_CurrentCellSize)) / 2;
+            int topMargin = (ClientSize.Height - (boardSize * m_CurrentCellSize)) / 2;
+
+            for (int row = 0; row < boardSize; row++)
+            {
+                for (int col = 0; col < boardSize; col++)
+                {
+                    m_BoardCells[row, col].Location = new Point(leftMargin + col * m_CurrentCellSize,
+                                                                topMargin + row * m_CurrentCellSize);
+                    m_BoardCells[row, col].Size = new Size(m_CurrentCellSize, m_CurrentCellSize);
+                }
+            }
+        }
+
         private void initGame(int i_BoardSize, bool i_IsAgainstComputer)
         {
             string playerOneName = "Black";
@@ -57,6 +107,7 @@ namespace Ex05_Othelo
         {
             int boardSize = m_Game.Board.Grid.GetLength(0);
             m_BoardCells = new PictureBox[boardSize, boardSize];
+            m_CurrentCellSize = calculateCellSize();
 
             for (int row = 0; row < boardSize; row++)
             {
@@ -64,17 +115,18 @@ namespace Ex05_Othelo
                 {
                     PictureBox pictureBox = new PictureBox
                     {
-                        Size = new Size(k_CellSize, k_CellSize),
-                        Location = new Point(col * k_CellSize, row * k_CellSize),
+                        Size = new Size(m_CurrentCellSize, m_CurrentCellSize),
                         Tag = $"{(char)('A' + col)}{row + 1}",
                         SizeMode = PictureBoxSizeMode.StretchImage,
                         BorderStyle = BorderStyle.FixedSingle
                     };
-                    pictureBox.Click += BoardCell_Click;
+                    pictureBox.Click += boardCell_Click;
                     m_BoardCells[row, col] = pictureBox;
                     Controls.Add(pictureBox);
                 }
             }
+
+            updateBoardLayout();
         }
 
         private void updateUI()
@@ -91,21 +143,6 @@ namespace Ex05_Othelo
                 for (int col = 0; col < m_Game.Board.Grid.GetLength(1); col++)
                 {
                     updateCellAppearance(m_BoardCells[row, col], m_Game.Board.Grid[row, col]);
-                }
-            }
-        }
-
-        private void centerBoard()
-        {
-            int boardSize = m_Game.Board.Grid.GetLength(0);
-            int leftMargin = (ClientSize.Width - (boardSize * k_CellSize)) / 2;
-            int topMargin = k_Margin;
-
-            for (int row = 0; row < boardSize; row++)
-            {
-                for (int col = 0; col < boardSize; col++)
-                {
-                    m_BoardCells[row, col].Location = new Point(leftMargin + col * k_CellSize, topMargin + row * k_CellSize);
                 }
             }
         }
@@ -149,15 +186,7 @@ namespace Ex05_Othelo
             this.Text = $"Othello - {m_Game.CurrentPlayer.Name}'s Turn";
         }
 
-        private void adjustFormSize()
-        {
-            int boardPixelSize = m_Game.Board.Grid.GetLength(0) * k_CellSize;
-            ClientSize = new Size(boardPixelSize + k_Margin * 2, boardPixelSize + k_Margin * 2);
-            centerBoard();
-            updateTitleBar();
-        }
-
-        private void BoardCell_Click(object sender, EventArgs e)
+        private void boardCell_Click(object sender, EventArgs e)
         {
             PictureBox clickedCell = (PictureBox)sender;
             string move = (string)clickedCell.Tag;
