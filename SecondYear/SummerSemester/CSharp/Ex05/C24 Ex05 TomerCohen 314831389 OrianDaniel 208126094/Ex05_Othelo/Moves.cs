@@ -43,10 +43,8 @@ namespace Ex05_Othelo
                 {
                     if (isValidMove(i_Board, i, j, i_Player))
                     {
-                        // $G$ CSS-999 (-3) Unnecessary parenthesis
-                        int row = (i + 1);
-                        // $G$ CSS-999 (-3) Unnecessary parenthesis
-                        char col = ((char)('A' + j));
+                        int row = i + 1;
+                        char col = (char)('A' + j);
                         m_AllValidMoves.Add($"{col}{row}");
                     }
                 }

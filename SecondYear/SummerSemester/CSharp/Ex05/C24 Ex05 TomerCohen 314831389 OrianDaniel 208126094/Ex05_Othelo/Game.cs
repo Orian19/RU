@@ -57,6 +57,7 @@ namespace Ex05_Othelo
         public string MakeComputerMove()
         {
             Moves validMoves = new Moves(Board, CurrentPlayer);
+
             return m_AIPlayer.GetBestMove(Board, CurrentPlayer, validMoves.ValidMoves);
         }
 
@@ -80,19 +81,22 @@ namespace Ex05_Othelo
         public bool HasValidMoves(Player i_Player)
         {
             Moves moves = new Moves(m_Board, i_Player);
+
             return moves.ValidMoves.Any();
         }
 
         public bool TryMakeMove(string i_Move)
         {
+            bool madeMove = false;
             Moves validMoves = new Moves(Board, CurrentPlayer);
             if (validMoves.ValidMoves.Contains(i_Move))
             {
                 CurrentPlayer.MakeMove(i_Move, Board);
                 SwitchPlayer();
-                return true;
+                madeMove = true; ;
             }
-            return false;
+
+            return madeMove;
         }
 
         public void SwitchPlayer()
@@ -104,19 +108,33 @@ namespace Ex05_Othelo
         {
             int numberOfBlackCoins = m_Board.BlackAndWhitePointCounters().Item1;
             int numberOfWhiteCoins = m_Board.BlackAndWhitePointCounters().Item2;
+            string winnerName = null;
+            string loserName = null;
+            int winnerScore = 0;
+            int loserScore = 0;
+            bool isTie = false;
 
             if (numberOfBlackCoins > numberOfWhiteCoins)
             {
-                return (m_PlayerOne.Name, numberOfBlackCoins, m_PlayerTwo.Name, numberOfWhiteCoins, false);
+                winnerName = m_PlayerOne.Name;
+                loserName = m_PlayerTwo.Name;
+                winnerScore = numberOfBlackCoins;
+                loserScore = numberOfWhiteCoins;
             }
             else if (numberOfBlackCoins < numberOfWhiteCoins)
             {
-                return (m_PlayerTwo.Name, numberOfWhiteCoins, m_PlayerOne.Name, numberOfBlackCoins, false);
+                winnerName = m_PlayerTwo.Name;
+                loserName = m_PlayerOne.Name;
+                winnerScore = numberOfWhiteCoins;
+                loserScore = numberOfBlackCoins;
             }
             else
             {
-                return (null, numberOfBlackCoins, null, numberOfWhiteCoins, true);
+                isTie = true;
+                winnerScore = loserScore = numberOfBlackCoins;
             }
+
+            return (winnerName, winnerScore, loserName, loserScore, isTie);
         }
     }
 }

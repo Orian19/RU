@@ -64,6 +64,7 @@ namespace Ex05_Othelo
             int maxWidth = (ClientSize.Width - 2 * k_Margin) / boardSize;
             int maxHeight = (ClientSize.Height - 2 * k_Margin) / boardSize;
             int cellSize = Math.Min(maxWidth, maxHeight);
+
             return limitCellSizeToRangelamp(cellSize, k_MinCellSize, k_MaxCellSize);
         }
 
