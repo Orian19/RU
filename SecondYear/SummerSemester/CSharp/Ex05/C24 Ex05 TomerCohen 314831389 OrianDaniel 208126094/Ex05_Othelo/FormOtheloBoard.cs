@@ -102,6 +102,12 @@ namespace Ex05_Othelo
             string playerOneName = "Black";
             string playerTwoName = i_IsAgainstComputer ? "Computer" : "White";
             m_Game = new Game(playerOneName, playerTwoName, i_IsAgainstComputer, i_BoardSize);
+            m_Game.Board.CellChanged += board_CellChanged;
+        }
+
+        private void board_CellChanged(object sender, CellChangedEventArgs e)
+        {
+            updateCellAppearance(m_BoardCells[e.Row, e.Col], e.Value);
         }
 
         private void createBoardCells()
@@ -124,6 +130,7 @@ namespace Ex05_Othelo
                     pictureBox.Click += boardCell_Click;
                     m_BoardCells[row, col] = pictureBox;
                     Controls.Add(pictureBox);
+                    updateCellAppearance(pictureBox, m_Game.Board.Grid[row, col]);
                 }
             }
 
@@ -132,35 +139,26 @@ namespace Ex05_Othelo
 
         private void updateUI()
         {
-            updateBoardDisplay();
             highlightValidMoves();
             updateTitleBar();
-        }
-
-        private void updateBoardDisplay()
-        {
-            for (int row = 0; row < m_Game.Board.Grid.GetLength(0); row++)
-            {
-                for (int col = 0; col < m_Game.Board.Grid.GetLength(1); col++)
-                {
-                    updateCellAppearance(m_BoardCells[row, col], m_Game.Board.Grid[row, col]);
-                }
-            }
         }
 
         private void updateCellAppearance(PictureBox i_PictureBox, char i_CellValue)
         {
             if (i_CellValue == 'X')
             {
-                i_PictureBox.Image = m_RedCoinImage;
+                i_PictureBox.Image = new Bitmap(m_RedCoinImage, i_PictureBox.Size);
+                i_PictureBox.BackColor = SystemColors.Control;
             }
             else if (i_CellValue == 'O')
             {
-                i_PictureBox.Image = m_YellowCoinImage;
+                i_PictureBox.Image = new Bitmap(m_YellowCoinImage, i_PictureBox.Size);
+                i_PictureBox.BackColor = SystemColors.Control;
             }
             else
             {
                 i_PictureBox.Image = null;
+                i_PictureBox.BackColor = SystemColors.Control;
             }
         }
 

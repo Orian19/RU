@@ -5,9 +5,10 @@ namespace Ex05_Othelo
     public class Board
     {
         private char[,] m_Grid;
-
         private const char k_White = 'O';
         private const char k_Black = 'X';
+        public event EventHandler<CellChangedEventArgs> CellChanged;
+
 
         public Board(int i_Size)
         {
@@ -26,10 +27,10 @@ namespace Ex05_Othelo
             int midRow = m_Grid.GetLength(0) / 2;
             int midCol = m_Grid.GetLength(1) / 2;
 
-            m_Grid[midRow - 1, midCol - 1] = k_White;
-            m_Grid[midRow - 1, midCol] = k_Black;
-            m_Grid[midRow, midCol - 1] = k_Black;
-            m_Grid[midRow, midCol] = k_White;
+            SetCell(midRow - 1, midCol - 1, k_White);
+            SetCell(midRow - 1, midCol, k_Black);
+            SetCell(midRow, midCol - 1, k_Black);
+            SetCell(midRow, midCol, k_White);
         }
 
         public void UpdateBoard(int i_Row, int i_Col, Player i_Player)
@@ -38,18 +39,32 @@ namespace Ex05_Othelo
             {
                 if (Moves.IsValidDirection(m_Grid, i_Row, i_Col, direction, i_Player))
                 {
-                    m_Grid[i_Row, i_Col] = i_Player.Color;
+                    SetCell(i_Row, i_Col, i_Player.Color);
                     int rowToUpdate = i_Row + direction[0];
                     int colToUpdate = i_Col + direction[1];
 
                     while (m_Grid[rowToUpdate, colToUpdate] != i_Player.Color)
                     {
-                        m_Grid[rowToUpdate, colToUpdate] = i_Player.Color;
+                        SetCell(rowToUpdate, colToUpdate, i_Player.Color);
                         rowToUpdate += direction[0];
                         colToUpdate += direction[1];
                     }
                 }
             }
+        }
+
+        private void SetCell(int row, int col, char value)
+        {
+            if (m_Grid[row, col] != value)
+            {
+                m_Grid[row, col] = value;
+                OnCellChanged(row, col, value);
+            }
+        }
+
+        protected virtual void OnCellChanged(int row, int col, char value)
+        {
+            CellChanged?.Invoke(this, new CellChangedEventArgs(row, col, value));
         }
 
         public Tuple<int, int> BlackAndWhitePointCounters()
