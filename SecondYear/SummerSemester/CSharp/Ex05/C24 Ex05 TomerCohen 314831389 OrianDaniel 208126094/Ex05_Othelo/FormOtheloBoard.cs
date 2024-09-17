@@ -101,6 +101,7 @@ namespace Ex05_Othelo
         {
             string playerOneName = "Black";
             string playerTwoName = i_IsAgainstComputer ? "Computer" : "White";
+
             m_Game = new Game(playerOneName, playerTwoName, i_IsAgainstComputer, i_BoardSize);
             m_Game.Board.CellChanged += board_CellChanged;
         }
@@ -113,6 +114,7 @@ namespace Ex05_Othelo
         private void createBoardCells()
         {
             int boardSize = m_Game.Board.Grid.GetLength(0);
+
             m_BoardCells = new PictureBox[boardSize, boardSize];
             m_CurrentCellSize = calculateCellSize();
 
@@ -145,29 +147,30 @@ namespace Ex05_Othelo
 
         private void updateCellAppearance(PictureBox i_PictureBox, char i_CellValue)
         {
-            if (i_CellValue == 'X')
+            switch (i_CellValue)
             {
-                i_PictureBox.Image = new Bitmap(m_RedCoinImage, i_PictureBox.Size);
-                i_PictureBox.BackColor = SystemColors.Control;
+                case 'X':
+                    i_PictureBox.Image = m_RedCoinImage;
+                    break;
+                case 'O':
+                    i_PictureBox.Image = m_YellowCoinImage;
+                    break;
+                default:
+                    i_PictureBox.Image = null;
+                    break;
             }
-            else if (i_CellValue == 'O')
-            {
-                i_PictureBox.Image = new Bitmap(m_YellowCoinImage, i_PictureBox.Size);
-                i_PictureBox.BackColor = SystemColors.Control;
-            }
-            else
-            {
-                i_PictureBox.Image = null;
-                i_PictureBox.BackColor = SystemColors.Control;
-            }
+            i_PictureBox.BackColor = SystemColors.Control;
+            i_PictureBox.SizeMode = PictureBoxSizeMode.Zoom;
         }
 
         private void highlightValidMoves()
         {
             Moves validMoves = new Moves(m_Game.Board, m_Game.CurrentPlayer);
+
             foreach (PictureBox pictureBox in m_BoardCells)
             {
                 bool isValidMove = validMoves.ValidMoves.Contains((string)pictureBox.Tag);
+
                 pictureBox.Enabled = isValidMove;
                 if (isValidMove && pictureBox.Image == null)
                 {
@@ -201,6 +204,7 @@ namespace Ex05_Othelo
         {
             m_Game.HandleNextTurn();
             updateUI();
+
             if (m_Game.IsGameOver())
             {
                 showGameOverMessage();
@@ -214,6 +218,7 @@ namespace Ex05_Othelo
         private void makeComputerMove()
         {
             string move = m_Game.MakeComputerMove();
+
             if (move != null)
             {
                 m_Game.TryMakeMove(move);
@@ -237,7 +242,6 @@ namespace Ex05_Othelo
             }
 
             message += "\nWould you like another round?";
-
             DialogResult result = MessageBox.Show(message, "Game Over", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
 
             if (result == DialogResult.Yes)

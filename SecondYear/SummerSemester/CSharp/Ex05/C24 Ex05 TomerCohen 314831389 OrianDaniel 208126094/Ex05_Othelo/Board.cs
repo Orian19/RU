@@ -9,7 +9,6 @@ namespace Ex05_Othelo
         private const char k_Black = 'X';
         public event EventHandler<CellChangedEventArgs> CellChanged;
 
-
         public Board(int i_Size)
         {
             m_Grid = new char[i_Size, i_Size];

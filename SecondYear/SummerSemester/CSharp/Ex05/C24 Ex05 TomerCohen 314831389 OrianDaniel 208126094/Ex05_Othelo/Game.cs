@@ -7,6 +7,7 @@ namespace Ex05_Othelo
         private Player m_PlayerOne;
         private Player m_PlayerTwo;
         private AIPlayer m_AIPlayer;
+        private Player m_CurrentPlayer;
         private Board m_Board;
         private bool m_IsAgainstComputer;
         public int RoundsPlayed { get; private set; } = 1;
@@ -23,7 +24,7 @@ namespace Ex05_Othelo
             m_PlayerOne = new Player(i_PlayerOneName, 'X', false);
             m_PlayerTwo = new Player(i_PlayerTwoName, 'O', m_IsAgainstComputer);
             m_Board = new Board(i_BoardSize);
-            CurrentPlayer = PlayerOne;
+            m_CurrentPlayer = m_PlayerOne;
         }
 
         public Board Board
@@ -45,7 +46,7 @@ namespace Ex05_Othelo
 
         public void Reset()
         {
-            InitializeGame(PlayerOne.Name, PlayerTwo.Name, Board.Grid.GetLength(0));
+            InitializeGame(m_PlayerOne.Name, m_PlayerTwo.Name, m_Board.Grid.GetLength(0));
         }
 
         public bool IsGameOver()
@@ -56,16 +57,16 @@ namespace Ex05_Othelo
 
         public string MakeComputerMove()
         {
-            Moves validMoves = new Moves(Board, CurrentPlayer);
+            Moves validMoves = new Moves(m_Board, m_CurrentPlayer);
 
-            return m_AIPlayer.GetBestMove(Board, CurrentPlayer, validMoves.ValidMoves);
+            return m_AIPlayer.GetBestMove(m_Board, m_CurrentPlayer, validMoves.ValidMoves);
         }
 
         public void HandleNextTurn()
         {
             do
             {
-                if (HasValidMoves(CurrentPlayer))
+                if (HasValidMoves(m_CurrentPlayer))
                 {
                     break;
                 }
@@ -88,10 +89,11 @@ namespace Ex05_Othelo
         public bool TryMakeMove(string i_Move)
         {
             bool madeMove = false;
-            Moves validMoves = new Moves(Board, CurrentPlayer);
+            Moves validMoves = new Moves(m_Board, m_CurrentPlayer);
+
             if (validMoves.ValidMoves.Contains(i_Move))
             {
-                CurrentPlayer.MakeMove(i_Move, Board);
+                m_CurrentPlayer.MakeMove(i_Move, m_Board);
                 SwitchPlayer();
                 madeMove = true; ;
             }
@@ -101,7 +103,7 @@ namespace Ex05_Othelo
 
         public void SwitchPlayer()
         {
-            CurrentPlayer = (CurrentPlayer == PlayerOne) ? PlayerTwo : PlayerOne;
+            m_CurrentPlayer = (m_CurrentPlayer == m_PlayerOne) ? m_PlayerTwo : m_PlayerOne;
         }
 
         public (string winnerName, int winnerScore, string loserName, int loserScore, bool isTie) DetermineWinner()
