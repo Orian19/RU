@@ -11,7 +11,7 @@ namespace Ex05_Othelo
         private PictureBox[,] m_BoardCells;
         private Image m_RedCoinImage;
         private Image m_YellowCoinImage;
-        private const int k_MinCellSize = 20;
+        private const int k_MinCellSize = 25;
         private const int k_MaxCellSize = 80;
         private const int k_Margin = 20;
         private int m_CurrentCellSize;
@@ -141,8 +141,20 @@ namespace Ex05_Othelo
 
         private void updateUI()
         {
+            updateBoardDisplay();
             highlightValidMoves();
             updateTitleBar();
+        }
+
+        private void updateBoardDisplay()
+        {
+            for (int row = 0; row < m_Game.Board.Grid.GetLength(0); row++)
+            {
+                for (int col = 0; col < m_Game.Board.Grid.GetLength(1); col++)
+                {
+                    updateCellAppearance(m_BoardCells[row, col], m_Game.Board.Grid[row, col]);
+                }
+            }
         }
 
         private void updateCellAppearance(PictureBox i_PictureBox, char i_CellValue)
