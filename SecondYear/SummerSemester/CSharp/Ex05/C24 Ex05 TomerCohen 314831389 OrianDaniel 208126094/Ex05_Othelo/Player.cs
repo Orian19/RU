@@ -5,6 +5,7 @@
         private readonly string r_Name;
         private readonly char r_Color;
         private bool m_IsComputer;
+        public int Wins { get; set; } = 0;
 
         public Player(string i_Name, char i_Color, bool i_IsComputer)
         {

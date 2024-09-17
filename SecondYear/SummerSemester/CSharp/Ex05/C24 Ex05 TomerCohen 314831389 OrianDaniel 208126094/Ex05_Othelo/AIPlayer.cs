@@ -5,6 +5,7 @@ namespace Ex05_Othelo
 {
     public class AIPlayer
     {
+        public int Wins { get; set; } = 0;
         private const int k_MaxDepth = 4; //Depth of 4 balances between performance and strategic.
 
         public string GetBestMove(Board i_Board, Player i_AIPlayer, List<string> i_AllValidMoves)

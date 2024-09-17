@@ -246,13 +246,15 @@ namespace Ex05_Othelo
 
             if (isTie)
             {
-                message = $"It's a tie! Both players have {winnerScore} pieces. ({m_Game.RoundsPlayed}/3)";
+                message = $"It's a tie! Both players have {winnerScore} pieces.";
             }
             else
             {
-                message = $"{winnerName} Won!! ({winnerScore}/{loserScore}) ({m_Game.RoundsPlayed}/3)";
+                message = $"{winnerName} Won!! ({winnerScore}/{loserScore}) ";
+                m_Game.UpdateWinCounts(winnerName);
             }
 
+            message += $"({m_Game.PlayerOne.Wins}/{m_Game.PlayerTwo.Wins})";
             message += "\nWould you like another round?";
             DialogResult result = MessageBox.Show(message, "Game Over", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
 
@@ -266,9 +268,9 @@ namespace Ex05_Othelo
             }
         }
 
+
         private void restartGame()
         {
-            m_Game.IncrementRoundsPlayed();
             m_Game.Reset();
             updateUI();
         }

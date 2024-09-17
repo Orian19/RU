@@ -9,7 +9,6 @@ namespace Ex05_Othelo
         private AIPlayer m_AIPlayer;
         private Board m_Board;
         private bool m_IsAgainstComputer;
-        public int RoundsPlayed { get; private set; } = 1;
 
         public Game(string i_PlayerOneName, string i_PlayerTwoName, bool i_IsAgainstComputer, int i_BoardSize)
         {
@@ -45,7 +44,8 @@ namespace Ex05_Othelo
 
         public void Reset()
         {
-            InitializeGame(m_PlayerOne.Name, m_PlayerTwo.Name, m_Board.Grid.GetLength(0));
+            m_Board = new Board(m_Board.Grid.GetLength(0));
+            CurrentPlayer = m_PlayerOne;
         }
 
         public bool IsGameOver()
@@ -73,11 +73,6 @@ namespace Ex05_Othelo
             } while (!IsGameOver());
         }
 
-        public void IncrementRoundsPlayed()
-        {
-            RoundsPlayed = (RoundsPlayed % 3) + 1;
-        }
-
         public bool HasValidMoves(Player i_Player)
         {
             Moves moves = new Moves(m_Board, i_Player);
@@ -102,6 +97,11 @@ namespace Ex05_Othelo
         public void SwitchPlayer()
         {
             CurrentPlayer = (CurrentPlayer == m_PlayerOne) ? m_PlayerTwo : m_PlayerOne;
+        }
+
+        public void UpdateWinCounts(string i_WinnerName)
+        {
+            (i_WinnerName == m_PlayerOne.Name ? m_PlayerOne : m_PlayerTwo).Wins++;
         }
 
         public (string winnerName, int winnerScore, string loserName, int loserScore, bool isTie) DetermineWinner()
