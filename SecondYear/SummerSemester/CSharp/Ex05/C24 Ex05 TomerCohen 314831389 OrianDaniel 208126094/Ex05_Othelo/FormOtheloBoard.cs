@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.IO;
 using System.Windows.Forms;
 
 namespace Ex05_Othelo
@@ -19,27 +18,23 @@ namespace Ex05_Othelo
         public FormOtheloBoard(int i_BoardSize, bool i_IsAgainstComputer)
         {
             InitializeComponent();
-            loadImages();
+            loadImagesFromResources();
             initGame(i_BoardSize, i_IsAgainstComputer);
             setupFormSizeAndResize(i_BoardSize);
             createBoardCells();
             updateUI();
         }
 
-        private void loadImages()
+        private void loadImagesFromResources()
         {
-            string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-            string redCoinPath = Path.Combine(projectDirectory, "CoinRed.png");
-            string yellowCoinPath = Path.Combine(projectDirectory, "CoinYellow.png");
-
             try
             {
-                m_RedCoinImage = Image.FromFile(redCoinPath);
-                m_YellowCoinImage = Image.FromFile(yellowCoinPath);
+                m_RedCoinImage = Properties.Resources.CoinRed;
+                m_YellowCoinImage = Properties.Resources.CoinYellow;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading coin images: {ex.Message}\nPlease ensure the image files are in the correct location.",
+                MessageBox.Show($"Error loading coin images: {ex.Message}\nPlease ensure the image files are correctly added to the resources.",
                                 "Image Load Error",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
@@ -65,12 +60,7 @@ namespace Ex05_Othelo
             int maxHeight = (ClientSize.Height - 2 * k_Margin) / boardSize;
             int cellSize = Math.Min(maxWidth, maxHeight);
 
-            return limitCellSizeToRangelamp(cellSize, k_MinCellSize, k_MaxCellSize);
-        }
-
-        private int limitCellSizeToRangelamp(int i_Value, int i_Min, int i_Max)
-        {
-            return Math.Max(i_Min, Math.Min(i_Value, i_Max));
+            return Math.Max(k_MinCellSize, Math.Min(cellSize, k_MaxCellSize));
         }
 
         private void formOtheloBoard_Resize(object sender, EventArgs e)
@@ -171,6 +161,7 @@ namespace Ex05_Othelo
                     i_PictureBox.Image = null;
                     break;
             }
+
             i_PictureBox.BackColor = SystemColors.Control;
             i_PictureBox.SizeMode = PictureBoxSizeMode.Zoom;
         }
@@ -267,7 +258,6 @@ namespace Ex05_Othelo
                 Close();
             }
         }
-
 
         private void restartGame()
         {

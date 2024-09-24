@@ -16,7 +16,7 @@ namespace Ex05_Othelo
 
         private void updateBoardSizeButton()
         {
-            this.buttonBoardSize.Text = $"Board Size: {m_BoardSize}X{m_BoardSize}";
+            this.buttonBoardSize.Text = $"Board Size: {m_BoardSize}x{m_BoardSize}(click to increase)";
         }
 
         private void buttonBoardSize_Click(object sender, EventArgs e)
