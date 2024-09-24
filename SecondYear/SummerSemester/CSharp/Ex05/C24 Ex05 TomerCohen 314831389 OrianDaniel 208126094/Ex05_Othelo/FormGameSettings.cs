@@ -16,7 +16,7 @@ namespace Ex05_Othelo
 
         private void updateBoardSizeButton()
         {
-            this.buttonBoardSize.Text = $"Board Size: {m_BoardSize}x{m_BoardSize}(click to increase)";
+            buttonBoardSize.Text = $"Board Size: {m_BoardSize}x{m_BoardSize} (click to increase)";
         }
 
         private void buttonBoardSize_Click(object sender, EventArgs e)
@@ -44,10 +44,10 @@ namespace Ex05_Othelo
 
         private void startGame()
         {
-            this.Hide();
+            Hide();
             FormOtheloBoard formOtheloBoard = new FormOtheloBoard(m_BoardSize, m_IsAgainstComputer);
             formOtheloBoard.ShowDialog();
-            this.Close();
+            Close();
         }
     }
 }

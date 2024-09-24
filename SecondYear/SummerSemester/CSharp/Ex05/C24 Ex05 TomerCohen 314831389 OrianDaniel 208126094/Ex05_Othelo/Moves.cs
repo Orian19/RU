@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Ex05_Othelo
 {
@@ -25,8 +24,8 @@ namespace Ex05_Othelo
 
         public Moves(Board i_Board, Player i_Player)
         {
-           m_AllValidMoves = new List<string>();
-           allValidMovesOnBoard(i_Board, i_Player);
+            m_AllValidMoves = new List<string>();
+            allValidMovesOnBoard(i_Board, i_Player);
         }
 
         public List<string> ValidMoves
@@ -94,7 +93,7 @@ namespace Ex05_Othelo
 
             if (!hasOpponentPieceInBetween || !IsInBounds(i_Grid, rowToScan, colToScan))
             {
-                isValidDirection =  false;
+                isValidDirection = false;
             }
 
             return isValidDirection && i_Grid[rowToScan, colToScan] == i_Player.Color;

@@ -34,7 +34,7 @@ namespace Ex05_Othelo
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading coin images: {ex.Message}\nPlease ensure the image files are correctly added to the resources.",
+                MessageBox.Show($"Error loading coin images: {ex.Message}{Environment.NewLine}Please ensure the image files are correctly added to the resources.",
                                 "Image Load Error",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
@@ -45,12 +45,12 @@ namespace Ex05_Othelo
 
         private void setupFormSizeAndResize(int i_BoardSize)
         {
-            this.MinimumSize = new Size(i_BoardSize * k_MinCellSize + 2 * k_Margin,
+            MinimumSize = new Size(i_BoardSize * k_MinCellSize + 2 * k_Margin,
                                         i_BoardSize * k_MinCellSize + 2 * k_Margin + 40);
-            this.MaximumSize = new Size(i_BoardSize * k_MaxCellSize + 2 * k_Margin,
+            MaximumSize = new Size(i_BoardSize * k_MaxCellSize + 2 * k_Margin,
                                         i_BoardSize * k_MaxCellSize + 2 * k_Margin + 40);
 
-            this.Resize += formOtheloBoard_Resize;
+            Resize += formOtheloBoard_Resize;
         }
 
         private int calculateCellSize()
@@ -119,6 +119,7 @@ namespace Ex05_Othelo
                         SizeMode = PictureBoxSizeMode.StretchImage,
                         BorderStyle = BorderStyle.FixedSingle
                     };
+
                     pictureBox.Click += boardCell_Click;
                     m_BoardCells[row, col] = pictureBox;
                     Controls.Add(pictureBox);
@@ -154,9 +155,11 @@ namespace Ex05_Othelo
                 case 'X':
                     i_PictureBox.Image = m_RedCoinImage;
                     break;
+
                 case 'O':
                     i_PictureBox.Image = m_YellowCoinImage;
                     break;
+
                 default:
                     i_PictureBox.Image = null;
                     break;
@@ -188,7 +191,7 @@ namespace Ex05_Othelo
 
         private void updateTitleBar()
         {
-            this.Text = $"Othello - {m_Game.CurrentPlayer.Name}'s Turn";
+            Text = $"Othello - {m_Game.CurrentPlayer.Name}'s Turn";
         }
 
         private void boardCell_Click(object sender, EventArgs e)

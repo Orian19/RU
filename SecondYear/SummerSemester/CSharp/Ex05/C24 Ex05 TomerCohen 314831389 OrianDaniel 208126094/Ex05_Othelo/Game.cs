@@ -33,8 +33,8 @@ namespace Ex05_Othelo
         public Player CurrentPlayer { get; private set; }
 
         public Player PlayerOne
-        {  
-            get { return m_PlayerOne; } 
+        {
+            get { return m_PlayerOne; }
         }
 
         public Player PlayerTwo

@@ -39,7 +39,7 @@
             this.buttonBoardSize.Name = "buttonBoardSize";
             this.buttonBoardSize.Size = new System.Drawing.Size(262, 49);
             this.buttonBoardSize.TabIndex = 0;
-            this.buttonBoardSize.Text = "Board Size: 6X6 (click to increase)";
+            this.buttonBoardSize.Text = "Board Size: 6x6 (click to increase)";
             this.buttonBoardSize.UseVisualStyleBackColor = true;
             this.buttonBoardSize.Click += new System.EventHandler(this.buttonBoardSize_Click);
             // 
