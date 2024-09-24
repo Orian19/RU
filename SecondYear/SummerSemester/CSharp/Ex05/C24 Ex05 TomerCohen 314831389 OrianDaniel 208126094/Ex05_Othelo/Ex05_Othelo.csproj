@@ -70,9 +70,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="Ex05.ConsoleUtils">
-      <HintPath>.\Ex05.ConsoleUtils.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormGameSettings.resx">
