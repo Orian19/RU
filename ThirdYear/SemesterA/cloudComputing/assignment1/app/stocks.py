@@ -1,12 +1,19 @@
 from flask import Flask, request, jsonify
+from datetime import datetime
+import requests
 from uuid import uuid4
+import re
 
 app = Flask(__name__)
-app.config['API_KEY'] = "ypEWmvAVIB0S4viTgRJQdw==a119mdlgYyq9UhLW"
+app.config['API_KEY'] = "" # put ninja api here
 Stocks = {}
 
 @app.route('/stocks', methods=['POST', 'GET'])
 def stocks():
+    """
+    POST request: Add a new stock to the portfolio
+    GET request: Retrieve all stocks in the portfolio
+    """
     if request.method == 'POST':
         try:
             content_type = request.headers.get('Content-Type')
@@ -15,15 +22,23 @@ def stocks():
             
             data = request.get_json()
             required_fields = ['symbol', 'purchase price', 'shares']
+            optional_fields = ['name', 'purchase date']
+            allowed_fields = set(required_fields + optional_fields)
 
             if not all(field in data for field in required_fields):
                 return jsonify({'error': 'Malformed data'}), 400
             
+            if not set(data.keys()).issubset(allowed_fields):
+                return jsonify({'error': 'Malformed data'}), 400
+
             new_id = uuid4()
 
             if 'purchase date' not in data:
                 data['purchase date'] = 'N/A'
             else:
+                date_pattern = r'^\d{2}-\d{2}-\d{4}$'
+                if not re.match(date_pattern, data['purchase date']):
+                    return jsonify({'error': 'Malformed data'}), 400
                 data['purchase date'] = data['purchase date']
             if 'name' not in data:
                 data['name'] = 'N/A'
@@ -39,6 +54,10 @@ def stocks():
                 'shares': data['shares']
             }
 
+            for stock_id in Stocks:
+                if Stocks[stock_id]['symbol'] == stock['symbol']:
+                    return jsonify({'error': 'Malformed data'}), 400
+
             Stocks[str(new_id)] = stock
             respsnse_data = {"id": new_id}
             return jsonify(respsnse_data), 201
@@ -47,7 +66,7 @@ def stocks():
             return jsonify({'server error': str(e)}), 500
     else:  # GET request
         try:
-            stocks = Stocks.values()
+            stocks = list(Stocks.values())
             print(stocks)
             if 'purchase date' in request.args:
                 purchase_date = request.args.get('purchase date')
@@ -72,6 +91,11 @@ def stocks():
         
 @app.route('/stocks/<id>', methods=['GET', 'PUT', 'DELETE'])
 def stock(id):
+    """
+    GET request: Retrieve a stock by ID
+    PUT request: Update a stock by ID
+    DELETE request: Delete a stock by ID
+    """
     if request.method == 'GET':
         try:
             stock = Stocks.get(id)
@@ -94,6 +118,8 @@ def stock(id):
             required_fields = ['id', 'symbol', 'purchase price', 'shares', 'purchase date', 'name']
             if not all(field in data for field in required_fields):
                 return jsonify({'error': 'Malformed data'}), 400
+            if data['id'] != id:
+                return jsonify({'error': 'Malformed data'}), 400
             if 'purchase date' in data:
                 stock['purchase date'] = data['purchase date']
             if 'name' in data:
@@ -104,7 +130,7 @@ def stock(id):
                 stock['shares'] = data['shares']
 
             Stocks[id] = stock
-            return jsonify(Stocks[id]), 200
+            return jsonify({"id": id}), 200
         except Exception as e:
             print("Exception: ", str(e))
             return jsonify({'server error': str(e)}), 500
@@ -119,5 +145,58 @@ def stock(id):
             print("Exception: ", str(e))
             return jsonify({'server error': str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(port=8000, debug=True)
+          
+@app.route('/stock-value/<id>', methods=['GET'])
+def stock_value(id):
+    """
+    GET request: Retrieve the value of a stock by ID
+    """
+    if request.method == 'GET':
+        try:
+            stock = Stocks.get(id)
+
+            if stock is None:
+                return jsonify({'error': 'Not found'}), 404
+
+            symbol = stock['symbol']
+            shares = stock['shares']
+
+            api_url = f'https://api.api-ninjas.com/v1/stockprice?ticker={symbol}'
+            response = requests.get(api_url, headers={'X-Api-Key': app.config['API_KEY']})
+            
+            if response.status_code == requests.codes.ok:     
+                stock_price = response.json()['price']
+                stock_value = stock_price * shares
+                return jsonify({
+                    'symbol': symbol,
+                    'ticker': stock_price,
+                    'stock value': stock_value
+                    }), 200
+        except Exception as e:
+            print("Exception: ", str(e))
+            return jsonify({'server error': str(e)}), 500
+    
+@app.route('/portfolio-value', methods=['GET'])
+def portfolio():
+    """
+    GET request: Retrieve the total value of the portfolio
+    """
+    if request.method == 'GET':
+        try:
+            total_value = 0
+            for stock in Stocks.values():
+                symbol = stock['symbol']
+                shares = stock['shares']
+                api_url = f'https://api.api-ninjas.com/v1/stockprice?ticker={symbol}'
+                response = requests.get(api_url, headers={'X-Api-Key': app.config['API_KEY']})
+                if response.status_code == requests.codes.ok:
+                    stock_price = response.json()['price']
+                    stock_value = stock_price * shares
+                    total_value += stock_value
+            return jsonify({ 
+                'date':  datetime.now().strftime('%d-%m-%Y'),  # format DD-MM-YYYY
+                'portfolio value': total_value
+                }), 200
+        except Exception as e:
+            print("Exception: ", str(e))
+            return jsonify({'server error': str(e)}), 500
