@@ -1,0 +1,69 @@
+services:
+  stock1-1-robust:
+    build: stocks_app
+    ports:
+      - "5001:8000"
+    expose:
+      - 8000
+    environment:
+      - MONGO_COLLECTION=stock1
+      - FLASK_DEBUG=1
+    depends_on:
+      - mongo
+    restart: always
+  
+  stock1-2-robust:
+    build: stocks_app
+    ports:
+      - "5004:8000"
+    expose:
+      - 8000
+    environment:
+      - MONGO_COLLECTION=stock1
+      - FLASK_DEBUG=1
+    depends_on:
+      - mongo
+    restart: always
+    
+  stock2-robust:
+    build: stocks_app
+    ports:
+      - "5002:8000"
+    expose:
+      - 8000
+    environment:
+      - MONGO_COLLECTION=stock2
+      - FLASK_DEBUG=1
+    depends_on:
+      - mongo
+    restart: always
+    
+  capital-gains-robust:
+    build: gains_app
+    ports:
+      - "5003:8080"
+    expose:
+      - 8080
+    environment:
+      - FLASK_DEBUG=1
+    depends_on:
+      - stock1-1-robust
+      - stock1-2-robust
+      - stock2-robust
+    restart: always
+    
+  reverse:
+    build: ./
+    ports:
+      - "80:80"
+    depends_on:
+      - stock1-1-robust
+      - stock1-2-robust
+      - stock2-robust
+    restart: always
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+   
