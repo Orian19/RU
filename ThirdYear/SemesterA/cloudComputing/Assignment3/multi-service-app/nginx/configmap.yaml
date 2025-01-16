@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: stocks
+data:
+  nginx.conf: |
+    events {
+      use epoll;
+      worker_connections 1024;
+    }
+
+    http {
+        upstream stocks-service {
+            server stocks-service;
+        }
+
+        upstream capital-gains-service {
+            server capital-gains-service;
+        }
+
+        server {
+            listen 80;
+
+            # Route for /stocks
+            location ~ ^/stocks$ {
+                rewrite ^/stocks$ /stocks break;
+                proxy_pass http://stocks-service;
+            }
+
+            # Route for /stocks/<id>
+            location ~ ^/stocks/([a-zA-Z0-9]+)$ {
+                rewrite ^/stocks/([a-zA-Z0-9]+)$ /stocks/$1 break;
+                proxy_pass http://stocks-service;
+            }
+
+            # Route for /stock-value/<id>
+            location ~ ^/stock-value/([a-zA-Z0-9]+)$ {
+                rewrite ^/stock-value/([a-zA-Z0-9]+)$ /stock-value/$1 break;
+                proxy_pass http://stocks-service;
+            }
+
+            # Route for /portfolio-value
+            location ~ ^/portfolio-value$ {
+                proxy_pass http://stocks-service;
+            }
+
+            # Route for /capital-gains
+            location ~ ^/capital-gains$ {
+                proxy_pass http://capital-gains-service;
+            }
+
+            # Default route for unhandled requests
+            location / {
+                return 403;
+            }
+
+            # Error logging
+            error_log /var/log/nginx/error.log debug;
+        }
+    }

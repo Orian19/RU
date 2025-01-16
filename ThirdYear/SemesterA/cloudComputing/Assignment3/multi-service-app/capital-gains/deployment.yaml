@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capital-gains-app
+  namespace: stocks
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: capital-gains-app
+  template:
+    metadata:
+      labels:
+        app: capital-gains-app
+    spec:
+      containers:
+        - name: capital-gains-app
+          image: capital-gains-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
