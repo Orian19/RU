@@ -1,2 +1,2 @@
 # RU
-University
+University homework and projects
