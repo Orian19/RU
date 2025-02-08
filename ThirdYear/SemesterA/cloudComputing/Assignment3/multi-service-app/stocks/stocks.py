@@ -17,7 +17,7 @@ app.config['API_KEY'] = "insert_ninjas_api_key"
 def serialize_objectid(document):
     if isinstance(document, dict):
         # Recursively convert ObjectId fields
-        return {key: (str(value) if isinstance(value, ObjectId) else value) for key, value in document.items()}
+        return {key if key != '_id' else 'id': (str(value) if isinstance(value, ObjectId) else value) for key, value in document.items()}
     return document
 
 @app.route('/stocks', methods=['POST', 'GET'])
