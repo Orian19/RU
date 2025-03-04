@@ -12,7 +12,7 @@ collection_name = os.getenv('MONGO_COLLECTION')
 collection = db[collection_name]
 
 app = Flask(__name__)
-app.config['API_KEY'] = "ypEWmvAVIB0S4viTgRJQdw==a119mdlgYyq9UhLW"
+app.config['API_KEY'] = "" # insert Ninjas API key (yes this is not a best practice :) )
 
 def serialize_objectid(document):
     if isinstance(document, dict):
