@@ -73,7 +73,15 @@ class SeamImage:
             Use NumpyPy vectorized matrix multiplication for high performance.
             To prevent outlier values in the boundaries, we recommend to pad them with 0.5
         """
-        raise NotImplementedError("TODO: Implement SeamImage.rgb_to_grayscale")
+        # add padding to the image
+        np_img_padded = np.pad(np_img, pad_width=((1, 1), (1, 1), (0, 0)), mode='constant', constant_values=0.5)
+        gs_weights = self.gs_weights.reshape(1, 1, 3)  # (1,1,3)
+
+        # calculate the grayscale image
+        gs_img = np.sum(np_img_padded * gs_weights, axis=2)  # (341, 512)
+        gs_img = gs_img[1:-1, 1:-1, np.newaxis]  # (341, 512, 1)
+
+        return gs_img
 
     @NI_decor
     def calc_gradient_magnitude(self):
@@ -87,7 +95,20 @@ class SeamImage:
             - keep in mind that values must be in range [0,1]
             - np.gradient or other off-the-shelf tools are NOT allowed, however feel free to compare yourself to them
         """
-        raise NotImplementedError("TODO: Implement SeamImage.calc_gradient_magnitude")
+        # x-gradient (horizontal)
+        gradient_x = self.resized_gs[:, 1:] - self.resized_gs[:, :-1]
+
+        # y-gradient (vertical)
+        gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
+
+        gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0)
+        gradient_y = np.pad(gradient_y, ((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0)
+
+        # the magnitude of the gradient
+        gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
+        gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
+
+        return gradient_magnitude.astype(np.float32)
 
 
     def update_ref_mat(self):
