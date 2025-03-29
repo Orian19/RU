@@ -110,7 +110,6 @@ class SeamImage:
 
         return gradient_magnitude.astype(np.float32)
 
-
     def update_ref_mat(self):
         for i, s in enumerate(self.seam_history[-1]):
             self.idx_map[i, s:] += 1
@@ -184,14 +183,30 @@ class SeamImage:
 
         :arg seam: The seam to remove
         """
-        raise NotImplementedError("TODO: Implement SeamImage.remove_seam")
+        self.w -= 1
+        self.mask[np.arange(self.h), seam] = False
+
+        mask_3d = np.stack([self.mask] * 3, axis=2)  # (h, w, 3)
+
+        self.resized_rgb = self.resized_rgb[mask_3d].reshape(self.h, self.w, self.resized_rgb.shape[2])
+        self.resized_gs = self.resized_gs[self.mask].reshape(self.h, self.w, self.resized_gs.shape[2])
 
     @NI_decor
     def rotate_mats(self, clockwise: bool):
         """
         Rotates the matrices either clockwise or counter-clockwise.
         """
-        raise NotImplementedError("TODO: Implement SeamImage.rotate_mats")
+        self.rgb = np.rot90(self.rgb, k=1 if clockwise else -1, axes=(0, 1))
+        self.gs = np.rot90(self.gs, k=1 if clockwise else -1, axes=(0, 1))
+        self.resized_rgb = np.rot90(self.resized_rgb, k=1 if clockwise else -1, axes=(0, 1))
+        self.resized_gs = np.rot90(self.resized_gs, k=1 if clockwise else -1, axes=(0, 1))
+        self.E = np.rot90(self.E, k=1 if clockwise else -1, axes=(0, 1))
+        self.cumm_mask = np.rot90(self.cumm_mask, k=1 if clockwise else -1, axes=(0, 1))
+        self.idx_map_h = np.rot90(self.idx_map_h, k=1 if clockwise else -1, axes=(0, 1))
+        self.idx_map_v = np.rot90(self.idx_map_v, k=1 if clockwise else -1, axes=(0, 1))
+        self.seams_rgb = np.rot90(self.seams_rgb, k=1 if clockwise else -1, axes=(0, 1))
+        self.h, self.w = self.w, self.h
+        self.idx_map_v, self.idx_map_h = self.idx_map_h, self.idx_map_v
 
     @NI_decor
     def seams_removal_vertical(self, num_remove: int):
@@ -200,7 +215,10 @@ class SeamImage:
         Parameters:
             num_remove (int): umber of vertical seam to be removed
         """
-        raise NotImplementedError("TODO: Implement SeamImage.seams_removal_horizontal")
+        self.idx_map = np.copy(self.idx_map_h)
+        self.seams_removal(num_remove)
+
+        self.seam_balance += num_remove
 
     @NI_decor
     def seams_removal_horizontal(self, num_remove: int):
@@ -209,7 +227,15 @@ class SeamImage:
         Parameters:
             num_remove (int): number of horizontal seam to be removed
         """
-        raise NotImplementedError("TODO: Implement SeamImage.seams_removal_horizontal")
+        # rotate the image
+        self.rotate_mats(clockwise=True)
+        self.idx_map = np.copy(self.idx_map_h)
+        self.seams_removal(num_remove)
+        # rotate back
+        self.rotate_mats(clockwise=False)
+
+        self.seam_balance += num_remove
+
 
     """
     BONUS SECTION
@@ -264,7 +290,19 @@ class GreedySeamImage(SeamImage):
         The first pixel of the seam should be the pixel with the lowest cost.
         Every row chooses the next pixel based on which neighbor has the lowest cost.
         """
-        raise NotImplementedError("TODO: Implement GreedySeamImage.find_minimal_seam")
+        # Get the first pixel of the seam
+        min_seam = [np.argmin(self.E[0])]
+
+        # go over all the rows and find the next pixel
+        for i in range(1, self.h):
+            prev_x = min_seam[-1]
+            curr_row = self.E[i]
+            left = max(prev_x - 1, 0)
+            right = min(prev_x + 1, self.w - 1)
+            # add the index of the minimum pixel in the current row
+            min_seam.append(np.argmin(curr_row[left:right + 1]) + left)
+
+        return min_seam
 
 
 class DPSeamImage(SeamImage):
