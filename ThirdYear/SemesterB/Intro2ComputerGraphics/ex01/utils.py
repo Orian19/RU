@@ -200,10 +200,10 @@ class SeamImage:
         self.gs = np.rot90(self.gs, k=1 if clockwise else -1, axes=(0, 1))
         self.resized_rgb = np.rot90(self.resized_rgb, k=1 if clockwise else -1, axes=(0, 1))
         self.resized_gs = np.rot90(self.resized_gs, k=1 if clockwise else -1, axes=(0, 1))
-        self.E = np.rot90(self.E, k=1 if clockwise else -1, axes=(0, 1))
+        self.E = np.rot90(self.E, k=1 if clockwise else -1)
         self.cumm_mask = np.rot90(self.cumm_mask, k=1 if clockwise else -1, axes=(0, 1))
-        self.idx_map_h = np.rot90(self.idx_map_h, k=1 if clockwise else -1, axes=(0, 1))
-        self.idx_map_v = np.rot90(self.idx_map_v, k=1 if clockwise else -1, axes=(0, 1))
+        self.idx_map_h = np.rot90(self.idx_map_h, k=1 if clockwise else -1)
+        self.idx_map_v = np.rot90(self.idx_map_v, k=-1 if clockwise else 1)
         self.seams_rgb = np.rot90(self.seams_rgb, k=1 if clockwise else -1, axes=(0, 1))
         self.h, self.w = self.w, self.h
         self.idx_map_v, self.idx_map_h = self.idx_map_h, self.idx_map_v
@@ -218,7 +218,13 @@ class SeamImage:
         self.idx_map = np.copy(self.idx_map_h)
         self.seams_removal(num_remove)
 
+        # update seam visualization
+        if self.vis_seams:
+            self.paint_seams()
+
         self.seam_balance += num_remove
+
+        self.seam_history = []
 
     @NI_decor
     def seams_removal_horizontal(self, num_remove: int):
@@ -227,14 +233,21 @@ class SeamImage:
         Parameters:
             num_remove (int): number of horizontal seam to be removed
         """
+        # self.idx_map = np.copy(self.idx_map_v)
         # rotate the image
         self.rotate_mats(clockwise=True)
         self.idx_map = np.copy(self.idx_map_h)
         self.seams_removal(num_remove)
+
+        # update seam visualization
+        if self.vis_seams:
+            self.paint_seams()
+
         # rotate back
         self.rotate_mats(clockwise=False)
 
         self.seam_balance += num_remove
+        self.seam_history = []
 
 
     """
