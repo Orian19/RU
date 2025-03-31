@@ -292,7 +292,8 @@ class SeamImage:
 
         raise NotImplementedError("TODO (Bonus): Implement SeamImage.seams_addition_vertical")
 
-class GreedySeamImage(SeamImage):
+
+class GreedySeamImage(SeamImage):   # todo: compare final image solution
     """Implementation of the Seam Carving algorithm using a greedy approach"""
     @NI_decor
     def find_minimal_seam(self) -> List[int]:
@@ -360,7 +361,33 @@ class DPSeamImage(SeamImage):
             As taught, the energy is calculated from top to bottom.
             You might find the function 'np.roll' useful.
         """
-        raise NotImplementedError("TODO: Implement DPSeamImage.calc_M")
+        # C_L = |p_i-1,j, p_i,j-1| + |p_i-1,j - p_i+1,j|
+        # C_M = |p_i-1,j, p_i,j-1|
+        # C_R = |p_i+1,j, p_i,j-1| + |p_i-1,j - p_i+1,j|
+        # calculate the C matrix with the resized rgb image and the resized gs image
+        sqz_gs = np.squeeze(self.resized_gs)  # todo: time efficiency
+        C_M = np.abs(np.roll(sqz_gs, shift=1, axis=1) - np.roll(sqz_gs, shift=-1, axis=1))
+        C_L = C_M + np.abs(np.roll(sqz_gs, shift=1, axis=0) - np.roll(sqz_gs, shift=1, axis=1))
+        C_R = C_M + np.abs(np.roll(sqz_gs, shift=1, axis=0) - np.roll(sqz_gs, shift=-1, axis=1))
+
+        # handle the first and last columns for C_L and C_R # todo: modify to be different
+        C_L[:,0] = np.inf
+        C_R[:,-1] = np.inf
+
+        M_ij = np.copy(self.E)
+        M_ij[0] = self.E[0]  # first row is the same as E
+        # DP forward-looking cost - M(i,j) = E(i,j) + min(M(i-1,j-1), M(i-1,j), M(i-1,j+1))
+        for i in range(1, self.h):
+            # calculate the minimum cost for each pixel
+            M_ij[i] = self.E[i] + np.minimum.reduce([M_ij[i - 1] + C_L[i],
+                                                     M_ij[i - 1] + C_M[i],
+                                                     M_ij[i - 1] + C_R[i]])
+
+        M_ij = np.clip(M_ij, 0.0, 1.0)
+
+        return M_ij.astype(np.float32)
+
+
 
     def init_mats(self):
         self.M = self.calc_M()
