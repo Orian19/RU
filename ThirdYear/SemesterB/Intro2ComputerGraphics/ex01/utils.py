@@ -371,19 +371,17 @@ class DPSeamImage(SeamImage):
         C_R = C_M + np.abs(np.roll(sqz_gs, shift=1, axis=0) - np.roll(sqz_gs, shift=-1, axis=1))
 
         # handle the first and last columns for C_L and C_R # todo: modify to be different
-        C_L[:,0] = np.inf
-        C_R[:,-1] = np.inf
+        C_L[:, 0] = np.inf
+        C_R[:, -1] = np.inf
 
         M_ij = np.copy(self.E)
         M_ij[0] = self.E[0]  # first row is the same as E
-        # DP forward-looking cost - M(i,j) = E(i,j) + min(M(i-1,j-1), M(i-1,j), M(i-1,j+1))
+        # DP forward-looking cost - M(i,j) = E(i,j) + min(M(i-1,j-1) + C_L(i,j), M(i-1,j) + C_M(i,j), M(i-1,j + C_R(i,j))
         for i in range(1, self.h):
-            # calculate the minimum cost for each pixel
-            M_ij[i] = self.E[i] + np.minimum.reduce([M_ij[i - 1] + C_L[i],
+            # calculate the minimum cost for each pixel and store also the backtracking index
+            M_ij[i] = self.E[i] + np.minimum.reduce(np.roll(M_ij[i - 1] + C_L[i], shift=1),
                                                      M_ij[i - 1] + C_M[i],
-                                                     M_ij[i - 1] + C_R[i]])
-
-        M_ij = np.clip(M_ij, 0.0, 1.0)
+                                                     np.roll(M_ij[i - 1] + C_R[i], shift=-1))
 
         return M_ij.astype(np.float32)
 
@@ -407,8 +405,10 @@ class DPSeamImage(SeamImage):
         Guidelines & hints:
             np.ndarray is a reference type. Changing it here may affect it on the outside.
         """
-        raise NotImplementedError("TODO: Implement DPSeamImage.calc_bt_mat")
-        h, w = M.shape
+        # raise NotImplementedError("TODO: Implement DPSeamImage.calc_bt_mat")
+        # h, w = M.shape
+        pass
+        # this method is implemented as part of the calc_M method
 
 
 def scale_to_shape(orig_shape: np.ndarray, scale_factors: list):
