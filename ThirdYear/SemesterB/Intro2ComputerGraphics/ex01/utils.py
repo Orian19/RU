@@ -215,7 +215,7 @@ class SeamImage:
         Parameters:
             num_remove (int): umber of vertical seam to be removed
         """
-        self.idx_map = np.copy(self.idx_map_h)
+        self.idx_map = self.idx_map_h
         self.seams_removal(num_remove)
 
         # update seam visualization
@@ -236,7 +236,7 @@ class SeamImage:
         # self.idx_map = np.copy(self.idx_map_v)
         # rotate the image
         self.rotate_mats(clockwise=True)
-        self.idx_map = np.copy(self.idx_map_h)
+        self.idx_map = self.idx_map_h
         self.seams_removal(num_remove)
 
         # update seam visualization
@@ -348,7 +348,25 @@ class DPSeamImage(SeamImage):
             ii) fill in the backtrack matrix corresponding to M
             iii) seam backtracking: calculates the actual indices of the seam
         """
-        raise NotImplementedError("TODO: implement DPSeamImage.find_minimal_seam")
+        self.init_mats()
+        min_seam = []
+        # find the minimum cost in the last row of M
+        min_cost_idx = np.argmin(self.M[-1])
+
+        # backtrack the seam from the last row to the first row and update mask
+        for i in range(self.h - 1, -1, -1):
+            min_seam.append(min_cost_idx)
+            # update the backtrack index (-1 left, 0 middle, +1 right)
+            next_direction = self.backtrack_mat[i][min_cost_idx]
+            min_cost_idx = min_cost_idx + next_direction
+            # self.mask[i, min_cost_idx] = False  # todo: min_seam[i] = min_cost_idx
+
+            # ensure the index is within bounds
+            # min_cost_idx = np.clip(min_cost_idx, 0, self.w - 1)
+
+        min_seam.reverse()
+
+        return min_seam
 
     @NI_decor
     def calc_M(self):
