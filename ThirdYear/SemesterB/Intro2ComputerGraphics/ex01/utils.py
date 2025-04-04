@@ -196,15 +196,15 @@ class SeamImage:
         """
         Rotates the matrices either clockwise or counter-clockwise.
         """
-        self.rgb = np.rot90(self.rgb, k=1 if clockwise else -1, axes=(0, 1))
-        self.gs = np.rot90(self.gs, k=1 if clockwise else -1, axes=(0, 1))
-        self.resized_rgb = np.rot90(self.resized_rgb, k=1 if clockwise else -1, axes=(0, 1))
-        self.resized_gs = np.rot90(self.resized_gs, k=1 if clockwise else -1, axes=(0, 1))
-        self.E = np.rot90(self.E, k=1 if clockwise else -1)
-        self.cumm_mask = np.rot90(self.cumm_mask, k=1 if clockwise else -1, axes=(0, 1))
-        self.idx_map_h = np.rot90(self.idx_map_h, k=1 if clockwise else -1)
-        self.idx_map_v = np.rot90(self.idx_map_v, k=-1 if clockwise else 1)
-        self.seams_rgb = np.rot90(self.seams_rgb, k=1 if clockwise else -1, axes=(0, 1))
+        self.rgb = np.rot90(self.rgb, k=-1 if clockwise else 1, axes=(0, 1))
+        self.gs = np.rot90(self.gs, k=-1 if clockwise else 1, axes=(0, 1))
+        self.resized_rgb = np.rot90(self.resized_rgb, k=-1 if clockwise else 1, axes=(0, 1))
+        self.resized_gs = np.rot90(self.resized_gs, k=-1 if clockwise else 1, axes=(0, 1))
+        self.E = np.rot90(self.E, k=-1 if clockwise else 1)
+        self.cumm_mask = np.rot90(self.cumm_mask, k=-1 if clockwise else 1, axes=(0, 1))
+        self.idx_map_h = np.rot90(self.idx_map_h, k=-1 if clockwise else 1)
+        self.idx_map_v = np.rot90(self.idx_map_v, k=1 if clockwise else -1)
+        self.seams_rgb = np.rot90(self.seams_rgb, k=-1 if clockwise else 1, axes=(0, 1))
         self.h, self.w = self.w, self.h
         self.idx_map_v, self.idx_map_h = self.idx_map_h, self.idx_map_v
 
@@ -394,20 +394,27 @@ class DPSeamImage(SeamImage):
 
         M_ij = np.copy(self.E)
         M_ij[0] = self.E[0]  # first row is the same as E
-        # DP forward-looking cost - M(i,j) = E(i,j) + min(M(i-1,j-1) + C_L(i,j), M(i-1,j) + C_M(i,j), M(i-1,j + C_R(i,j))
+
         for i in range(1, self.h):
-            # calculate the minimum cost for each pixel and store also the backtracking index
-            M_ij[i] = self.E[i] + np.minimum.reduce(np.roll(M_ij[i - 1] + C_L[i], shift=1),
-                                                     M_ij[i - 1] + C_M[i],
-                                                     np.roll(M_ij[i - 1] + C_R[i], shift=-1))
+            left_shifted = np.roll(M_ij[i - 1], shift=1) + C_L[i]
+            middle = M_ij[i - 1] + C_M[i]
+            right_shifted = np.roll(M_ij[i - 1], shift=-1) + C_R[i]
+
+            # stack all costs to find more easily the min
+            cost_matrix = np.stack([left_shifted, middle, right_shifted], axis=0)  # (3, w)
+            # find the min cost at each pixel
+            min_indices = np.argmin(cost_matrix, axis=0)
+            # update M_ij with the minimum cost
+            M_ij[i] = self.E[i] + np.choose(min_indices, cost_matrix)
+
+            # save backtracking indices (-1 for left, 0 for middle, +1 for right)
+            self.backtrack_mat[i] = min_indices - 1   # todo: check if need absoulte indice and not relative
 
         return M_ij.astype(np.float32)
 
-
-
     def init_mats(self):
-        self.M = self.calc_M()
-        self.backtrack_mat = np.zeros_like(self.M, dtype=int)
+        self.backtrack_mat = np.zeros_like(self.E, dtype=int)
+        self.M = self.calc_M()  # todo: switched order
 
     @staticmethod
     @jit(nopython=True)
