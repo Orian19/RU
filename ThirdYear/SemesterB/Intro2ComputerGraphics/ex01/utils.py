@@ -44,7 +44,8 @@ class SeamImage:
         try:
             self.gs = self.rgb_to_grayscale(self.rgb)
             self.resized_gs = self.gs.copy()
-            self.cumm_mask = np.ones_like(self.gs, dtype=bool)
+            # self.cumm_mask = np.ones_like(self.gs, dtype=bool)  # todo
+            self.cumm_mask = np.ones(self.gs.shape[:2], dtype=bool)
         except NotImplementedError as e:
             print(e)
 
@@ -95,10 +96,15 @@ class SeamImage:
             - keep in mind that values must be in range [0,1]
             - np.gradient or other off-the-shelf tools are NOT allowed, however feel free to compare yourself to them
         """
+        # gradient_x = np.zeros((self.h, self.w))
+        # gradient_y = np.zeros((self.h, self.w))
+
         # x-gradient (horizontal)
+        # gradient_x[:, :-1] = self.resized_gs[:, 1:, 0] - self.resized_gs[:, :-1, 0]
         gradient_x = self.resized_gs[:, 1:] - self.resized_gs[:, :-1]
 
         # y-gradient (vertical)
+        # gradient_y[:-1, :] = self.resized_gs[1:, :, 0] - self.resized_gs[:-1, :, 0]
         gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
 
         gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0)
@@ -106,13 +112,15 @@ class SeamImage:
 
         # the magnitude of the gradient
         gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
+        # gradient_magnitude = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
         gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
 
         return gradient_magnitude.astype(np.float32)
 
     def update_ref_mat(self):
         for i, s in enumerate(self.seam_history[-1]):
-            self.idx_map[i, s:] += 1
+            # self.idx_map[i, s:] += 1
+            self.idx_map[i, s:] = np.roll(self.idx_map[i, s:], -1)
 
     def reinit(self):
         """
@@ -124,12 +132,22 @@ class SeamImage:
     def load_image(img_path, format='RGB'):
         return np.asarray(Image.open(img_path).convert(format)).astype('float32') / 255.0
 
-    def paint_seams(self):
-        for s in self.seam_history:
-            for i, s_i in enumerate(s):
-                self.cumm_mask[self.idx_map_v[i,s_i], self.idx_map_h[i,s_i]] = False
+    # def paint_seams(self):
+    #     for s in self.seam_history:
+    #         for i, s_i in enumerate(s):
+    #             self.cumm_mask[self.idx_map_v[i,s_i], self.idx_map_h[i,s_i]] = False
+    #     # cumm_mask_rgb = np.stack([np.squeeze(self.cumm_mask)] * 3, axis=2)  # todo: fix this
+    #     cumm_mask_rgb = np.stack([self.cumm_mask] * 3, axis=2)  # todo: fix this
+    #     self.seams_rgb = np.where(cumm_mask_rgb, self.seams_rgb, [1, 0, 0])
+
+    def update_cumm_mask(self):  # todo
+        min_seam = self.seam_history[-1]
+        for i, s_i in enumerate(min_seam):
+            self.cumm_mask[self.idx_map_v[i, s_i], self.idx_map_h[i, s_i]] = False
+
+    def paint_seams(self, color=[1, 0, 0]):
         cumm_mask_rgb = np.stack([self.cumm_mask] * 3, axis=2)
-        self.seams_rgb = np.where(cumm_mask_rgb, self.seams_rgb, [1,0,0])
+        self.seams_rgb = np.where(cumm_mask_rgb, self.seams_rgb, color)
 
     def seams_removal(self, num_remove: int):
         """ Iterates num_remove times and removes num_remove vertical seams
@@ -328,6 +346,7 @@ class DPSeamImage(SeamImage):
         """
         super().__init__(*args, **kwargs)
         try:
+            self.backtrack_mat = np.zeros_like(self.E, dtype=int)  # todo
             self.M = self.calc_M()
         except NotImplementedError as e:
             print(e)
@@ -359,10 +378,6 @@ class DPSeamImage(SeamImage):
             # update the backtrack index (-1 left, 0 middle, +1 right)
             next_direction = self.backtrack_mat[i][min_cost_idx]
             min_cost_idx = min_cost_idx + next_direction
-            # self.mask[i, min_cost_idx] = False  # todo: min_seam[i] = min_cost_idx
-
-            # ensure the index is within bounds
-            # min_cost_idx = np.clip(min_cost_idx, 0, self.w - 1)
 
         min_seam.reverse()
 
@@ -388,28 +403,30 @@ class DPSeamImage(SeamImage):
         C_L = C_M + np.abs(np.roll(sqz_gs, shift=1, axis=0) - np.roll(sqz_gs, shift=1, axis=1))
         C_R = C_M + np.abs(np.roll(sqz_gs, shift=1, axis=0) - np.roll(sqz_gs, shift=-1, axis=1))
 
-        # handle the first and last columns for C_L and C_R # todo: modify to be different
+        # handle the edges of the image
         C_L[:, 0] = np.inf
         C_R[:, -1] = np.inf
 
         M_ij = np.copy(self.E)
-        M_ij[0] = self.E[0]  # first row is the same as E
+        M_ij[0] = self.E[0]  # first row is the same as E (base case)
 
         for i in range(1, self.h):
-            left_shifted = np.roll(M_ij[i - 1], shift=1) + C_L[i]
-            middle = M_ij[i - 1] + C_M[i]
-            right_shifted = np.roll(M_ij[i - 1], shift=-1) + C_R[i]
+            try:
+                left_shifted = np.roll(M_ij[i - 1], shift=1) + C_L[i]
+                middle = M_ij[i - 1] + C_M[i]
+                right_shifted = np.roll(M_ij[i - 1], shift=-1) + C_R[i]
 
-            # stack all costs to find more easily the min
-            cost_matrix = np.stack([left_shifted, middle, right_shifted], axis=0)  # (3, w)
-            # find the min cost at each pixel
-            min_indices = np.argmin(cost_matrix, axis=0)
-            # update M_ij with the minimum cost
-            M_ij[i] = self.E[i] + np.choose(min_indices, cost_matrix)
+                # stack all costs to find more easily the min
+                cost_matrix = np.stack([left_shifted, middle, right_shifted], axis=0)  # (3, w)
+                # find the min cost at each pixel
+                min_indices = np.argmin(cost_matrix, axis=0)
+                # update M_ij with the minimum cost
+                M_ij[i] = self.E[i] + np.choose(min_indices, cost_matrix)
 
-            # save backtracking indices (-1 for left, 0 for middle, +1 for right)
-            self.backtrack_mat[i] = min_indices - 1   # todo: check if need absoulte indice and not relative
-
+                # save backtracking indices (-1 for left, 0 for middle, +1 for right)
+                self.backtrack_mat[i] = min_indices - 1   # todo: check if need absoulte indice and not relative
+            except IndexError:
+                print("IndexError: ", i)
         return M_ij.astype(np.float32)
 
     def init_mats(self):
@@ -446,7 +463,7 @@ def scale_to_shape(orig_shape: np.ndarray, scale_factors: list):
     Returns
         the new shape
     """
-    raise NotImplementedError("TODO: Implement scale_to_shape")
+    return (orig_shape * np.array(scale_factors)).astype(int)
 
 
 def resize_seam_carving(seam_img: SeamImage, shapes: np.ndarray):
@@ -459,7 +476,21 @@ def resize_seam_carving(seam_img: SeamImage, shapes: np.ndarray):
     Returns
         the resized rgb image
     """
-    raise NotImplementedError("TODO: Implement resize_seam_carving")
+    image = copy.deepcopy(seam_img)
+    original_h, original_w = shapes[0]
+    new_h, new_w = shapes[1]
+
+    # calculate the number of seams to remove/add
+    num_remove_h = original_h - new_h
+    num_remove_w = original_w - new_w
+
+    if num_remove_w > 0:
+        image.seams_removal_vertical(num_remove_w)
+
+    if num_remove_h > 0:
+        image.seams_removal_horizontal(num_remove_h)
+
+    return image.resized_rgb
 
 
 def bilinear(image, new_shape):
@@ -473,10 +504,12 @@ def bilinear(image, new_shape):
     out_height, out_width = new_shape
     new_image = np.zeros(new_shape)
     ###Your code here###
+
     def get_scaled_param(org, size_in, size_out):
         scaled_org = (org * size_in) / size_out
         scaled_org = min(scaled_org, size_in - 1)
         return scaled_org
+
     scaled_x_grid = [get_scaled_param(x,in_width,out_width) for x in range(out_width)]
     scaled_y_grid = [get_scaled_param(y,in_height,out_height) for y in range(out_height)]
     x1s = np.array(scaled_x_grid, dtype=int)
