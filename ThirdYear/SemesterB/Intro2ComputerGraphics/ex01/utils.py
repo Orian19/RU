@@ -6,6 +6,7 @@ from abc import abstractmethod, abstractstaticmethod
 from os.path import basename
 from typing import List
 import functools
+import copy
 
     
 def NI_decor(fn):
@@ -96,15 +97,7 @@ class SeamImage:
             - keep in mind that values must be in range [0,1]
             - np.gradient or other off-the-shelf tools are NOT allowed, however feel free to compare yourself to them
         """
-        # gradient_x = np.zeros((self.h, self.w))
-        # gradient_y = np.zeros((self.h, self.w))
-
-        # x-gradient (horizontal)
-        # gradient_x[:, :-1] = self.resized_gs[:, 1:, 0] - self.resized_gs[:, :-1, 0]
         gradient_x = self.resized_gs[:, 1:] - self.resized_gs[:, :-1]
-
-        # y-gradient (vertical)
-        # gradient_y[:-1, :] = self.resized_gs[1:, :, 0] - self.resized_gs[:-1, :, 0]
         gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
 
         gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0)
@@ -112,7 +105,6 @@ class SeamImage:
 
         # the magnitude of the gradient
         gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
-        # gradient_magnitude = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
         gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
 
         return gradient_magnitude.astype(np.float32)
@@ -140,7 +132,7 @@ class SeamImage:
     #     cumm_mask_rgb = np.stack([self.cumm_mask] * 3, axis=2)  # todo: fix this
     #     self.seams_rgb = np.where(cumm_mask_rgb, self.seams_rgb, [1, 0, 0])
 
-    def update_cumm_mask(self):  # todo
+    def update_cumm_mask(self):  # todo change name
         min_seam = self.seam_history[-1]
         for i, s_i in enumerate(min_seam):
             self.cumm_mask[self.idx_map_v[i, s_i], self.idx_map_h[i, s_i]] = False
