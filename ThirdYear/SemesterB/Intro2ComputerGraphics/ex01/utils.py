@@ -177,6 +177,7 @@ class SeamImage:
             seam = self.find_minimal_seam()
             self.seam_history.append(seam)
             if self.vis_seams:
+                self.update_cumm_mask()  # todo: remove
                 self.update_ref_mat()
             self.remove_seam(seam)
 
@@ -208,6 +209,31 @@ class SeamImage:
 
         self.resized_rgb = self.resized_rgb[mask_3d].reshape(self.h, self.w, self.resized_rgb.shape[2])
         self.resized_gs = self.resized_gs[self.mask].reshape(self.h, self.w, self.resized_gs.shape[2])
+
+    @NI_decor
+    def add_seams(self, nums_add: int):
+        self.w += nums_add
+        self.resized_rgb = np.copy(self.rgb)
+        self.resized_gs = np.copy(self.gs)
+
+        for i in range(nums_add):
+            self.resized_rgb = np.stack([
+                np.insert(self.resized_rgb[row], self.seam_history[i][row] + 1, self.resized_rgb[row, self.seam_history[i][row]], axis=0)
+                for row in range(self.h)
+            ], axis=0)  # shape: (h, 3)
+
+            self.resized_gs = np.stack([
+                np.insert(self.resized_gs[row], self.seam_history[i][row] + 1,
+                          self.resized_gs[row, self.seam_history[i][row]], axis=0)
+                for row in range(self.h)
+            ], axis=0)  # shape: (h, 1)
+
+        self.w = self.resized_rgb.shape[1]
+        self.h = self.resized_rgb.shape[0]
+
+        self.cumm_mask = np.ones(self.resized_gs.shape[:2], dtype=bool)
+        self.idx_map_h, self.idx_map_v = np.meshgrid(range(self.w), range(self.h))
+        self.seams_rgb = np.copy(self.resized_rgb)
 
     @NI_decor
     def rotate_mats(self, clockwise: bool):
@@ -251,7 +277,7 @@ class SeamImage:
         Parameters:
             num_remove (int): number of horizontal seam to be removed
         """
-        # self.idx_map = np.copy(self.idx_map_v)
+        # self.idx_map = np.copy(self.idx_map_v)  # todo: do this if it works
         # rotate the image
         self.rotate_mats(clockwise=True)
         self.idx_map = self.idx_map_h
@@ -267,25 +293,12 @@ class SeamImage:
         self.seam_balance += num_remove
         self.seam_history = []
 
-
     """
     BONUS SECTION
     """
 
-    @NI_decor
-    def seams_addition(self, num_add: int):
-        """ BONUS: adds num_add seams to the image
+    # todo: time complexity bonus in the notebook
 
-            Parameters:
-                num_add (int): number of horizontal seam to be removed
-
-            Guidelines & hints:
-            - This method should be similar to removal
-            - You may use the wrapper functions below (to support both vertical and horizontal addition of seams)
-            - Visualization: paint the added seams in green (0,255,0)
-
-        """
-        raise NotImplementedError("TODO (Bonus): Implement SeamImage.seams_addition")
 
     @NI_decor
     def seams_addition_horizontal(self, num_add: int):
@@ -298,7 +311,21 @@ class SeamImage:
             You may find np.rot90 function useful
 
         """
-        raise NotImplementedError("TODO (Bonus): Implement SeamImage.seams_addition_horizontal")
+        self.rotate_mats(clockwise=True)
+        self.idx_map = self.idx_map_h
+        self.seams_removal(num_add)
+
+        # update seam visualization
+        if self.vis_seams:
+            self.paint_seams(color=[0, 1, 0])
+
+        self.add_seams(num_add)
+
+        # rotate back
+        self.rotate_mats(clockwise=False)
+
+        self.seam_balance += num_add
+        self.seam_history = []
 
     @NI_decor
     def seams_addition_vertical(self, num_add: int):
@@ -307,8 +334,17 @@ class SeamImage:
         Parameters:
             num_add (int): number of vertical seam to be added
         """
+        self.idx_map = self.idx_map_h
+        self.seams_removal(num_add)
 
-        raise NotImplementedError("TODO (Bonus): Implement SeamImage.seams_addition_vertical")
+        # update seam visualization
+        if self.vis_seams:
+            self.paint_seams(color=[0, 1, 0])
+
+        self.seam_balance += num_add
+
+        self.add_seams(num_add)
+        self.seam_history = []
 
 
 class GreedySeamImage(SeamImage):   # todo: compare final image solution
