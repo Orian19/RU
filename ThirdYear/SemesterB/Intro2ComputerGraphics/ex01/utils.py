@@ -439,22 +439,19 @@ class DPSeamImage(SeamImage):
         M_ij[0] = self.E[0]  # first row is the same as E (base case)
 
         for i in range(1, self.h):
-            try:
-                left_shifted = np.roll(M_ij[i - 1], shift=1) + C_L[i]
-                middle = M_ij[i - 1] + C_M[i]
-                right_shifted = np.roll(M_ij[i - 1], shift=-1) + C_R[i]
+            left_shifted = np.roll(M_ij[i - 1], shift=1) + C_L[i]
+            middle = M_ij[i - 1] + C_M[i]
+            right_shifted = np.roll(M_ij[i - 1], shift=-1) + C_R[i]
 
-                # stack all costs to find more easily the min
-                cost_matrix = np.stack([left_shifted, middle, right_shifted], axis=0)  # (3, w)
-                # find the min cost at each pixel
-                min_indices = np.argmin(cost_matrix, axis=0)
-                # update M_ij with the minimum cost
-                M_ij[i] = self.E[i] + np.choose(min_indices, cost_matrix)
+            # stack all costs to find more easily the min
+            cost_matrix = np.stack([left_shifted, middle, right_shifted], axis=0)  # (3, w)
+            # find the min cost at each pixel
+            min_indices = np.argmin(cost_matrix, axis=0)
+            # update M_ij with the minimum cost
+            M_ij[i] = self.E[i] + np.choose(min_indices, cost_matrix)
 
-                # save backtracking indices (-1 for left, 0 for middle, +1 for right)
-                self.backtrack_mat[i] = min_indices - 1   # todo: check if need absoulte indice and not relative
-            except IndexError:
-                print("IndexError: ", i)
+            # save backtracking indices (-1 for left, 0 for middle, +1 for right)
+            self.backtrack_mat[i] = min_indices - 1   # todo: check if need absoulte indice and not relative
         return M_ij.astype(np.float32)
 
     def init_mats(self):
@@ -512,11 +509,11 @@ def resize_seam_carving(seam_img: SeamImage, shapes: np.ndarray):
     num_remove_h = original_h - new_h
     num_remove_w = original_w - new_w
 
-    if num_remove_w > 0:
-        image.seams_removal_vertical(num_remove_w)
+    # if num_remove_w > 0:  # todo
+    image.seams_removal_vertical(num_remove_w)
+    image.seams_removal_horizontal(num_remove_h)
 
-    if num_remove_h > 0:
-        image.seams_removal_horizontal(num_remove_h)
+    # if num_remove_h > 0:  # todo
 
     return image.resized_rgb
 
@@ -552,5 +549,3 @@ def bilinear(image, new_shape):
     c2 = np.reshape(image[y2s][:,x1s] * dx + (1 - dx) * image[y2s][:,x2s], (out_width, out_height, 3))
     new_image = np.reshape(c1 * dy + (1 - dy) * c2, (out_height, out_width, 3)).astype(int)
     return new_image
-
-
