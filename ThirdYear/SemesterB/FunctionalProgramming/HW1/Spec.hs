@@ -337,7 +337,7 @@ tests =
           assertEqual "isPalindromicPrime 101" True (isPalindromicPrime 101),
       TestLabel "sumGen (divisors 12) => 12" $
         TestCase $
-          assertEqual "sumGen (divisors 12)" 28 (nthGen 3 (divisors 12))
+          assertEqual "sumGen (divisors 12)" 28 (sumGen (divisors 12))
     ]
 
 main :: IO Counts

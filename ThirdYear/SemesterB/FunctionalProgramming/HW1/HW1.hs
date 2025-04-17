@@ -167,27 +167,37 @@ andAlso p (f, cond, seed) = (f, \x -> p x && cond x, seed)
 
 -- Bonus (15 points): Generates all positive divisors of a number smaller than the number itself.
 divisors :: Integer -> Generator Integer
-divisors n = case n of
-  x | abs x <= 1 -> emptyGen
-  x | x > 1 -> andAlso (\y -> x `mod` y == 0) (isSmallerGen 1 (abs x))
-  _ -> emptyGen -- not reachable
+divisors n =
+  case abs n of
+    x | x <= 1 -> emptyGen
+    x -> (nextDivisor x, (< x), 0)
   where
-    isSmallerGen :: Integer -> Integer -> Generator Integer
-    isSmallerGen start end = (\x -> x + 1, (< end), start)
+    nextDivisor :: Integer -> Integer -> Integer
+    nextDivisor num current =
+      let try = current + 1 in
+        if try >= num
+          then try
+        else if num `mod` try == 0
+          then try
+        else nextDivisor num try
 
 -----------------------------------
 -- Section 4: Number classification
 -----------------------------------
 
 isPrime :: Integer -> Bool
-isPrime n = lengthGen (divisors n) == 1
+isPrime n = n > 1 && lengthGen (divisors n) == 2
 
 nextPrime :: Integer -> Integer
-nextPrime 2 = 3
-nextPrime n = lengthGen (\x -> x + 1, \x -> not (isPrime x), n) + n
+nextPrime n
+  | n < 2     = 2
+  | otherwise = let candidate = n + 1
+                in if isPrime candidate
+                   then candidate
+                   else nextPrime candidate
 
 primes :: Generator Integer
-primes = (\x -> x + 1, isPrime, 1)
+primes = (nextPrime, const True, 1)
 
 isHappy :: Integer -> Bool
 isHappy n = not $ anyGen (== 4) (sumSquareDigits, (/= 1), n)
