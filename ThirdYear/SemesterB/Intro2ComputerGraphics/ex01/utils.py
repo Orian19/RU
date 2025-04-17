@@ -324,7 +324,7 @@ class SeamImage:
         self.seam_history = []
 
 
-class GreedySeamImage(SeamImage):   # todo: compare final image solution
+class GreedySeamImage(SeamImage):
     """Implementation of the Seam Carving algorithm using a greedy approach"""
     @NI_decor
     def find_minimal_seam(self) -> List[int]:
@@ -359,7 +359,7 @@ class DPSeamImage(SeamImage):
         """
         super().__init__(*args, **kwargs)
         try:
-            self.backtrack_mat = np.zeros_like(self.E, dtype=int)  # todo
+            self.backtrack_mat = np.zeros_like(self.E, dtype=int)
             self.M = self.calc_M()
         except NotImplementedError as e:
             print(e)
@@ -412,7 +412,7 @@ class DPSeamImage(SeamImage):
         # C_M = |p_i-1,j, p_i,j-1|
         # C_R = |p_i+1,j, p_i,j-1| + |p_i-1,j - p_i+1,j|
         # calculate the C matrix with the resized rgb image and the resized gs image
-        sqz_gs = np.squeeze(self.resized_gs)  # todo: time efficiency
+        sqz_gs = np.squeeze(self.resized_gs)
         C_M = np.abs(np.roll(sqz_gs, shift=1, axis=1) - np.roll(sqz_gs, shift=-1, axis=1))
         C_L = C_M + np.abs(np.roll(sqz_gs, shift=1, axis=0) - np.roll(sqz_gs, shift=1, axis=1))
         C_R = C_M + np.abs(np.roll(sqz_gs, shift=1, axis=0) - np.roll(sqz_gs, shift=-1, axis=1))
