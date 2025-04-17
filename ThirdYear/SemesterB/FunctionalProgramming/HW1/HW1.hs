@@ -160,11 +160,16 @@ integers = foreverGen f 0
 
 -- Sums all the values produced by a generator until it stops.
 sumGen :: Generator Integer -> Integer
-sumGen (f, cond, seed) = let nextSeed = f seed in if cond seed then nextSeed + sumGen (f, cond, nextSeed) else 0
+sumGen (f, cond, seed) = let nextSeed = f seed in 
+                           if cond seed then nextSeed + sumGen (f, cond, nextSeed) 
+                           else 0
 
 -- Checks if a generator produces a value that satisfies a predicate.
 anyGen :: (a -> Bool) -> Generator a -> Bool
-anyGen p (f, cond, seed) = let nextSeed = f seed in if not (cond seed) then False else if p nextSeed then True else anyGen p (f, cond, f seed)
+anyGen p (f, cond, seed) = let nextSeed = f seed in
+                             if not (cond seed) then False 
+                             else if p nextSeed then True 
+                             else anyGen p (f, cond, f seed)
 
 -- Adds an additional predicate to a generator.
 andAlso :: (a -> Bool) -> Generator a -> Generator a
