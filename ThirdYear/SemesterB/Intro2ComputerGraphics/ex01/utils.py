@@ -100,8 +100,8 @@ class SeamImage:
         gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
 
         # pad the gradient images to match the original image size
-        gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0)
-        gradient_y = np.pad(gradient_y, ((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0)
+        gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0.5)
+        gradient_y = np.pad(gradient_y, ((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0.5)
 
         # the magnitude of the gradient
         gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
@@ -122,14 +122,6 @@ class SeamImage:
     @staticmethod
     def load_image(img_path, format='RGB'):
         return np.asarray(Image.open(img_path).convert(format)).astype('float32') / 255.0
-
-    # def paint_seams(self):
-    #     for s in self.seam_history:
-    #         for i, s_i in enumerate(s):
-    #             self.cumm_mask[self.idx_map_v[i,s_i], self.idx_map_h[i,s_i]] = False
-    #     # cumm_mask_rgb = np.stack([np.squeeze(self.cumm_mask)] * 3, axis=2)  # todo: fix this
-    #     cumm_mask_rgb = np.stack([self.cumm_mask] * 3, axis=2)  # todo: fix this
-    #     self.seams_rgb = np.where(cumm_mask_rgb, self.seams_rgb, [1, 0, 0])
 
     def update_cumm_mask(self):
         min_seam = self.seam_history[-1]
@@ -497,6 +489,8 @@ def resize_seam_carving(seam_img: SeamImage, shapes: np.ndarray):
     Returns
         the resized rgb image
     """
+    # seam_img.reinit()
+
     image = copy.deepcopy(seam_img)
     original_h, original_w = shapes[0]
     new_h, new_w = shapes[1]
