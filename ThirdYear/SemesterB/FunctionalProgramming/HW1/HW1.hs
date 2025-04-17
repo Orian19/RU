@@ -23,30 +23,43 @@ import Prelude (Bool (..), Eq (..), Foldable (sum), Int, Integer, Num (..), Ord 
 
 curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
 curry3 f a b c = f (a, b, c)
+
 uncurry3 :: (a -> b -> c -> d) -> (a, b, c) -> d
 uncurry3 f (a, b, c) = f a b c
+
 fst3 :: (a, b, c) -> a
 fst3 (a, _, _) = a
+
 snd3 :: (a, b, c) -> b
 snd3 (_, b, _) = b
+
 thd3 :: (a, b, c) -> c
 thd3 (_, _, c) = c
+
 dropFst :: (a, b, c) -> (b, c)
 dropFst (_, b, c) = (b, c)
+
 dropSnd :: (a, b, c) -> (a, c)
 dropSnd (a, _, c) = (a, c)
+
 dropThd :: (a, b, c) -> (a, b)
 dropThd (a, b, _) = (a, b)
+
 mapPair :: (a -> b) -> (a, a) -> (b, b)
 mapPair f (x, y) = (f x, f y)
+
 pairApply :: (a -> b) -> (a -> c) -> a -> (b, c)
 pairApply f g a = (f a, g a)
+
 const :: a -> b -> a
-const a _ = a 
+const a _ = a
+
 constSecond :: a -> b -> b
 constSecond _ b = b
+
 const2 :: a -> b -> c -> a
 const2 a _ _ = a 
+
 -- Generatlizations of (.)
 (.:) :: (c -> d) -> (a -> b -> c) -> a -> b -> d -- Hint: We saw this in class!
 (.:) = (.) . (.)
@@ -57,19 +70,10 @@ const2 a _ _ = a
 (.::.) :: (f -> g) -> (a -> b -> c -> d -> e -> f) -> a -> b -> c -> d -> e -> g
 (.::.) = (.) . (.::)
 
-
--- (.:) :: (c -> d) -> (a -> b -> c) -> a -> b -> d -- Hint: We saw this in class!
--- (.:) f g a b = f (g a b)
--- (.:.) :: (d -> e) -> (a -> b -> c -> d) -> a -> b -> c -> e
--- (.:.) f g a b c = f (g a b c)
--- (.::) :: (e -> f) -> (a -> b -> c -> d -> e) -> a -> b -> c -> d -> f
--- (.::) f g a b c d = f (g a b c d)
--- (.::.) :: (f -> g) -> (a -> b -> c -> d -> e -> f) -> a -> b -> c -> d -> e -> g
--- (.::.) f g a b c d e = f (g a b c d e)
-
 -- How can we ever implement such a function!?
 impossible :: a -> b
 impossible _ = error "impossible to implement"
+
 ---------------------------------------------------
 -- Section 2: Function Composition & Transformation
 ---------------------------------------------------
@@ -98,6 +102,7 @@ collatzLength n = case n of
     1 -> 0
     x | x > 1 -> if even x then 1 + collatzLength (x `div` 2) else 1 + collatzLength (3 * x + 1)
     _ -> 0
+
 ------------------------
 -- Section 3: Generators
 ------------------------
@@ -174,12 +179,10 @@ divisors n =
   where
     nextDivisor :: Integer -> Integer -> Integer
     nextDivisor num current =
-      let try = current + 1 in
-        if try >= num
-          then try
-        else if num `mod` try == 0
-          then try
-        else nextDivisor num try
+      let candidate = current + 1 in
+        if candidate >= num then candidate
+        else if num `mod` candidate == 0 then candidate
+        else nextDivisor num candidate
 
 -----------------------------------
 -- Section 4: Number classification
@@ -189,12 +192,12 @@ isPrime :: Integer -> Bool
 isPrime n = n > 1 && lengthGen (divisors n) == 2
 
 nextPrime :: Integer -> Integer
-nextPrime n
-  | n < 2     = 2
-  | otherwise = let candidate = n + 1
-                in if isPrime candidate
-                   then candidate
-                   else nextPrime candidate
+nextPrime n = case n of
+  x | x < 2 -> 2
+  x | x >= 2 -> let candidate = x + 1 in 
+                  if isPrime candidate then candidate
+                  else nextPrime candidate
+  _ -> 0 -- not reachable
 
 primes :: Generator Integer
 primes = (nextPrime, const True, 1)
@@ -214,7 +217,6 @@ isArmstrong n = n >= 0 && sumKDigits n == n
         sumKDigits :: Integer -> Integer
         sumKDigits 0 = 0
         sumKDigits x = (x `mod` 10) ^ k + sumKDigits (x `div` 10)
-            
 
 isPalindromicPrime :: Integer -> Bool
 isPalindromicPrime n = isPrime n && reverseDigits n == n
