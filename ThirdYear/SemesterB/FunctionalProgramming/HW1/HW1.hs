@@ -153,7 +153,7 @@ integers :: Generator Integer
 integers = foreverGen f 0
     where 
         f :: Integer -> Integer
-        f n = case n of
+        f n = case n of -- generates all integers except 0 in an alternating pattern
             x | x <= 0 -> (-x) + 1
             x | x > 0 -> (-x)
             _ -> 0 -- not reachable
@@ -185,8 +185,7 @@ divisors n =
     nextDivisor :: Integer -> Integer -> Integer
     nextDivisor num current =
       let candidate = current + 1 in
-        if candidate >= num then candidate
-        else if num `mod` candidate == 0 then candidate
+        if candidate >= num || num `mod` candidate == 0 then candidate
         else nextDivisor num candidate
 
 -----------------------------------
@@ -197,18 +196,15 @@ isPrime :: Integer -> Bool
 isPrime n = n > 1 && lengthGen (divisors n) == 2
 
 nextPrime :: Integer -> Integer
-nextPrime n = case n of
-  x | x < 2 -> 2
-  x | x >= 2 -> let candidate = x + 1 in 
+nextPrime n = let candidate = n + 1 in 
                   if isPrime candidate then candidate
                   else nextPrime candidate
-  _ -> 0 -- not reachable
 
 primes :: Generator Integer
-primes = (nextPrime, const True, 1)
+primes = foreverGen nextPrime 1
 
 isHappy :: Integer -> Bool
-isHappy n = not $ anyGen (== 4) (sumSquareDigits, (/= 1), n)
+isHappy n = not $ anyGen (== 4) (sumSquareDigits, (/= 1), n) -- all unhappy numbers eventually reach 4
     where
         sumSquareDigits :: Integer -> Integer
         sumSquareDigits x = case abs x of
