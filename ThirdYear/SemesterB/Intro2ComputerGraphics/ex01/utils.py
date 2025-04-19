@@ -66,7 +66,7 @@ class SeamImage:
     def rgb_to_grayscale(self, np_img):
         """ Converts a np RGB image into grayscale (using self.gs_weights).
         Parameters
-            np_img : ndarray (float32) of shape (h, w, 3) 
+            np_img : ndarray (float32) of shape (h, w, 3)
         Returns:
             grayscale image (float32) of shape (h, w, 1)
 
@@ -84,6 +84,19 @@ class SeamImage:
 
         return gs_img
 
+    # @NI_decor
+    # def rgb_to_grayscale(self, np_img):
+    #     gs_weights = self.gs_weights.reshape(1, 1, 3)
+    #     gs_img = np.sum(np_img * gs_weights, axis=2, keepdims=True)  # (h, w, 1)
+    #
+    #     # Set border pixels to 0.5 (no change in dimensions)
+    #     gs_img[0, :, :] = 0.5
+    #     gs_img[-1, :, :] = 0.5
+    #     gs_img[:, 0, :] = 0.5
+    #     gs_img[:, -1, :] = 0.5
+    #
+    #     return gs_img.astype(np.float32)
+
     @NI_decor
     def calc_gradient_magnitude(self):
         """ Calculate gradient magnitude of a grayscale image
@@ -96,22 +109,46 @@ class SeamImage:
             - keep in mind that values must be in range [0,1]
             - np.gradient or other off-the-shelf tools are NOT allowed, however feel free to compare yourself to them
         """
-        gradient_x = self.resized_gs[:, 1:] - self.resized_gs[:, :-1]
-        gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
+        # gradient_x = self.resized_gs[:, 1:] - self.resized_gs[:, :-1]
+        # gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
+        #
+        # # pad the gradient images to match the original image size
+        # gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0.5)
+        # gradient_y = np.pad(gradient_y, ((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0.5)
+        #
+        # # the magnitude of the gradient
+        # gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
+        # gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
+        #
+        # return gradient_magnitude.astype(np.float32)
 
-        # pad the gradient images to match the original image size
-        gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0.5)
-        gradient_y = np.pad(gradient_y, ((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0.5)
 
-        # the magnitude of the gradient
-        gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
-        gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
 
-        return gradient_magnitude.astype(np.float32)
+
+
+        padded = np.pad(self.resized_gs, ((1, 1), (1, 1), (0, 0)), mode='constant', constant_values=0.5)
+
+        # Convert to 2D by slicing the grayscale channel (assuming shape (h, w, 1))
+        gs = padded[:, :, 0]
+
+        # Compute gradients using central difference
+        gx = (gs[1:-1, 2:] - gs[1:-1, :-2]) / 2.0
+        gy = (gs[2:, 1:-1] - gs[:-2, 1:-1]) / 2.0
+
+        # Compute magnitude
+        grad_mag = np.sqrt(gx ** 2 + gy ** 2)
+        grad_mag = np.clip(grad_mag, 0.0, 1.0).astype(np.float32)
+
+        return grad_mag
+
+    # def update_ref_mat(self):
+    #     for i, s in enumerate(self.seam_history[-1]):
+    #         self.idx_map[i, s:] = np.roll(self.idx_map[i, s:], -1)
 
     def update_ref_mat(self):
         for i, s in enumerate(self.seam_history[-1]):
-            self.idx_map[i, s:] = np.roll(self.idx_map[i, s:], -1)
+            self.idx_map[i, s:-1] = self.idx_map[i, s + 1:]
+        self.idx_map = self.idx_map[:, :-1]
 
     def reinit(self):
         """
@@ -474,8 +511,6 @@ def scale_to_shape(orig_shape: np.ndarray, scale_factors: list):
     Returns
         the new shape
     """
-    # if len(orig_shape) != 2:  # todo: check if this is needed
-    #     raise ValueError("orig_shape must be a 2D array")
     return (orig_shape * np.array(scale_factors)).astype(int)
 
 
@@ -489,8 +524,6 @@ def resize_seam_carving(seam_img: SeamImage, shapes: np.ndarray):
     Returns
         the resized rgb image
     """
-    # seam_img.reinit()
-
     image = copy.deepcopy(seam_img)
     original_h, original_w = shapes[0]
     new_h, new_w = shapes[1]
@@ -499,11 +532,12 @@ def resize_seam_carving(seam_img: SeamImage, shapes: np.ndarray):
     num_remove_h = original_h - new_h
     num_remove_w = original_w - new_w
 
-    # if num_remove_w > 0:  # todo
-    image.seams_removal_vertical(num_remove_w)
-    image.seams_removal_horizontal(num_remove_h)
+    # remove seams
+    if num_remove_w > 0:
+        image.seams_removal_vertical(num_remove_w)
 
-    # if num_remove_h > 0:  # todo
+    if num_remove_h > 0:
+        image.seams_removal_horizontal(num_remove_h)
 
     return image.resized_rgb
 
