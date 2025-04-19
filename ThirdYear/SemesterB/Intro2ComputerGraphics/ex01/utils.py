@@ -84,19 +84,6 @@ class SeamImage:
 
         return gs_img
 
-    # @NI_decor
-    # def rgb_to_grayscale(self, np_img):
-    #     gs_weights = self.gs_weights.reshape(1, 1, 3)
-    #     gs_img = np.sum(np_img * gs_weights, axis=2, keepdims=True)  # (h, w, 1)
-    #
-    #     # Set border pixels to 0.5 (no change in dimensions)
-    #     gs_img[0, :, :] = 0.5
-    #     gs_img[-1, :, :] = 0.5
-    #     gs_img[:, 0, :] = 0.5
-    #     gs_img[:, -1, :] = 0.5
-    #
-    #     return gs_img.astype(np.float32)
-
     @NI_decor
     def calc_gradient_magnitude(self):
         """ Calculate gradient magnitude of a grayscale image
@@ -109,46 +96,23 @@ class SeamImage:
             - keep in mind that values must be in range [0,1]
             - np.gradient or other off-the-shelf tools are NOT allowed, however feel free to compare yourself to them
         """
-        # gradient_x = self.resized_gs[:, 1:] - self.resized_gs[:, :-1]
-        # gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
-        #
-        # # pad the gradient images to match the original image size
-        # gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0.5)
-        # gradient_y = np.pad(gradient_y, ((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0.5)
-        #
-        # # the magnitude of the gradient
-        # gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
-        # gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
-        #
-        # return gradient_magnitude.astype(np.float32)
+        # pad the gradient images to match the original image size
+        padded_gs = np.pad(self.resized_gs, ((1, 1), (1, 1), (0, 0)), mode='constant', constant_values=0.5)
+        gs = padded_gs[:, :, 0]
 
+        # gradients difference
+        gradient_x = (gs[1:-1, 2:] - gs[1:-1, :-2])
+        gradient_y = (gs[2:, 1:-1] - gs[:-2, 1:-1])
 
+        # the magnitude of the gradient
+        gradient_magnitude = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
+        gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
 
-
-
-        padded = np.pad(self.resized_gs, ((1, 1), (1, 1), (0, 0)), mode='constant', constant_values=0.5)
-
-        # Convert to 2D by slicing the grayscale channel (assuming shape (h, w, 1))
-        gs = padded[:, :, 0]
-
-        # Compute gradients using central difference
-        gx = (gs[1:-1, 2:] - gs[1:-1, :-2]) / 2.0
-        gy = (gs[2:, 1:-1] - gs[:-2, 1:-1]) / 2.0
-
-        # Compute magnitude
-        grad_mag = np.sqrt(gx ** 2 + gy ** 2)
-        grad_mag = np.clip(grad_mag, 0.0, 1.0).astype(np.float32)
-
-        return grad_mag
-
-    # def update_ref_mat(self):
-    #     for i, s in enumerate(self.seam_history[-1]):
-    #         self.idx_map[i, s:] = np.roll(self.idx_map[i, s:], -1)
+        return gradient_magnitude.astype(np.float32)
 
     def update_ref_mat(self):
         for i, s in enumerate(self.seam_history[-1]):
-            self.idx_map[i, s:-1] = self.idx_map[i, s + 1:]
-        self.idx_map = self.idx_map[:, :-1]
+            self.idx_map[i, s:] = np.roll(self.idx_map[i, s:], -1)
 
     def reinit(self):
         """
