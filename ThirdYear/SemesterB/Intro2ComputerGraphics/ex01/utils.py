@@ -96,13 +96,29 @@ class SeamImage:
             - keep in mind that values must be in range [0,1]
             - np.gradient or other off-the-shelf tools are NOT allowed, however feel free to compare yourself to them
         """
+        # gradient_x = self.resized_gs[:, 1:] - self.resized_gs[:, :-1]
+        # gradient_y = self.resized_gs[1:, :] - self.resized_gs[:-1, :]
+        #
+        # # pad the gradient images to match the original image size
+        # gradient_x = np.pad(gradient_x, ((0, 0), (0, 1), (0, 0)), mode='constant', constant_values=0.5)
+        # gradient_y = np.pad(gradient_y, ((0, 1), (0, 0), (0, 0)), mode='constant', constant_values=0.5)
+        #
+        # # the magnitude of the gradient
+        # gradient_magnitude = np.squeeze(np.sqrt(gradient_x ** 2 + gradient_y ** 2))
+        # gradient_magnitude = np.clip(gradient_magnitude, 0.0, 1.0)
+        #
+        # return gradient_magnitude.astype(np.float32)
+
+
+
+
         # pad the gradient images to match the original image size
         padded_gs = np.pad(self.resized_gs, ((1, 1), (1, 1), (0, 0)), mode='constant', constant_values=0.5)
         gs = padded_gs[:, :, 0]
 
         # gradients difference
-        gradient_x = (gs[1:-1, 2:] - gs[1:-1, :-2])
-        gradient_y = (gs[2:, 1:-1] - gs[:-2, 1:-1])
+        gradient_x = (gs[1:-1, 2:] - gs[1:-1, :-2]) / 2.0
+        gradient_y = (gs[2:, 1:-1] - gs[:-2, 1:-1]) / 2.0
 
         # the magnitude of the gradient
         gradient_magnitude = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
