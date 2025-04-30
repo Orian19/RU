@@ -280,6 +280,7 @@ zipWithDefault a b = \case
     [] -> (x, b) : zipWithDefault a b xs []
     (y : ys) -> (x, y) : zipWithDefault a b xs ys
 
+data ZipFail = ErrorFirst | ErrorSecond deriving (Eq, Show)
 zipEither :: [a] -> [b] -> Either ZipFail [(a, b)]
 zipEither = \case
   [] -> \case
@@ -288,7 +289,7 @@ zipEither = \case
   (x : xs) -> \case
     [] -> Left ErrorSecond
     (y : ys) -> case zipEither xs ys of
-      Left ErrorFirst -> Left ErrorFirst
+      Left err -> Left err
       Right zs -> Right ((x, y) : zs)
 
 -- may fail cause length will check an inf list
