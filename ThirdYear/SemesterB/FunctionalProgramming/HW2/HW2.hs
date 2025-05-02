@@ -75,9 +75,9 @@ sumMaybe = \case
     Just y -> Just $ x + y
 
 liftMaybe2 :: (a -> b -> c) -> Maybe a -> Maybe b -> Maybe c
-liftMaybe2 f = \case
+liftMaybe2 f a b = case a of
   Nothing -> Nothing
-  Just x -> \case
+  Just x -> case b of
     Nothing -> Nothing
     Just y -> Just $ f x y
 
@@ -130,7 +130,7 @@ mapEither f = \case
     Left y -> Left y
     Right z -> case mapEither f xs of
       Left y -> Left y
-      Right ys -> Right $ (f z) : ys
+      Right ys -> Right $ z : ys --(f z) : ys
 
 partitionEithers :: [Either a b] -> ([a], [b])
 partitionEithers = \case
@@ -168,28 +168,28 @@ exprToString e = toStr e
   where
     toStr (Lit n) = show n
     toStr (Iden s) = s
-    toStr (Plus Iden e1 Iden e2) = "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
+    toStr (Plus (Iden e1) (Iden e2)) = "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
     toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
     toStr (Mul e1 e2) = "(" ++ toStr e1 ++ " * " ++ toStr e2 ++ ")"
     toStr (Div e1 e2) = "(" ++ toStr e1 ++ " / " ++ toStr e2 ++ ")"
 
 -- Bonus (25 points): Same as the above, but without unnecessary parentheses
-exprToString' :: Expr -> String
-exprToString' e = toStr e
-  where
-    toStr (Lit n) = show n
-    toStr (Iden s) = s
-    toStr (Plus e1 e2) = case e1 of
-      toStr (Lit n) = show n
-      toStr (Iden s) = s
-      toStr (Plus e1 e2) = "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
-      toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
-      toStr (Mul e1 e2) = "(" ++ toStr e1 ++ " * " ++ toStr e2 ++ ")"
-      toStr (Div e1 e2) = "(" ++ toStr e1 ++ " / " ++ toStr e2 ++ ")"
-        "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
-      toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
-    toStr (Mul e1 e2) = toStr e1 ++ " * " ++ toStr e2
-    toStr (Div e1 e2) = toStr e1 ++ " / " ++ toStr e2
+-- exprToString' :: Expr -> String
+-- exprToString' e = toStr e
+--   where
+--     toStr (Lit n) = show n
+--     toStr (Iden s) = s
+--     toStr (Plus e1 e2) = case e1 of
+--       toStr (Lit n) = show n
+--       toStr (Iden s) = s
+--       toStr (Plus e1 e2) = "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
+--       toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
+--       toStr (Mul e1 e2) = "(" ++ toStr e1 ++ " * " ++ toStr e2 ++ ")"
+--       toStr (Div e1 e2) = "(" ++ toStr e1 ++ " / " ++ toStr e2 ++ ")"
+--         "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
+--       toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
+--     toStr (Mul e1 e2) = toStr e1 ++ " * " ++ toStr e2
+--     toStr (Div e1 e2) = toStr e1 ++ " / " ++ toStr e2
 
 -- Returns Nothing on division by zero.
 partialEvaluate :: [(String, Int)] -> Expr -> Maybe Expr
@@ -377,13 +377,77 @@ nub = \case
   [x] -> [x]
   (x : y : xs) -> if x == y then nub (y : xs) else x : nub (y : xs)
 
-
 -- Removes *all* repeats, consecutive or not.
 uniq :: [Int] -> [Int]
+uniq = \case
+  [] -> []
+  (x : xs) ->
+    if elem x xs
+    then x : uniq (filter (/= x) xs)
+    else x : uniq xs      
+
+-- uniq :: [Int] -> [Int]
+-- uniq = \case
+--   [] -> []
+--   (x : xs) ->
+--     let res = lookupIdxAndRemove x xs
+--     in if fst res
+--        then x : uniq (x : snd res)
+--        else x : uniq xs
+--   where
+--     lookupIdxAndRemove :: Int -> [Int] -> (Bool, [Int])
+--     lookupIdxAndRemove x = \case
+--       [] -> (False, [])
+--       (y : ys) ->
+--         if x == y
+--         then (True, ys)   -- remove the duplicate
+--         else let (found, zs) = lookupIdxAndRemove x ys
+--              in (found, y : zs)
 
 -- Section 3.3: base64
 base64Chars :: String -- As defined in the PDF
 base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 toBase64 :: Integer -> String
+toBase64 n
+  | n == 0 = "A"
+  | n < 0 = "-" : toBase64 (-n)
+  | otherwise = toPosBase64 n
+  where
+    toPosBase64 :: Integer -> String
+    toPosBase64 = \case
+    0 = ""
+    x = let (d, m) = x `divMod` 64 in 
+      toPosBase64 d ++ [base64Chars !! fromIntegral m]
+
 fromBase64 :: String -> Maybe Integer
+fromBase64 n
+  | n == "" = Just 0
+  | "-" : xs = fmap negate (fromBase64 xs)
+  | otherwise = fromPosBase64 0 (reverse n)
+    where
+      fromPosBase64 ::  Integer -> String -> Maybe Integer
+      fromPosBase64 n = \case
+      [] = Just 0
+      (x : xs) = if elem x base64Chars 
+                  then fromPosBase64 (n + 1) xs + ((findIdx x base64Chars) * (64 ^ n))
+                  else Nothing
+        where
+          findIdx :: Char -> String -> Integer
+          findIdx x (y : ys) = if x == y then 0 else 1 + findIdx x ys
+
+    -- fromPosBase64 n (x:xs) =
+    --   if x `elem` base64Chars
+    --     then do
+    --       rest <- fromPosBase64 (n + 1) xs
+    --       let Just i = findIdx x base64Chars
+    --       return $ i * (64 ^ n) + rest
+    --     else Nothing
+
+    -- findIdx :: Char -> String -> Maybe Integer
+    -- findIdx x = go 0
+    --   where
+    --     go _ [] = Nothing
+    --     go i (y:ys)
+    --       | x == y = Just i
+    --       | otherwise = go (i + 1) ys
