@@ -68,11 +68,7 @@ filterMaybe f = \case
   Just x -> if f x then Just x else Nothing
 
 sumMaybe :: Maybe Int -> Maybe Int -> Maybe Int
-sumMaybe x y = case x of
-  Nothing -> Nothing
-  Just a -> case y of
-    Nothing -> Nothing
-    Just b -> Just $ a + b
+sumMaybe = liftMaybe2 (+)
 
 liftMaybe2 :: (a -> b -> c) -> Maybe a -> Maybe b -> Maybe c
 liftMaybe2 f a b = case a of
@@ -88,11 +84,7 @@ catMaybes = \case
   (Nothing : xs) -> catMaybes xs
 
 mapMaybe :: (a -> Maybe b) -> [a] -> [b]
-mapMaybe f = \case
-  [] -> []
-  (x : xs) -> case f x of
-    Nothing -> mapMaybe f xs
-    Just y -> y : mapMaybe f xs
+mapMaybe f = catMaybes . map f
 
 -- Section 1.2 Basic Eithers
 fromEither :: b -> Either a b -> b
@@ -124,13 +116,7 @@ catEithers = \case
     Right zs -> Right $ y : zs
 
 mapEither :: (a -> Either e b) -> [a] -> Either e [b]
-mapEither f = \case
-  [] -> Right []
-  (x : xs) -> case f x of
-    Left y -> Left y
-    Right z -> case mapEither f xs of
-      Left y -> Left y
-      Right ys -> Right $ z : ys --(f z) : ys
+mapEither f = catEithers . map f
 
 partitionEithers :: [Either a b] -> ([a], [b])
 partitionEithers = \case
@@ -146,11 +132,7 @@ eitherToMaybe = \case
   Right x -> Just x
 
 productEither :: Either a Int -> Either a Int -> Either a Int
-productEither x y = case x of
-  Left e -> Left e
-  Right a -> case y of
-    Left e -> Left e
-    Right b -> Right $ a * b
+productEither = liftEither2 (*)
 
 liftEither2 :: (a -> b -> c) -> Either e a -> Either e b -> Either e c
 liftEither2 f a b = case a of
@@ -166,30 +148,60 @@ data Expr = Iden String | Lit Int | Plus Expr Expr | Minus Expr Expr | Mul Expr 
 exprToString :: Expr -> String
 exprToString e = toStr e
   where
+    toStr :: Expr -> String
     toStr (Lit n) = show n
     toStr (Iden s) = s
-    toStr (Plus e1 e2) = "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
-    toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
-    toStr (Mul e1 e2) = "(" ++ toStr e1 ++ " * " ++ toStr e2 ++ ")"
-    toStr (Div e1 e2) = "(" ++ toStr e1 ++ " / " ++ toStr e2 ++ ")"
+    toStr (Plus e1 e2) = toStr e1 ++ " + " ++ wrapPar e2
+    toStr (Minus e1 e2) = toStr e1 ++ " - " ++ wrapPar e2
+    toStr (Mul e1 e2) = toStr e1 ++ " * " ++ wrapPar e2
+    toStr (Div e1 e2) = toStr e1 ++ " / " ++ wrapPar e2
+    
+    wrapPar :: Expr -> String
+    wrapPar ex = case ex of
+      Lit x -> show x
+      Iden y -> y
+      _ -> "(" ++ toStr ex ++ ")"
 
 -- Bonus (25 points): Same as the above, but without unnecessary parentheses
--- exprToString' :: Expr -> String
--- exprToString' e = toStr e
---   where
---     toStr (Lit n) = show n
---     toStr (Iden s) = s
---     toStr (Plus e1 e2) = case e1 of
---       toStr (Lit n) = show n
---       toStr (Iden s) = s
---       toStr (Plus e1 e2) = "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
---       toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
---       toStr (Mul e1 e2) = "(" ++ toStr e1 ++ " * " ++ toStr e2 ++ ")"
---       toStr (Div e1 e2) = "(" ++ toStr e1 ++ " / " ++ toStr e2 ++ ")"
---         "(" ++ toStr e1 ++ " + " ++ toStr e2 ++ ")"
---       toStr (Minus e1 e2) = "(" ++ toStr e1 ++ " - " ++ toStr e2 ++ ")"
---     toStr (Mul e1 e2) = toStr e1 ++ " * " ++ toStr e2
---     toStr (Div e1 e2) = toStr e1 ++ " / " ++ toStr e2
+exprToString' :: Expr -> String
+exprToString' expr = fst (toStrBonus expr)
+
+-- determines if parentheses are needed for the expression by checking the precedence of the operator
+toStrBonus :: Expr -> (String, Int)
+-- Order of precedence: 
+-- 1: Plus, Minus
+-- 2: Mul, Div
+-- 3: Lit, Iden (never parentheses)
+
+toStrBonus (Lit n) = (show n, 3)
+toStrBonus (Iden s) = (s, 3)
+toStrBonus (Plus e1 e2) =
+  let (s1, _) = toStrBonus e1
+      (s2, p2) = toStrBonus e2
+      leftExp = s1
+      rightExp = if p2 == 1 then "(" ++ s2 ++ ")" else s2
+  in (leftExp ++ " + " ++ rightExp, 1)
+
+toStrBonus (Minus e1 e2) =
+  let (s1, _) = toStrBonus e1
+      (s2, p2) = toStrBonus e2
+      leftExp = s1
+      rightExp = if p2 == 1 then "(" ++ s2 ++ ")" else s2
+  in (leftExp ++ " - " ++ rightExp, 1)
+
+toStrBonus (Mul e1 e2) =
+  let (s1, p1) = toStrBonus e1
+      (s2, p2) = toStrBonus e2
+      leftExp  = if p1 == 1 then "(" ++ s1 ++ ")" else s1
+      rightExp = if p2 <= 2 then "(" ++ s2 ++ ")" else s2
+  in (leftExp ++ " * " ++ rightExp, 2)
+
+toStrBonus (Div e1 e2) =
+  let (s1, p1) = toStrBonus e1
+      (s2, p2) = toStrBonus e2
+      leftExp  = if p1 == 1 then "(" ++ s1 ++ ")" else s1
+      rightExp = if p2 <= 2 then "(" ++ s2 ++ ")" else s2
+  in (leftExp ++ " / " ++ rightExp, 2)
 
 -- Returns Nothing on division by zero.
 partialEvaluate :: [(String, Int)] -> Expr -> Maybe Expr
@@ -228,25 +240,19 @@ partialEvaluate ids = \case
     Just a -> case partialEvaluate ids y of
       Nothing -> Nothing
       Just b -> case (a, b) of
-        (Lit _, Lit 0) -> Nothing
+        (_, Lit 0) -> Nothing
         (Lit c, Lit d) -> Just $ Lit (c `div` d)
         _ -> Just $ Div a b
 
 negateExpr :: Expr -> Expr
-negateExpr e = Minus (Lit 0) e
--- negateExpr = \case
---   Lit x -> Lit -x
---   Iden x -> Mul (Lit (-1)) (Iden x)
---   Plus x y -> Plus (negateExpr x) (negateExpr y)
---   Minus x y -> Plus (negateExpr x) y
---   Mul x y -> Mul (negateExpr x) y
---   Div x y -> Div (negateExpr x) y
+negateExpr = Minus (Lit 0)
 
 -- if the exponent is smaller than 0, this should return 0.
 powerExpr :: Expr -> Int -> Expr
+powerExpr (Lit 0) 0 = Lit 1
 powerExpr e n = case n of
-  x | x < 0 -> Lit 0
-  0 -> Lit 1
+  x | x < 0 -> e `Mul` (Lit 0)
+  0 -> (e `Div` e)
   1 -> e
   _ -> Mul e (powerExpr e (n - 1))
 
@@ -281,6 +287,7 @@ zipWithDefault a b = \case
     (y : ys) -> (x, y) : zipWithDefault a b xs ys
 
 data ZipFail = ErrorFirst | ErrorSecond deriving (Eq, Show)
+
 zipEither :: [a] -> [b] -> Either ZipFail [(a, b)]
 zipEither = \case
   [] -> \case
@@ -291,12 +298,6 @@ zipEither = \case
     (y : ys) -> case zipEither xs ys of
       Left err -> Left err
       Right zs -> Right ((x, y) : zs)
-
--- may fail cause length will check an inf list
--- zipEither [] [] = Right []
--- zipEither a b = if length a > length b then Left ErrorSecond 
---   else if length a < length b then Left ErrorFirst 
---   else Right $ zip a b
 
 unzip :: [(a, b)] -> ([a], [b])
 unzip = \case
@@ -321,8 +322,8 @@ snoc a b = case a of
 
 take :: Int -> [a] -> [a]
 take n = \case
-  [] -> []
   _ | n <= 0 -> []
+  [] -> []
   (x : xs) -> x : take (n - 1) xs
 
 -- The last element of the result (if non-empty) is the last element which satisfies the predicate
@@ -332,14 +333,9 @@ takeWhile f = \case
   (x : xs) -> if f x then x : takeWhile f xs else []
 
 drop :: Int -> [a] -> [a]
--- drop n = \case
---   [] -> []
---   (x : xs) -> case n of
---     0 -> x : xs
---     n' -> drop (n' - 1) xs
 drop n = \case
   [] -> []
-  (x:xs) -> if n <= 0
+  (x : xs) -> if n <= 0
             then x : xs
             else drop (n - 1) xs
 
@@ -350,19 +346,20 @@ dropWhile f = \case
   (x : xs) -> if f x then dropWhile f xs else x : xs
 
 slice :: Int -> Int -> [a] -> [a]
+slice a b _ | a >= b = []
+slice a b ls | a < 0 = take b (drop a ls)
 slice a b ls = take (b - a) (drop a ls)
 
 takeEvery :: Int -> [a] -> [a]
-takeEvery n = \case
-  [] -> []
-  (x : xs) ->
-    if n <= 0 then [] 
-    else x : takeEvery n (drop (n - 1) xs)
+takeEvery n xs
+  | n <= 0 = id xs
+  | otherwise = case drop (n - 1) xs of
+      [] -> []
+      (y : ys) -> y : takeEvery n ys
 
 dropEvery :: Int -> [a] -> [a]
--- todo: remove otherwise style?
 dropEvery n xs
-  | n <= 0 = xs
+  | n <= 1 = []
   | otherwise = case xs of
       [] -> []
       _  -> take (n-1) xs ++ dropEvery n (drop n xs)
@@ -383,24 +380,6 @@ uniq = \case
     then x : uniq (filter (/= x) xs)
     else x : uniq xs      
 
--- uniq :: [Int] -> [Int]
--- uniq = \case
---   [] -> []
---   (x : xs) ->
---     let res = lookupIdxAndRemove x xs
---     in if fst res
---        then x : uniq (x : snd res)
---        else x : uniq xs
---   where
---     lookupIdxAndRemove :: Int -> [Int] -> (Bool, [Int])
---     lookupIdxAndRemove x = \case
---       [] -> (False, [])
---       (y : ys) ->
---         if x == y
---         then (True, ys)   -- remove the duplicate
---         else let (found, zs) = lookupIdxAndRemove x ys
---              in (found, y : zs)
-
 -- Section 3.3: base64
 base64Chars :: String -- As defined in the PDF
 base64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -418,67 +397,35 @@ toBase64 n
         toPosBase64 d ++ [base64Chars !! fromIntegral m]
 
 fromBase64 :: String -> Maybe Integer
--- fromBase64 n
---   | n == "" = Just 0
---   | "-" : xs = fmap negate (fromBase64 xs)
---   | otherwise = fromPosBase64 0 (reverse n)
---     where
---       fromPosBase64 ::  Integer -> String -> Maybe Integer
---       fromPosBase64 n = \case
---         [] -> Just 0
---         (x : xs) -> if elem x base64Chars 
---                     then fromPosBase64 (n + 1) xs + ((findIdx x base64Chars) * (64 ^ n))
---                     else Nothing
---           where
---             findIdx :: Char -> String -> Integer
---             findIdx x (y : ys) = if x == y then 0 else 1 + findIdx x ys
-
 fromBase64 s = case s of
   "" -> Just 0
-  ('-' : xs) -> case fromBase64 xs of
-                  Nothing -> Nothing
-                  Just x -> Just (0 - x)
-  _ -> fromPosBase64 0 (myReverse s)
+  ('-' : xs) -> maybeMap negate $ fromBase64 xs
+  _ -> fromPosBase64 0 (reverse s)
   where    
     fromPosBase64 :: Integer -> String -> Maybe Integer
     fromPosBase64 _ [] = Just 0
-    fromPosBase64 n (x:xs) =
+    fromPosBase64 n (x : xs) =
       if elem x base64Chars
         then case findIdx x base64Chars of
                Nothing -> Nothing
                Just idx -> case fromPosBase64 (n + 1) xs of
                              Nothing -> Nothing
-                             Just rest -> Just (rest + fromIntegral idx * pow 64 n)
+                             Just rest -> Just (rest + fromIntegral idx * (64 ^ n))
         else Nothing
 
     findIdx :: Char -> String -> Maybe Int
-    findIdx c = go 0
+    findIdx ch = f 0
       where
-        go _ [] = Nothing
-        go i (y : ys) = if c == y then Just i else go (i + 1) ys
+        f _ [] = Nothing
+        f i (y : ys) = if ch == y then Just i else f (i + 1) ys
 
-    myReverse :: [a] -> [a]
-    myReverse = rev []
+    reverse :: [a] -> [a]
+    reverse = rev []
       where
-        rev acc [] = acc
-        rev acc (x : xs) = rev (x : acc) xs
+        rev ls [] = ls
+        rev ls (x : xs) = rev (x : ls) xs
 
-    pow :: Integer -> Integer -> Integer
-    pow _ 0 = 1
-    pow b e = b * pow b (e - 1)
-
-    -- fromPosBase64 n (x:xs) =
-    --   if x `elem` base64Chars
-    --     then do
-    --       rest <- fromPosBase64 (n + 1) xs
-    --       let Just i = findIdx x base64Chars
-    --       return $ i * (64 ^ n) + rest
-    --     else Nothing
-
-    -- findIdx :: Char -> String -> Maybe Integer
-    -- findIdx x = go 0
-    --   where
-    --     go _ [] = Nothing
-    --     go i (y:ys)
-    --       | x == y = Just i
-    --       | otherwise = go (i + 1) ys
+    (^) :: Integer -> Integer -> Integer
+    (^) _ 0 = 1
+    (^) b e = b * (^) b (e - 1)
+    
