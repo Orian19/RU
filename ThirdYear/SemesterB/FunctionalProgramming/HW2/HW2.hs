@@ -30,7 +30,6 @@ fromMaybe a = \case
   Nothing -> a
   Just x -> x
 
--- todo: ?
 concatMaybeMap :: (a -> Maybe b) -> Maybe a -> Maybe b
 concatMaybeMap f = \case
   Nothing -> Nothing
@@ -428,4 +427,3 @@ fromBase64 s = case s of
     (^) :: Integer -> Integer -> Integer
     (^) _ 0 = 1
     (^) b e = b * (^) b (e - 1)
-    
