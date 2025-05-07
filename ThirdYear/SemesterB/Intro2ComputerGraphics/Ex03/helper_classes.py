@@ -65,8 +65,11 @@ class PointLight(LightSource):
     def get_intensity(self, intersection):
         # calculate distance between light source and intersection 
         # calculate and return the light intensity based on kc, kl, kq
-        # f_att(d) = kq * d^2 + kl * d + kc
+        # I_L = I_0 * 1 / f_att(d)
+
         d = self.get_distance_from_light(intersection)
+
+        # f_att(d) = kq * d^2 + kl * d + kc
         f_att = self.kq * d**2 + self.kl * d + self.kc
 
         return self.intensity / f_att
@@ -83,18 +86,17 @@ class SpotLight(LightSource):
 
     # This function returns the ray that goes from the light source to a point
     def get_light_ray(self, intersection):
-        #TODO
         return Ray(intersection, normalize(self.position - intersection))
 
     def get_distance_from_light(self, intersection):
-        #TODO
         return np.linalg.norm(self.position - intersection)
 
     def get_intensity(self, intersection):
-        #TODO
         d = self.get_distance_from_light(intersection)
-        f_att = self.kq * d ** 2 + self.kl * d + self.kc
         v = normalize(intersection - self.position)
+
+        # I_L = I_0 * (v . v_d) / f_att(d)
+        f_att = self.kq * d ** 2 + self.kl * d + self.kc
 
         return self.intensity * np.dot(self.direction, v) / f_att
 
@@ -151,16 +153,27 @@ class Triangle(Object3D):
         self.a = np.array(a)
         self.b = np.array(b)
         self.c = np.array(c)
+        self.u, self.v = self.compute_plane_vectors()
         self.normal = self.compute_normal()
+        self.triangle = Plane(self.normal, self.a)
 
-    # computes normal to the trainagle surface. Pay attention to its direction!
+    def compute_plane_vectors(self):
+        # using the triangle vertices to get the plane vectors for parametric representation
+        u = self.b - self.a
+        v = self.c - self.a
+
+        return u, v
+
+    # computes normal to the triangle surface. Pay attention to its direction!
     def compute_normal(self):
-        # TODO
-        pass
+        # using the plane vectors and cross-product to get the normal vector
+        return np.cross(self.u, self.v)
 
     def intersect(self, ray: Ray):
+        # finding the t
         # TODO
-        pass
+        return self.triangle.intersect(ray)
+
 
 class Diamond(Object3D):
     """     
@@ -189,24 +202,33 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
         C -> E -> A
     """
     def __init__(self, v_list):
-        self.v_list = v_list
+        self.v_list = v_list  # list of vertices
         self.triangle_list = self.create_triangle_list()
 
     def create_triangle_list(self):
         l = []
         t_idx = [
-                [0,1,3],
+                [0,1,3],  # front face A -> B -> D
                 [1,2,3],
                 [0,3,2],
                  [4,1,0],
                  [4,2,1],
                  [2,4,0]]
-        # TODO
+
+        # go over the triangle indices and create triangles
+        for i in t_idx:
+            a = self.v_list[i[0]]
+            b = self.v_list[i[1]]
+            c = self.v_list[i[2]]
+            triangle = Triangle(a, b, c)
+            l.append(triangle)
+
         return l
 
     def apply_materials_to_triangles(self):
-        # TODO
-        pass
+        # go over the triangles and apply the materials
+        for triangle in self.triangle_list:
+            triangle.set_material(self.ambient, self.diffuse, self.specular, self.shininess, self.reflection)
 
     def intersect(self, ray: Ray):
         # TODO
@@ -218,6 +240,43 @@ class Sphere(Object3D):
         self.radius = radius
 
     def intersect(self, ray: Ray):
-        #TODO
-        pass
+        # |P-C|^2 = r^2
+        # |O + tD - C|^2 = r^2
+        # a = D.D
+        # b = 2D.(O-C)
+        # c = |O-C|^2 - r^2
+        # t = (-b +/- sqrt(b^2 - 4ac)) / 2a
+
+        # if ray.direction is a zero vector, we can't find the intersection
+        if np.dot(ray.direction, ray.direction) == 0:
+            return None
+
+        O = ray.origin
+        C = self.center
+
+        # quadratic coefficients after substituting the ray equation into the sphere equation
+        a = np.dot(ray.direction, ray.direction)
+        b = 2 * np.dot(ray.direction, O - C)
+        c = np.dot(O - C, O - C) - self.radius ** 2
+        discriminant = b ** 2 - 4 * a * c
+
+        # if the discriminant is negative, there is no intersection
+        if discriminant >= 0:
+            t1 = (-b + np.sqrt(discriminant)) / (2 * a)
+            t2 = (-b - np.sqrt(discriminant)) / (2 * a)
+
+            # if t1 > 0 and t2 > 0:
+            #     return min(t1, t2), self
+            # elif t1 > 0:
+            #     return t1, self
+            # elif t2 > 0:
+            #     return t2, self
+            
+            # if t1 and t2 are both negative, there is no intersection
+            valid_ts = [t for t in (t1, t2) if t > 0]
+            if valid_ts:
+                return min(valid_ts), self
+
+        return None
+
 
