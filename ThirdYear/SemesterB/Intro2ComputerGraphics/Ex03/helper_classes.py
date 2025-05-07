@@ -9,8 +9,11 @@ def normalize(vector):
 # This function gets a vector and the normal of the surface it hit
 # This function returns the vector that reflects from the surface
 def reflected(vector, axis):
-    # TODO:
     v = np.array([0,0,0])
+
+    # R = L - 2(L*N)N
+    v = vector - 2 * np.dot(vector, axis) * axis
+
     return v
 
 ## Lights
@@ -109,10 +112,17 @@ class Ray:
     # The function is getting the collection of objects in the scene and looks for the one with minimum distance.
     # The function should return the nearest object and its distance (in two different arguments)
     def nearest_intersected_object(self, objects):
-        intersections = None
+        intersections = [obj.intersect(self) for obj in objects]
         nearest_object = None
         min_distance = np.inf
-        #TODO
+
+        for intersection in intersections:
+            if intersection is not None:
+                distance, obj = intersection
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_object = obj
+
         return nearest_object, min_distance
 
 
@@ -232,7 +242,11 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
 
     def intersect(self, ray: Ray):
         # TODO
-        pass
+        nearest_object, min_distance = ray.nearest_intersected_object(self.triangle_list)
+        if nearest_object is not None:
+            return nearest_object, min_distance
+
+        return None
 
 class Sphere(Object3D):
     def __init__(self, center, radius: float):
@@ -271,12 +285,10 @@ class Sphere(Object3D):
             #     return t1, self
             # elif t2 > 0:
             #     return t2, self
-            
+
             # if t1 and t2 are both negative, there is no intersection
             valid_ts = [t for t in (t1, t2) if t > 0]
             if valid_ts:
                 return min(valid_ts), self
 
         return None
-
-
