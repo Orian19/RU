@@ -1,5 +1,6 @@
 import numpy as np
 
+EPSILON = 1e-5
 
 # This function gets a vector and returns its normalized form.
 def normalize(vector):
@@ -163,7 +164,7 @@ class Triangle(Object3D):
         self.a = np.array(a)
         self.b = np.array(b)
         self.c = np.array(c)
-        self.u, self.v = self.compute_plane_vectors()
+        self.ab, self.ac = self.compute_plane_vectors()
         self.normal = self.compute_normal()
         self.triangle = Plane(self.normal, self.a)
 
@@ -177,13 +178,52 @@ class Triangle(Object3D):
     # computes normal to the triangle surface. Pay attention to its direction!
     def compute_normal(self):
         # using the plane vectors and cross-product to get the normal vector
-        return np.cross(self.u, self.v)
+        return np.cross(self.ab, self.ac)
 
     def intersect(self, ray: Ray):
-        # finding the t
-        # TODO
-        return self.triangle.intersect(ray)
+        normal = normalize(np.cross(self.ab, self.ac))  # todo: normalize?
 
+        denom = np.dot(normal, ray.direction)
+        if abs(denom) < EPSILON:
+            return None  # ray is parallel
+
+        # for the point to be on the plane:
+        # N * (p - a) = 0, where N - normal, p - O + tD, a - point on the plane
+        # opening the equation we get:
+        # N * p = N * a = d
+        # =>  N * (O + tD) = d  => N * O + t(N*D) = d
+        # =>  t = (d - N*O) / (N*D)
+        d = np.dot(normal, self.a)
+        t = (d - np.dot(normal, ray.origin)) / denom
+
+        # if the intersection is behind the ray
+        if t < 0:
+            return None
+
+        # after we checked the point is on the plane and the ray is no parallel,
+        # we can use the Barycentric coordinates to check if the point is also on the triangle
+        p = ray.origin + t * ray.direction
+
+        abc_total_area = self.compute_triangle_area(self.ab, self.ac)
+
+        pa = self.a - p
+        pb = self.b - p
+        pc = self.c - p
+
+        # Barycentric coordinate
+        alpha = self.compute_triangle_area(pb, pc) / abc_total_area
+        beta = self.compute_triangle_area(pc, pa) / total_abc_total_areaarea
+        gamma = 1 - alpha - beta
+
+        # validating the point is on the triangle
+        if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1 and abs(alpha + beta + gamma - 1) < EPSILON:
+            return t, self
+        else:
+            return None
+
+    @staticmethod
+    def compute_triangle_area(u, v):
+        return np.linalg.norm(np.cross(u, v) / 2
 
 class Diamond(Object3D):
     """     
