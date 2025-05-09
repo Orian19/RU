@@ -160,6 +160,10 @@ class Object3D:
         self.specular = specular
         self.shininess = shininess
         self.reflection = reflection
+        self.refraction = refraction
+
+    def compute_normal(self, intersection):
+        pass
 
 
 class Plane(Object3D):
@@ -174,6 +178,9 @@ class Plane(Object3D):
             return t, self
         else:
             return None
+
+    def compute_normal(self, intersection):
+        return self.normal
 
 
 class Triangle(Object3D):

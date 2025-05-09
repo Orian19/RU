@@ -21,9 +21,9 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
             # This is the main loop where each pixel color is computed.
             # TODO
             nearest_object, min_distance = ray.nearest_intersected_object(objects)
-            intersection_point = camera + nearest_object.intersect(ray) * ray.direction
+            intersection_point = camera + nearest_object.intersect(ray)[0] * ray.direction
 
-            if intersection_point:
+            if intersection_point is not None:
                 color = get_color(objects, color, ambient, lights, nearest_object, ray, intersection_point, max_depth, 1)
 
             # We clip the values between 0 and 1 so all pixel values will make sense.
@@ -39,7 +39,7 @@ def get_color(objects, color, ambient, lights, nearest_object, ray, intersection
     color += nearest_object.ambient * ambient
 
     # using only unblocked lights
-    lights = [light for light in lights if not light.is_light_source_blocked(intersection_point, normal, objects)]
+    lights = [light for light in lights if not light.is_light_source_blocked(objects, normal, intersection_point)]
     
     for light in lights:
         # diffuse reflection
@@ -61,7 +61,7 @@ def get_color(objects, color, ambient, lights, nearest_object, ray, intersection
     # todo: maybe need to check reflection value > 0
     r_ray = Ray(intersection_point, reflected(ray.direction, normal))
     nearest_object, _ = ray.nearest_intersected_object(objects)
-    r_intersection_point = intersection_point + nearest_object.intersect(r_ray) * r_ray.direction
+    r_intersection_point = intersection_point + nearest_object.intersect(r_ray)[0] * r_ray.direction
     
     if r_intersection_point:
         color += nearest_object.reflection * get_color(objects, color, ambient, lights, nearest_object, r_ray,
@@ -72,7 +72,7 @@ def get_color(objects, color, ambient, lights, nearest_object, ray, intersection
     # todo: fake snell calc?
     t_ray = Ray(intersection_point, ray.direction)
     nearest_object, _ = ray.nearest_intersected_object(objects)
-    t_intersection_point = intersection_point + nearest_object.intersect(t_ray) * t_ray.direction
+    t_intersection_point = intersection_point + nearest_object.intersect(t_ray)[0] * t_ray.direction
 
     if t_intersection_point:
         color += nearest_object.refraction * get_color(objects, color, ambient, lights, nearest_object, t_ray,
