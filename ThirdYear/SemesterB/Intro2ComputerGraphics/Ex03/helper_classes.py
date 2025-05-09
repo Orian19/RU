@@ -179,7 +179,7 @@ class Plane(Object3D):
         else:
             return None
 
-    def compute_normal(self, intersection):
+    def compute_normal(self, intersection=None):
         return self.normal
 
 
@@ -209,7 +209,7 @@ class Triangle(Object3D):
         return u, v
 
     # computes normal to the triangle surface. Pay attention to its direction!
-    def compute_normal(self):
+    def compute_normal(self, intersection=None):
         # using the plane vectors and cross-product to get the normal vector
         return normalize(np.cross(self.ab, self.ac))
 
