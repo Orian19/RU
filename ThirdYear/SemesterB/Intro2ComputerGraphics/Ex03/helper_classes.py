@@ -57,8 +57,8 @@ class DirectionalLight(LightSource):
         super().__init__(intensity)
         self.direction = normalize(np.array(direction))
 
-    # This function returns the ray that goes from the light source to a point
-    def get_light_ray(self,intersection_point):
+    # This function returns the ray that goes from a point to a light source
+    def get_light_ray(self, intersection_point):
         # returning the opposite direction of the light source
         return Ray(intersection_point, -self.direction)
 
@@ -154,7 +154,7 @@ class Ray:
 
 
 class Object3D:
-    def set_material(self, ambient, diffuse, specular, shininess, reflection):
+    def set_material(self, ambient, diffuse, specular, shininess, reflection, refraction=0):
         self.ambient = ambient
         self.diffuse = diffuse
         self.specular = specular
