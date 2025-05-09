@@ -24,6 +24,32 @@ class LightSource:
     def __init__(self, intensity):
         self.intensity = intensity
 
+    def get_light_ray(self, intersection_point):
+        pass
+
+    def get_distance_from_light(self, intersection):
+        pass
+
+    def get_intensity(self, intersection):
+        pass
+
+    def is_light_source_blocked(self, objects, normal, intersection_point):
+        ray = self.get_light_ray(intersection_point)
+
+        # check if the ray intersects with any object
+        nearest_object, min_distance = ray.nearest_intersected_object(objects)
+        if nearest_object is None:
+            return False
+
+        # the light source is not behind the object
+        if ray.direction.dot(normal) >= 0:
+            return False
+
+        # the light source is blocked by the object (the object is between the light source and the intersection point)
+        if min_distance >= self.get_distance_from_light(intersection_point):
+            return False
+
+        return True
 
 class DirectionalLight(LightSource):
 
@@ -178,14 +204,13 @@ class Triangle(Object3D):
     # computes normal to the triangle surface. Pay attention to its direction!
     def compute_normal(self):
         # using the plane vectors and cross-product to get the normal vector
-        return np.cross(self.ab, self.ac)
+        return normalize(np.cross(self.ab, self.ac))
 
     def intersect(self, ray: Ray):
-        normal = normalize(np.cross(self.ab, self.ac))  # todo: normalize?
-
-        denom = np.dot(normal, ray.direction)
+        # checking if the ray is parallel to the plane (which happens when N . rayD = 0)
+        denom = np.dot(self.normal, ray.direction)
         if abs(denom) < EPSILON:
-            return None  # ray is parallel
+            return None
 
         # for the point to be on the plane:
         # N * (p - a) = 0, where N - normal, p - O + tD, a - point on the plane
@@ -193,8 +218,8 @@ class Triangle(Object3D):
         # N * p = N * a = d
         # =>  N * (O + tD) = d  => N * O + t(N*D) = d
         # =>  t = (d - N*O) / (N*D)
-        d = np.dot(normal, self.a)
-        t = (d - np.dot(normal, ray.origin)) / denom
+        d = np.dot(self.normal, self.a)
+        t = (d - np.dot(self.normal, ray.origin)) / denom
 
         # if the intersection is behind the ray
         if t < 0:
@@ -212,7 +237,7 @@ class Triangle(Object3D):
 
         # Barycentric coordinate
         alpha = self.compute_triangle_area(pb, pc) / abc_total_area
-        beta = self.compute_triangle_area(pc, pa) / total_abc_total_areaarea
+        beta = self.compute_triangle_area(pc, pa) / abc_total_area
         gamma = 1 - alpha - beta
 
         # validating the point is on the triangle
@@ -223,7 +248,7 @@ class Triangle(Object3D):
 
     @staticmethod
     def compute_triangle_area(u, v):
-        return np.linalg.norm(np.cross(u, v) / 2
+        return np.linalg.norm(np.cross(u, v)) / 2
 
 class Diamond(Object3D):
     """     
@@ -292,6 +317,10 @@ class Sphere(Object3D):
     def __init__(self, center, radius: float):
         self.center = center
         self.radius = radius
+
+    def compute_normal(self, intersection):
+        # normal is the vector from the center to the intersection point
+        return normalize(intersection - self.center)
 
     def intersect(self, ray: Ray):
         # |P-C|^2 = r^2
