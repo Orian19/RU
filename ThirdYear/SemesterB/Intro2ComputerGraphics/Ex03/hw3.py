@@ -40,7 +40,7 @@ def get_color(objects, color, ambient, lights, nearest_object, ray, intersection
 
     # using only unblocked lights
     lights = [light for light in lights if not light.is_light_source_blocked(objects, normal, intersection_point)]
-    
+
     for light in lights:
         # diffuse reflection
         diffuse = (light.get_intensity(intersection_point) * nearest_object.diffuse *
@@ -60,7 +60,7 @@ def get_color(objects, color, ambient, lights, nearest_object, ray, intersection
     # reflected ray from the object
     # todo: maybe need to check reflection value > 0
     r_ray = Ray(intersection_point, reflected(ray.direction, normal))
-    nearest_object, _ = ray.nearest_intersected_object(objects)
+    nearest_object, _ = r_ray.nearest_intersected_object(objects)
 
     if nearest_object and nearest_object.intersect(r_ray):
         r_intersection_point = intersection_point + nearest_object.intersect(r_ray)[0] * r_ray.direction
@@ -71,14 +71,15 @@ def get_color(objects, color, ambient, lights, nearest_object, ray, intersection
     # refracted ray from the object
     # todo: maybe need to check refracted value > 0
     # todo: fake snell calc?
-    t_ray = Ray(intersection_point, ray.direction)
-    nearest_object, _ = ray.nearest_intersected_object(objects)
-    
-    if nearest_object and nearest_object.intersect(t_ray):
-        t_intersection_point = intersection_point + nearest_object.intersect(t_ray)[0] * t_ray.direction
+    if nearest_object and nearest_object.refraction > 0:
+        t_ray = Ray(intersection_point, ray.direction)
+        nearest_object, _ = t_ray.nearest_intersected_object(objects)
+        
+        if nearest_object and nearest_object.intersect(t_ray):
+            t_intersection_point = intersection_point + nearest_object.intersect(t_ray)[0] * t_ray.direction
 
-        color += nearest_object.refraction * get_color(objects, color, ambient, lights, nearest_object, t_ray,
-                                                        t_intersection_point, max_depth, depth)
+            color += nearest_object.refraction * get_color(objects, color, ambient, lights, nearest_object, t_ray,
+                                                            t_intersection_point, max_depth, depth)
 
     return color
 
