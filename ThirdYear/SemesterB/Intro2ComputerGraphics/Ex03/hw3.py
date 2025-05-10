@@ -61,22 +61,24 @@ def get_color(objects, color, ambient, lights, nearest_object, ray, intersection
     # todo: maybe need to check reflection value > 0
     r_ray = Ray(intersection_point, reflected(ray.direction, normal))
     nearest_object, _ = ray.nearest_intersected_object(objects)
-    r_intersection_point = intersection_point + nearest_object.intersect(r_ray)[0] * r_ray.direction
-    
-    if r_intersection_point:
+
+    if nearest_object and nearest_object.intersect(r_ray):
+        r_intersection_point = intersection_point + nearest_object.intersect(r_ray)[0] * r_ray.direction
+        
         color += nearest_object.reflection * get_color(objects, color, ambient, lights, nearest_object, r_ray,
-                                                       r_intersection_point, max_depth, depth)
+                                                        r_intersection_point, max_depth, depth)
 
     # refracted ray from the object
     # todo: maybe need to check refracted value > 0
     # todo: fake snell calc?
     t_ray = Ray(intersection_point, ray.direction)
     nearest_object, _ = ray.nearest_intersected_object(objects)
-    t_intersection_point = intersection_point + nearest_object.intersect(t_ray)[0] * t_ray.direction
+    
+    if nearest_object and nearest_object.intersect(t_ray):
+        t_intersection_point = intersection_point + nearest_object.intersect(t_ray)[0] * t_ray.direction
 
-    if t_intersection_point:
         color += nearest_object.refraction * get_color(objects, color, ambient, lights, nearest_object, t_ray,
-                                                       t_intersection_point, max_depth, depth)
+                                                        t_intersection_point, max_depth, depth)
 
     return color
 
