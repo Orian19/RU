@@ -42,8 +42,8 @@ class LightSource:
             return False
 
         # the light source is not behind the object
-        if ray.direction.dot(normal) >= 0:
-            return False
+        if ray.direction.dot(normal) < 0:
+            return True
 
         # the light source is blocked by the object (the object is between the light source and the intersection point)
         if min_distance >= self.get_distance_from_light(intersection_point):
@@ -139,7 +139,11 @@ class Ray:
     # The function is getting the collection of objects in the scene and looks for the one with minimum distance.
     # The function should return the nearest object and its distance (in two different arguments)
     def nearest_intersected_object(self, objects):
-        intersections = [obj.intersect(self) for obj in objects]
+        # intersections = [obj.intersect(self) for obj in objects]
+        intersections = []
+        for obj in objects:
+            intersections.append(obj.intersect(self))
+
         nearest_object = None
         min_distance = np.inf
 
