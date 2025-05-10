@@ -32,7 +32,7 @@ class LightSource:
 
     def get_intensity(self, intersection):
         pass
-
+    
     def is_light_source_blocked(self, objects, normal, intersection_point):
         ray = self.get_light_ray(intersection_point)
 
@@ -320,7 +320,7 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
         # TODO
         nearest_object, min_distance = ray.nearest_intersected_object(self.triangle_list)
         if nearest_object is not None:
-            return nearest_object, min_distance
+            return min_distance, nearest_object
 
         return None
 
@@ -358,13 +358,6 @@ class Sphere(Object3D):
         if discriminant >= 0:
             t1 = (-b + np.sqrt(discriminant)) / (2 * a)
             t2 = (-b - np.sqrt(discriminant)) / (2 * a)
-
-            # if t1 > 0 and t2 > 0:
-            #     return min(t1, t2), self
-            # elif t1 > 0:
-            #     return t1, self
-            # elif t2 > 0:
-            #     return t2, self
 
             # if t1 and t2 are both negative, there is no intersection
             valid_ts = [t for t in (t1, t2) if t > 0]
