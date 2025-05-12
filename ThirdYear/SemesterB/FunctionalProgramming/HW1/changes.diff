@@ -1,0 +1,62 @@
+diff --git a/ThirdYear/SemesterB/FunctionalProgramming/HW1/HW1.hs b/ThirdYear/SemesterB/FunctionalProgramming/HW1/HW1.hs
+index 0bb40d4..78f9f66 100644
+--- a/ThirdYear/SemesterB/FunctionalProgramming/HW1/HW1.hs
++++ b/ThirdYear/SemesterB/FunctionalProgramming/HW1/HW1.hs
+@@ -180,20 +180,31 @@ divisors :: Integer -> Generator Integer
+ divisors n =
+   case abs n of
+     x | x <= 1 -> emptyGen
+-    x -> (nextDivisor x, (< x), 0)
++    x -> nextDivisor ((\y -> y /= 0 && y /= n && n `mod` y == 0)) ((+ 1), (< x), 0)
+   where
+-    nextDivisor :: Integer -> Integer -> Integer
+-    nextDivisor num current =
+-      let candidate = current + 1 in
+-        if candidate >= num || num `mod` candidate == 0 then candidate
+-        else nextDivisor num candidate
++    nextDivisor :: (a -> Bool) -> Generator a -> Generator a
++    nextDivisor p (f, cond, seed) = (cont, pred, seed)
++        where
++            cont x = next (f x)
++
++            pred = \x -> if cond (cont x) then p (cont x) else False
++
++            next x = if cond x && not (p x) then next (f x) else x
+ 
+ -----------------------------------
+ -- Section 4: Number classification
+ -----------------------------------
+ 
+ isPrime :: Integer -> Bool
+-isPrime n = n > 1 && lengthGen (divisors n) == 2
++isPrime n
++  | n < 2 = False
++  | otherwise = not (hasDivisor 2)
++  where
++    hasDivisor :: Integer -> Bool
++    hasDivisor d
++      | d * d > n = False
++      | n `mod` d == 0 = True
++      | otherwise = hasDivisor (d + 1)
+ 
+ isHappy :: Integer -> Bool
+-isHappy n = not $ anyGen (== 4) (sumSquareDigits, (/= 1), n) -- all unhappy numbers eventually reach 4
++isHappy n | n < 0 = isHappy (abs n)
++isHappy n = checkLoop n $ sumSquareDigits n
+     where
+         sumSquareDigits :: Integer -> Integer
+-        sumSquareDigits x = case abs x of
+-            0 -> 0
++        sumSquareDigits x = case x of
++            y | y < 0 -> sumSquareDigits (abs y)
++            y | y < 10 -> y ^ (2 :: Integer)
+             y -> sumSquareDigits (y `div` 10) + (y `mod` 10) ^ (2 :: Integer)
+-            
++        checkLoop :: Integer -> Integer -> Bool
++        checkLoop _ 1 = True
++        checkLoop slow fast = 
++            let slow' = sumSquareDigits slow
++                fast' = sumSquareDigits (sumSquareDigits fast)
++            in if slow' == fast' then False
++               else checkLoop slow' fast'
++   
