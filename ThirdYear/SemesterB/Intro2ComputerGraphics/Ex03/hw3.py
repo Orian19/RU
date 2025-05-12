@@ -20,10 +20,12 @@ def render_scene(camera, ambient, lights, objects, screen_size, max_depth):
 
             # This is the main loop where each pixel color is computed.
             nearest_object, _ = ray.nearest_intersected_object(objects)
-            intersection_point = camera + nearest_object.intersect(ray)[0] * ray.direction
 
-            if intersection_point is not None:
-                color = get_color(objects, ambient, lights, nearest_object, ray, intersection_point, max_depth, 1)
+            if nearest_object is not None:
+                intersection_point = camera + nearest_object.intersect(ray)[0] * ray.direction
+
+                if intersection_point is not None:
+                    color = get_color(objects, ambient, lights, nearest_object, ray, intersection_point, max_depth, 1)
 
             # We clip the values between 0 and 1 so all pixel values will make sense.
             image[i, j] = np.clip(color,0,1)
@@ -88,7 +90,31 @@ def get_color(objects, ambient, lights, nearest_object, ray, intersection_point,
 # Write your own objects and lights
 # TODO
 def your_own_scene():
-    camera = np.array([0,0,1])
-    lights = []
-    objects = []
+    # materials
+    glass_material = ([0.1, 0.1, 0.2], [0.1, 0.1, 0.2], [0.5, 0.5, 0.8], 100, 0.1, 0.9)
+    sphere_material = ([0.1, 0.8, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.2], 20, 0.3)
+    floor_material = ([0.5, 0.5, 0.5], [0.3, 0.3, 0.3], [0.1, 0.1, 0.1], 10, 0.2)
+    
+    # outer transparent object (sphere)
+    outer_sphere = Sphere([0, 0, -1], 0.6)
+    outer_sphere.set_material(*glass_material)
+
+    # extra object: sphere behind sphere
+    behind_sphere = Sphere([0.7, 0, -1.5], 0.3)
+    behind_sphere.set_material(*sphere_material)
+
+    # plane (floor)
+    floor = Plane([0, 1, 0], [0, -0.6, 0])
+    floor.set_material(*floor_material)
+
+    # lights
+    point_light = PointLight(intensity=np.array([1, 0.9, 0.9]), position=np.array([1, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
+    dir_light = DirectionalLight(intensity=np.array([0.8, 0.8, 1]), direction=np.array([-1, -1, -1]))
+
+    # create scene
+    objects = [outer_sphere, behind_sphere, floor]
+    lights = [point_light, dir_light]
+    camera = np.array([0, 0, 1])
+
     return camera, lights, objects
+
