@@ -71,14 +71,15 @@ def get_color(objects, ambient, lights, nearest_object, ray, intersection_point,
 
         if hit_obj is not None:
             r_intersection_point = intersection_point + hit_dist * r_ray.direction 
-            # r_intersection_point = intersection_point + hit_dist * r_ray.direction         
             # I_r = K_R * I_R
             reflection_color = get_color(objects, ambient, lights, hit_obj, r_ray, r_intersection_point, max_depth, depth)
     
     # handle refraction
     refraction_color = np.zeros(3)
+    # relaxed version of Snell's law
+    refraction_color = np.zeros(3)
     if nearest_object.refraction > 0:
-        t_ray = construct_refracted_ray(ray, intersection_point, normal, nearest_object.refractive_index)
+        t_ray = Ray(intersection_point, ray.direction)
         hit_obj, dist_obj = t_ray.nearest_intersected_object(objects)
         if hit_obj is not None:
             t_intersection = intersection_point + dist_obj * t_ray.direction
@@ -90,71 +91,35 @@ def get_color(objects, ambient, lights, nearest_object, ray, intersection_point,
 
 
 # Write your own objects and lights
-# TODO
 def your_own_scene():
-    # materials - (ambient, diffuse, specular, shininess, reflection, transparency, refractive_index)
-    glass_material = ([0.1, 0.1, 0.1], [0.1, 0.1, 0.2], [0.5, 0.5, 0.8], 100, 0.1, 0.6, 1.5)
-    sphere_material = ([0.1, 0.8, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.2], 20, 0.3, 0)
+    # materials - (ambient, diffuse, specular, shininess, reflection, transparency)
+    glass_material = ([0.1, 0.1, 0.1], [0.1, 0.1, 0.2], [0.5, 0.5, 0.8], 100, 0.1, 0.6)
+    sphere_material = ([0.1, 0.8, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.2], 20, 0.3, 0.0)
     floor_material = ([0.5, 0.5, 0.5], [0.3, 0.3, 0.3], [0.1, 0.1, 0.1], 10, 0.2, 0.0)
 
-    # Replace the outer sphere with one transparent triangle
-    glass_triangle = Triangle(
-        a=[-0.6, 0.8, -0.8],
-        b=[0.6, 0.8, -0.8],
-        c=[0.0, -0.4, -0.8]
-    )
+    # transparent object (triangle)
+    glass_triangle = Triangle([-0.6, 0.8, -0.8], [0.6, 0.8, -0.8],[0.0, -0.4, -0.8])
     glass_triangle.set_material(*glass_material)
 
-    # Extra object behind the triangle
+    # sphere behind triangle
     behind_sphere = Sphere([0.4, 0, -1.5], 0.4)
     behind_sphere.set_material(*sphere_material)
    
-    # Background
+    # background
     background = Plane([0,0,1], [0,0,-3])
     background.set_material([0.2, 0.3, 0.9], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2], 1000, 0.5)
     
-    # Floor
+    # floor
     floor = Plane([0, 1, 0], [0, -0.6, 0])
     floor.set_material(*floor_material)
 
-    # Lights
+    # lights
     point_light = PointLight(intensity=np.array([1, 0.9, 0.9]), position=np.array([1, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
     dir_light = DirectionalLight(intensity=np.array([0.8, 0.8, 1]), direction=np.array([-1, -1, -1]))
 
-    # Scene setup
+    # scene setup
     objects = [glass_triangle, behind_sphere, floor, background]
     lights = [point_light, dir_light]
     camera = np.array([0, 0, 1])
 
     return camera, lights, objects
-    # # materials - (ambient, diffuse, specular, shininess, reflection, transparency, refractive_index)
-    # glass_material = ([0.1, 0.1, 0.2], [0.1, 0.1, 0.2], [0.5, 0.5, 0.8], 100, 0.1, 0.9, 1.5)
-    # sphere_material = ([0.1, 0.8, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.2], 20, 0.3, 0.0)#, 1.0)
-    # floor_material = ([0.5, 0.5, 0.5], [0.3, 0.3, 0.3], [0.1, 0.1, 0.1], 10, 0.2, 0.0)#, 1.0)
-    
-    # # outer transparent object (sphere)
-    # outer_sphere = Sphere([0, 0, -1], 0.6)
-    # outer_sphere.set_material(*glass_material)
-
-    # # extra object: sphere behind sphere
-    # behind_sphere = Sphere([0.7, 0, -1.5], 0.3)
-    # behind_sphere.set_material(*sphere_material)
-
-    # # plane (floor)
-    # floor = Plane([0, 1, 0], [0, -0.6, 0])
-    # floor.set_material(*floor_material)
-
-    # # background
-    # background = Plane([0,0,1], [0,0,-3])
-    # background.set_material([0.2, 0.7, 0.9], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2], 1000, 0.5)
-
-    # # lights
-    # point_light = PointLight(intensity=np.array([1, 0.9, 0.9]), position=np.array([1, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
-    # dir_light = DirectionalLight(intensity=np.array([0.8, 0.8, 1]), direction=np.array([-1, -1, -1]))
-
-    # # create scene
-    # objects = [outer_sphere, behind_sphere, floor, background]
-    # lights = [point_light, dir_light]
-    # camera = np.array([0, 0, 1])
-
-    # return camera, lights, objects

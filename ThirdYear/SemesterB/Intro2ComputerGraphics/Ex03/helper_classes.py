@@ -40,6 +40,10 @@ class LightSource:
         nearest_object, min_distance = ray.nearest_intersected_object(objects)
         if nearest_object is None:
             return False
+        
+        # skip if the object is transparent
+        if nearest_object.refraction > 0:
+            return False
 
         # the light source is not behind the object
         if ray.direction.dot(normal) < 0:
@@ -83,12 +87,10 @@ class PointLight(LightSource):
 
     # This function returns the ray that goes from a point to the light source
     def get_light_ray(self,intersection):
-        # todo: why opposite direction? and not from light source to intersection?
         return Ray(intersection, normalize(self.position - intersection))
 
     # This function returns the distance from a point to the light source
     def get_distance_from_light(self, intersection):
-        #TODO maybe should be intersection - self.position
         return np.linalg.norm(self.position - intersection)
 
     # This function returns the light intensity at a point
@@ -103,7 +105,6 @@ class PointLight(LightSource):
         f_att = self.kq * d**2 + self.kl * d + self.kc
 
         return self.intensity / f_att
-
 
 class SpotLight(LightSource):
     def __init__(self, intensity, position, direction, kc, kl, kq):
@@ -177,7 +178,7 @@ class Plane(Object3D):
 
     def intersect(self, ray: Ray):
         v = self.point - ray.origin
-        t = np.dot(v, self.normal) / (np.dot(self.normal, ray.direction) + 1e-6)
+        t = np.dot(v, self.normal) / (np.dot(self.normal, ray.direction))
         if t > 0:
             return t, self
         else:
@@ -222,7 +223,7 @@ class Triangle(Object3D):
         denom = np.dot(self.normal, ray.direction)
         if abs(denom) < EPSILON:
             return None
-
+    
         # for the point to be on the plane:
         # N * (p - a) = 0, where N - normal, p - O + tD, a - point on the plane
         # opening the equation we get:
@@ -231,17 +232,17 @@ class Triangle(Object3D):
         # =>  t = (d - N*O) / (N*D)
         d = np.dot(self.normal, self.a)
         t = (d - np.dot(self.normal, ray.origin)) / denom
-
+    
         # if the intersection is behind the ray
         if t < 0:
             return None
-
+    
         # after we checked the point is on the plane and the ray is no parallel,
         # we can use the Barycentric coordinates to check if the point is also on the triangle
         p = ray.origin + t * ray.direction
-
+    
         abc_total_area = self.compute_triangle_area(self.ab, self.ac)
-
+    
         pa = self.a - p
         pb = self.b - p
         pc = self.c - p
@@ -317,7 +318,6 @@ A /&&&&&&&&&&&&&&&&&&&&\ B &&&/ C
             triangle.set_material(self.ambient, self.diffuse, self.specular, self.shininess, self.reflection)
 
     def intersect(self, ray: Ray):
-        # TODO
         nearest_object, min_distance = ray.nearest_intersected_object(self.triangle_list)
         if nearest_object is not None:
             return min_distance, nearest_object
