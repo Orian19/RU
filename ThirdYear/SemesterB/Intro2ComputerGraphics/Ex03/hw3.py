@@ -90,35 +90,47 @@ def get_color(objects, ambient, lights, nearest_object, ray, intersection_point,
     return color
 
 
-# Write your own objects and lights
+# Write your own objects and lights]
 def your_own_scene():
-    # materials - (ambient, diffuse, specular, shininess, reflection, transparency)
+    # materials (ambient, diffuse, specular, shininess, reflection, transparency, refractive)
     glass_material = ([0.1, 0.1, 0.1], [0.1, 0.1, 0.2], [0.5, 0.5, 0.8], 100, 0.1, 0.6)
-    sphere_material = ([0.1, 0.8, 0.1], [0.1, 0.8, 0.1], [0.2, 0.2, 0.2], 20, 0.3, 0.0)
+    strawberry_material = ([0.9, 0.4, 0.5], [0.9, 0.4, 0.5], [0.3, 0.3, 0.3], 20, 0.2, 0)
+    chocolate_material = ([0.4, 0.2, 0.1], [0.4, 0.2, 0.1], [0.2, 0.2, 0.2], 20, 0.2, 0)
+    vanilla_material = ([1.0, 0.95, 0.7], [1.0, 0.95, 0.7], [0.3, 0.3, 0.3], 20, 0.2, 0)
     floor_material = ([0.5, 0.5, 0.5], [0.3, 0.3, 0.3], [0.1, 0.1, 0.1], 10, 0.2, 0.0)
 
-    # transparent object (triangle)
-    glass_triangle = Triangle([-0.6, 0.8, -0.8], [0.6, 0.8, -0.8],[0.0, -0.4, -0.8])
+    # transparent triangle as the cone
+    glass_triangle = Triangle([-0.6, 0.8, -0.8], [0.6, 0.8, -0.8], [0.0, -0.4, -0.8])
     glass_triangle.set_material(*glass_material)
 
-    # sphere behind triangle
-    behind_sphere = Sphere([0.4, 0, -1.5], 0.4)
-    behind_sphere.set_material(*sphere_material)
-   
-    # background
-    background = Plane([0,0,1], [0,0,-3])
-    background.set_material([0.2, 0.3, 0.9], [0.2, 0.2, 0.2], [0.2, 0.2, 0.2], 1000, 0.5)
-    
-    # floor
+    # ice cream scoops
+    scoop_radius = 0.4
+    y_scoop = 0.8 + scoop_radius * 0.6
+
+    # bottom left: strawberry
+    strawberry = Sphere([-0.3, y_scoop, -1.5], scoop_radius)
+    strawberry.set_material(*strawberry_material)
+
+    # bottom right: chocolate
+    chocolate = Sphere([0.3, y_scoop, -1.5], scoop_radius)
+    chocolate.set_material(*chocolate_material)
+
+    # top center: vanilla
+    vanilla = Sphere([0.0, y_scoop + scoop_radius * 1.1, -1.5], scoop_radius)
+    vanilla.set_material(*vanilla_material)
+
+    # background and floor
+    background = Plane([0, 0, 1], [0, 0, -3])
+    background.set_material([0.8, 0.8, 0.1], [0.3, 0.3, 0.1], [0.1, 0.1, 0.05], 1000, 0.5)
     floor = Plane([0, 1, 0], [0, -0.6, 0])
     floor.set_material(*floor_material)
 
     # lights
-    point_light = PointLight(intensity=np.array([1, 0.9, 0.9]), position=np.array([1, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
+    point_light = PointLight(intensity=np.array([1, 0.9, 0.9]), position=np.array([-2, 1, 1]), kc=0.1, kl=0.1, kq=0.1)
     dir_light = DirectionalLight(intensity=np.array([0.8, 0.8, 1]), direction=np.array([-1, -1, -1]))
 
     # scene setup
-    objects = [glass_triangle, behind_sphere, floor, background]
+    objects = [glass_triangle, strawberry, chocolate, vanilla, floor, background]
     lights = [point_light, dir_light]
     camera = np.array([0, 0, 1])
 
