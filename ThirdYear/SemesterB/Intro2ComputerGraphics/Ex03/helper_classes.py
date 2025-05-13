@@ -249,8 +249,8 @@ class Triangle(Object3D):
         # Barycentric coordinate
         alpha = self.compute_triangle_area(pb, pc) / abc_total_area
         beta = self.compute_triangle_area(pc, pa) / abc_total_area
-        gamma = 1 - alpha - beta
-
+        gamma = self.compute_triangle_area(pa, pb) / abc_total_area
+    
         # validating the point is on the triangle
         if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1 and abs(alpha + beta + gamma - 1) < EPSILON:
             return t, self
