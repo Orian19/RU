@@ -196,3 +196,5 @@ SecondYear/SummerSemester/CSharp/Ex01/C24 Ex01 OrianDaniel 208126094 TomerCohen 
 .venv
 *.hi
 *.o
+ThirdYear/SemesterB/FunctionalProgramming/**/Spec
+
