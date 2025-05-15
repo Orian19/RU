@@ -131,12 +131,28 @@ sampleN :: Int -> InfiniteList a -> [a]
 sampleN n = take n . itoList
 
 itoList :: InfiniteList a -> [a]
+itoList (x :> xs) = x : itoList xs
+
 iiterate :: (a -> a) -> a -> InfiniteList a
+iiterate f x = x :> iiterate f (f x)
+
 irepeat :: a -> InfiniteList a
+irepeat = iiterate id
+
 naturals :: InfiniteList Integer
+naturals = iiterate (+1) 0
+
 imap :: (a -> b) -> InfiniteList a -> InfiniteList b
+imap f (x :> xs) = f x :> imap f xs
+
 iconcat :: InfiniteList [a] -> InfiniteList a
+iconcat (xs :> xss) = case xs of
+  [] -> iconcat xss
+  (y : ys) -> y :> iconcat (ys :> xss)
+
 grouped :: Integer -> InfiniteList a -> InfiniteList [a]
+grouped n list = let l = itoList list in [take n l :> grouped (drop n l)]
+
 reverseN :: Integer -> InfiniteList a -> InfiniteList a
 sqrtInf :: Rational -> InfiniteList Rational
 type InfiniteString = InfiniteList Char
