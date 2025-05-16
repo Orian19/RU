@@ -37,7 +37,8 @@ treeHeight = \case
 log2 :: Int -> Int
 log2 = \case
     x | x <= 0 -> undefined
-    x -> 1 + log2 $ x `div` 2
+    1 -> 0
+    x -> 1 + log2  (x `div` 2)
 
 -- DLR
 preOrderTraversal :: Tree a -> [a]
@@ -60,12 +61,12 @@ postOrderTraversal = \case
 data Classification = Full | Complete | FullAndComplete | Perfect | Degenerate | Other deriving (Show, Eq)
 
 classify :: Tree a -> Classification
-classify t
-  | isPerfect t = Perfect
-  | isFull t && isComplete t = FullAndComplete
-  | isFull t = Full
-  | isComplete t = Complete
-  | isDegenerate t = Degenerate
+classify tr
+  | isPerfect tr = Perfect
+  | isFull tr && isComplete tr = FullAndComplete
+  | isFull tr = Full
+  | isComplete tr = Complete
+  | isDegenerate tr = Degenerate
   | otherwise = Other
   where
     isDegenerate :: Tree a -> Bool
@@ -92,20 +93,10 @@ classify t
         where
             levelOrder :: [Tree a] -> Bool -> Bool
             levelOrder [] _ = True
-            levelOrder (Empty : xs) seenEmpty = levelOrder xs True
+            levelOrder (Empty : xs) _ = levelOrder xs True
             levelOrder (Tree l _ r : xs) seenEmpty
                 | seenEmpty = False
                 | otherwise = levelOrder (xs ++ [l, r]) seenEmpty
-
-        -- isComplete :: Tree a -> Bool
-        -- isComplete tree = checkComplete tree 0 (treeSize tree)
-        -- where
-        --     checkComplete :: Tree a -> Int -> Int -> Bool
-        --     checkComplete Empty _ _ = True
-        --     checkComplete (Tree l x r) index size =
-        --     index < size && -- Check if the current node's index is valid
-        --     checkComplete l (2 * index + 1) size && -- Check left subtree
-        --     checkComplete r (2 * index + 2) size    -- Check right subtree
 
 -- todo: change style?
 isBalanced :: Tree a -> Bool
