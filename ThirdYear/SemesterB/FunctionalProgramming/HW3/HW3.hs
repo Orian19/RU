@@ -215,14 +215,28 @@ sqrtStrings x = imap longDivision (sqrtInf x)
 
 -- Section 3: Maze
 data Cell = Open | Blocked | Treasure deriving (Show, Eq, Ord)
-
-
 data Maze = Maze {width :: Int, height :: Int, layout :: [[Cell]]} deriving Show
-cellAt :: Maze -> CellPosition -> Maybe Cell
-data CellPosition = CellPosition {row :: Int, col :: Int} deriving (Show, Eq, Ord)
 
+cellAt :: Maze -> CellPosition -> Maybe Cell
+cellAt (Maze {width = w, height = h, layout = grid}) (CellPosition r c)
+    | (0 > r || r >= h) || (0 > c || c >= w) = Nothing
+    | otherwise = Just $ (grid !! r) !! c
+
+data CellPosition = CellPosition {row :: Int, col :: Int} deriving (Show, Eq, Ord)
 data Error = OutOfBounds | InvalidCell | NoPath deriving (Show, Eq, Ord)
+
 getAvailableMoves :: Maze -> CellPosition -> Either Error [CellPosition]
+getAvailableMoves m pos = case cellAt m pos of
+    Nothing -> Left OutOfBounds
+    Just Blocked -> Left InvalidCell
+    Just _ -> Right $ filter isValid neighbors
+  where
+    directions = [(1,0), (-1,0), (0,1), (0,-1)]
+    neighbors = [CellPosition (row pos + dr) (col pos + dc) | (dr, dc) <- directions]
+    isValid p = case cellAt m p of
+        Just Open -> True
+        Just Treasure -> True
+        _ -> False
 
 -- From the lectures
 data Queue a = Queue [a] [a] deriving (Show, Eq)
@@ -236,5 +250,24 @@ dequeue (Queue l []) = dequeue $ Queue [] (reverse l)
 dequeue (Queue l (r : rs)) = Just (r, Queue l rs)
 
 shortestPath :: Maze -> CellPosition -> CellPosition -> Either Error [CellPosition]
+shortestPath m s t = case (cellAt m s, cellAt m t) of
+    (Blocked, _) -> Left InvalidCell
+    (_, Blocked) -> Left InvalidCell
+    (Nothing, _) -> Left OutOfBounds
+    (_, Nothing) -> Left OutOfBounds
+    (_, _) -> 
+        -- todo: assuming ((enqueue getAvailableMoves emptyQueue s)) is a flattend list
+        bfs (enqueue getAvailableMoves emptyQueue s) m t
+        where
+            bfs :: Queue a -> Maze -> CellPosition -> Queue a
+            bfs (Queue (x : xs) r) m t = case getAvailableMoves m x of
+                Left _ -> Left NoPath
+                Right [] -> Left NoPath
+                -- assuming (enqueue getAvailableMoves emptyQueue s) flattend
+                Right l -> if t `elem` l then   bfs (enqueue l (Queue xs r)) m t
+
+-- handled edge cases but left to handle bfs logic (mostly what we need to return and how to find minimum)
+-- need to handle when we reached the target
+
 -- Bonus (15 points)
 treasureHunt :: Maze -> CellPosition -> Either Error [CellPosition]
