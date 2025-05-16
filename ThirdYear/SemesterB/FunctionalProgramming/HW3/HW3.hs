@@ -16,6 +16,7 @@ import Data.Ratio (denominator, numerator, (%))
 import Data.Set qualified as Set
 import Foreign (toBool)
 import Data.Bool (Bool(False))
+import GHC.Base (undefined)
 
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Show, Eq)
 
@@ -151,16 +152,71 @@ iconcat (xs :> xss) = case xs of
   (y : ys) -> y :> iconcat (ys :> xss)
 
 grouped :: Integer -> InfiniteList a -> InfiniteList [a]
-grouped n list = let l = itoList list in [take n l :> grouped (drop n l)]
+grouped n l = appendN n l
+    where
+        appendN :: Integer -> InfiniteList a -> InfiniteList [a]
+        appendN 0 ys = [] :> appendN n ys
+        appendN _ (y :> ys) = case appendN (n - 1) ys of
+            zs :> zss -> (y : zs) :> zss
 
 reverseN :: Integer -> InfiniteList a -> InfiniteList a
+reverseN n l = iconcat $ imap reverseList $ grouped n l
+    where
+        reverseList :: [a] -> [a]
+        reverseList [] = []
+        reverseList (x : xs) = reverseList xs ++ [x]
+
 sqrtInf :: Rational -> InfiniteList Rational
+sqrtInf x =  iiterate (\ current -> ( current + x / current ) / 2) x
+
+-- type InfiniteString = InfiniteList Char
+-- longDivision :: Rational -> InfiniteString
+-- longDivision r
+--   | r < 0     = '-' :> longDivision (abs r)
+--   | otherwise = let (n, d) = (numerator r, denominator r)
+--                     (whole, rem) = n `divMod` d
+--                 in  mapDigits (show whole ++ ".") rem d
+--   where
+--     mapDigits :: String -> Integer -> Integer -> InfiniteString
+--     mapDigits (c:cs) rem d = c :> mapDigits cs rem d
+--     mapDigits [] rem d =
+--       let (digit, newRem) = (rem * 10) `divMod` d
+--       in intToDigit (fromInteger digit) :> mapDigits [] newRem d
+
 type InfiniteString = InfiniteList Char
 longDivision :: Rational -> InfiniteString
+longDivision x | x < 0 = '-' :> (longDivison x)
+longDivision x = case (numerator(abs(x)), denominator(abs(x))) of
+    (x, 0) -> undefined
+    (0, y) -> '0' :> '.' :> irepeat '0'
+    (x, y) -> divison 0 (reverseNum x) y
+    
+    where
+        divison :: Double -> Integer -> Integer -> InfiniteString
+        divison remainder x y = case x of
+            0 -> if remainder > 0 then '.' :> show(remainder `div` y) else '.' :> irepeat '0'
+            z -> let msb = remainder + (z `mod` 10); res = msb `div` y in 
+                if msb >= y then 
+                    show(res) :> divison (10 * (msb - res * y)) (x `div` 10) y  
+                else divison (10 * (remainder + msb)) (x `div` 10) y
+
+        reverseDigits :: Integer -> Integer
+        reverseDigits n = case n of
+            x -> (x `mod` 10) * 10 ^ (countDigits x - 1) + reverseDigits (x `div` 10)
+            _ -> 0
+        
+        countDigits :: Integer -> Integer
+        countDigits n = case abs n of
+            x | x >= 10 -> 1 + countDigits (x `div` 10)
+            _ -> 1
+
 sqrtStrings :: Rational -> InfiniteList InfiniteString
+sqrtStrings x = imap longDivision (sqrtInf x)
 
 -- Section 3: Maze
 data Cell = Open | Blocked | Treasure deriving (Show, Eq, Ord)
+
+
 data Maze = Maze {width :: Int, height :: Int, layout :: [[Cell]]} deriving Show
 cellAt :: Maze -> CellPosition -> Maybe Cell
 data CellPosition = CellPosition {row :: Int, col :: Int} deriving (Show, Eq, Ord)
