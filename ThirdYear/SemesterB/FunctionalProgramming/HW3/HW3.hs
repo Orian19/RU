@@ -88,7 +88,6 @@ classify tr
                 | seenEmpty = False
                 | otherwise = levelOrder (xs ++ [l, r]) seenEmpty
 
--- todo: change style?
 isBalanced :: Tree a -> Bool
 isBalanced = fst . testBalanced
   where
@@ -269,12 +268,7 @@ treasureHunt maze start = let
 
     where
         findTreasures :: Maze -> [CellPosition]
-        findTreasures maze' =
-            [ CellPosition r c
-            | (r, row) <- zip [0..] (layout maze')
-            , (c, cell) <- zip [0..] row
-            , isTreasure cell
-            ]
+        findTreasures maze' = [CellPosition r c | (r, row) <- zip [0..] (layout maze'), (c, cell) <- zip [0..] row, isTreasure cell]
 
         isTreasure :: Cell -> Bool
         isTreasure = \case
