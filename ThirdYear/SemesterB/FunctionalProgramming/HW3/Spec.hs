@@ -57,13 +57,13 @@ perfectTree = Tree
                   (Tree (singleTree 8) 4 (singleTree 9))
                   2
                   (Tree (singleTree 10) 5 (singleTree 11))
+              )
                 1
                 (Tree
                   (Tree (singleTree 12) 6 (singleTree 13))
                   3
                   (Tree (singleTree 14) 7 (singleTree 15))
                 )
-              )
 
 degenerateTree :: Tree Int
 degenerateTree = Tree 
@@ -205,9 +205,12 @@ main = hspec $ do
         
       it "returns the correct traversal for a small tree" $
         preOrderTraversal fullTree `shouldBe` [1, 2, 4, 8, 9, 5, 3]
-        
-      it "returns the correct traversal for a large tree" $
-        preOrderTraversal perfectTree `shouldBe` [1, 2, 4, 5, 3, 6, 7]
+          
+      it "returns the correct traversal for a prefect tree" $
+        preOrderTraversal perfectTree `shouldBe` [1, 2, 4, 8, 9, 5, 10, 11, 3, 6, 12, 13, 7, 14, 15]
+
+      -- it "returns the correct traversal for a large tree" $
+      --   preOrderTraversal perfectTree `shouldBe` [1, 2, 4, 5, 3, 6, 7]
     
     describe "inOrderTraversal" $ do
       it "returns an empty list for an empty tree" $
@@ -216,8 +219,10 @@ main = hspec $ do
       it "returns the correct traversal for a small tree" $
         inOrderTraversal fullTree `shouldBe` [8, 4, 9, 2, 5, 1, 3]
         
-      it "returns the correct traversal for a large tree" $
-        inOrderTraversal perfectTree `shouldBe` [4, 2, 5, 1, 6, 3, 7]
+      it "returns the correct traversal for a perfect tree" $
+        inOrderTraversal perfectTree `shouldBe` [8, 4, 9, 2, 10, 5, 11, 1, 12, 6, 13, 3, 14, 7, 15]
+      -- it "returns the correct traversal for a large tree" $
+      --   inOrderTraversal perfectTree `shouldBe` [4, 2, 5, 1, 6, 3, 7]
     
     describe "postOrderTraversal" $ do
       it "returns an empty list for an empty tree" $
@@ -226,8 +231,11 @@ main = hspec $ do
       it "returns the correct traversal for a small tree" $
         postOrderTraversal fullTree `shouldBe` [8, 9, 4, 5, 2, 3, 1]
         
-      it "returns the correct traversal for a large tree" $
-        postOrderTraversal perfectTree `shouldBe` [4, 5, 2, 6, 7, 3, 1]
+      it "returns the correct traversal for a perfect tree" $
+        postOrderTraversal perfectTree `shouldBe` [8, 9, 4, 10, 11, 5, 2, 12, 13, 6, 14, 15, 7, 3, 1]
+
+      -- it "returns the correct traversal for a large tree" $
+      --   postOrderTraversal perfectTree `shouldBe` [4, 5, 2, 6, 7, 3, 1]
     
     -- todo: add similar tests for all other classes
     describe "isComplete" $ do
