@@ -261,16 +261,17 @@ shortestPath m s t = case (cellAt m s, cellAt m t) of
 
 -- Bonus (15 points)
 treasureHunt :: Maze -> CellPosition -> Either Error [CellPosition]
-treasureHunt m s = let 
-                    treasures = findTreasures m  --(CellPosition 0 0) 
-                    in if treasures == [] then Left NoPath else Right $ findAllPaths m s treasures
+treasureHunt maze start = let 
+                    treasures = findTreasures maze
+                    in if treasures == []
+                       then Left NoPath 
+                       else findAllPaths maze start treasures
+
     where
-        -- findTreasures :: Maze -> CellPosition -> [CellPosition]
-        -- findTreasures m pos = filter isTreasure (concat (layout m))
         findTreasures :: Maze -> [CellPosition]
-        findTreasures m =
+        findTreasures maze' =
             [ CellPosition r c
-            | (r, row) <- zip [0..] (layout m)
+            | (r, row) <- zip [0..] (layout maze')
             , (c, cell) <- zip [0..] row
             , isTreasure cell
             ]
@@ -280,8 +281,12 @@ treasureHunt m s = let
             Treasure -> True
             _ -> False
 
-        findAllPaths :: Maze -> CellPosition -> [CellPosition] -> [CellPosition]
-        findAllPaths m s = \case
-            [] -> []
-            (x : xs) -> (shortestPath m s x ++ x) ++ findAllPaths m x xs
+        findAllPaths :: Maze -> CellPosition -> [CellPosition] -> Either Error [CellPosition]
+        findAllPaths maze' start' = \case
+            [] -> Right []
+            (x : xs) -> case shortestPath maze' start' x of
+                Left err -> Left err
+                Right pathToX -> case findAllPaths maze' x xs of
+                    Left err -> Left err
+                    Right restOfPath -> Right (pathToX ++ [x] ++ restOfPath)
         
