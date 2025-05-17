@@ -240,7 +240,7 @@ getAvailableMoves m pos = case cellAt m pos of
     Just Blocked -> Left InvalidCell
     Just _ -> Right $ filter isValid neighbors
   where
-    directions = [(1,0), (-1,0), (0,1), (0,-1)]
+    directions = [(0, -1), (0, 1), (1, 0), (-1, 0)]
     neighbors = [CellPosition (row pos + dr) (col pos + dc) | (dr, dc) <- directions]
     isValid p = case cellAt m p of
         Just Open -> True

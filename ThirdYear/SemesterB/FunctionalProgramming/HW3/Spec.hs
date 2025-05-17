@@ -386,7 +386,7 @@ main = hspec $ do
         getAvailableMoves sampleMaze (CellPosition (-1) 42) `shouldBe` Left OutOfBounds
         
       it "handles edge cases correctly" $
-        getAvailableMoves sampleMaze (CellPosition 2 2) `shouldBe` Right [CellPosition 1 2, CellPosition 2 1]
+        getAvailableMoves sampleMaze (CellPosition 0 1) `shouldBe` Right [CellPosition 0 0, CellPosition 0 2]
     
     describe "shortestPath" $ do
       it "finds the shortest path between two points" $
