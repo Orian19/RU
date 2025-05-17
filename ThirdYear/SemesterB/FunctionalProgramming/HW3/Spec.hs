@@ -153,11 +153,11 @@ treasureMaze = Maze
   { width = 5
   , height = 5
   , layout =
-    [ [Open, Open, Open, Open, Open]
-    , [Open, Blocked, Blocked, Treasure, Open]
-    , [Open, Open, Open, Blocked, Open]
-    , [Blocked, Blocked, Open, Open, Open]
-    , [Treasure, Open, Open, Blocked, Treasure]
+    [ [Open,     Open,    Open,    Open,     Open]
+    , [Open,     Blocked, Blocked, Treasure, Open]
+    , [Open,     Open,    Open,    Blocked,  Open]
+    , [Blocked,  Blocked, Open,    Open,     Open]
+    , [Treasure, Open,    Open,    Blocked,  Treasure]
     ]
   }
 
@@ -406,6 +406,10 @@ main = hspec $ do
       
       it "returns same cell for identical start and end" $
         shortestPath sampleMaze (CellPosition 0 0) (CellPosition 0 0) `shouldBe` Right []
+      
+      it "returns same cell for identical start and end" $
+        shortestPath treasureMaze (CellPosition 0 4) (CellPosition 4 0) `shouldBe` Right [CellPosition 1 4, CellPosition 2 4, CellPosition 3 4, CellPosition 3 3, CellPosition 3 2, CellPosition 4 2, CellPosition 4 1]
+
 
     -- Bonus section
     -- describe "treasureHunt" $ do
