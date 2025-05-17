@@ -390,8 +390,7 @@ main = hspec $ do
     
     describe "shortestPath" $ do
       it "finds the shortest path between two points" $
-        shortestPath sampleMaze (CellPosition 0 1) (CellPosition 2 2) `shouldBe` 
-          Right [CellPosition 0 2, CellPosition 1 2, CellPosition 2 1]
+        shortestPath sampleMaze (CellPosition 0 1) (CellPosition 2 2) `shouldBe` Right [CellPosition 0 2, CellPosition 1 2]
         
       it "returns empty list for adjacent cells" $
         shortestPath sampleMaze (CellPosition 0 0) (CellPosition 0 1) `shouldBe` Right []

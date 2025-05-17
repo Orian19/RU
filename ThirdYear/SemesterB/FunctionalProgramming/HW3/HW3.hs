@@ -298,9 +298,9 @@ shortestPath m s t = case (cellAt m s, cellAt m t) of
             buildPath :: [(CellPosition, CellPosition)] -> CellPosition -> CellPosition -> Either Error [CellPosition]
             buildPath cells start end = case backtrack end of
                 Nothing -> Left NoPath
-                Just path -> Right (reverse path)
+                Just path -> Right (reverse (drop 1 path))
                 where
-                    backtrack cur = if cur == start then Just [start]
+                    backtrack cur = if cur == start then Just []
                         else case lookup cur cells of
                             Nothing -> Nothing
                             Just prevPos -> case backtrack prevPos of
