@@ -147,6 +147,18 @@ blockedMaze = Maze
     , [Open, Open, Open]
     ]
   }
+manyTreasureMaze :: Maze
+manyTreasureMaze = Maze
+  { width = 5
+  , height = 5
+  , layout =
+    [ [Open,     Open,    Treasure,    Open,     Treasure]
+    , [Open,     Blocked, Blocked, Treasure, Open]
+    , [Open,     Treasure,    Open,    Blocked,  Open]
+    , [Blocked,  Blocked, Open,    Open,     Treasure]
+    , [Treasure, Treasure,    Treasure,    Blocked,  Treasure]
+    ]
+  }
 
 treasureMaze :: Maze
 treasureMaze = Maze
@@ -450,3 +462,23 @@ main = hspec $ do
             
       it "returns NoPath when treasures are unreachable" $
         treasureHunt blockedMaze (CellPosition 0 0) `shouldBe` Left NoPath
+      
+      it "handles lots of treasures mazee" $ do
+        let result = treasureHunt manyTreasureMaze (CellPosition 0 0)
+        case result of
+          Left err -> fail $ "Expected Right, but got Left " ++ show err
+          Right path -> do
+            -- Check that all treasures are visited
+            let treasurePositions = [CellPosition 0 2, CellPosition 0 4, CellPosition 1 3, CellPosition 2 1, CellPosition 3 4, CellPosition 4 0, CellPosition 4 1, CellPosition 4 2, CellPosition 4 4]
+            let reachable = all (\pos -> pos `elem` path || pos == CellPosition 0 0) treasurePositions
+            reachable `shouldBe` True
+
+      it "handles pdf mazee" $ do
+        let result = treasureHunt sampleMaze (CellPosition 0 0)
+        case result of
+          Left err -> fail $ "Expected Right, but got Left " ++ show err
+          Right path -> do
+            -- Check that all treasures are visited
+            let treasurePositions = [CellPosition 2 2, CellPosition 2 0]
+            let reachable = all (\pos -> pos `elem` path || pos == CellPosition 0 0) treasurePositions
+            reachable `shouldBe` True
