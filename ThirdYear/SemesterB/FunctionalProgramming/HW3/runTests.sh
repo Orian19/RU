@@ -1,10 +1,13 @@
 #!/bin/bash
 
-echo "--- Compiling HW2.hs ---"
-ghc -Wall -Werror HW2.hs
+echo "--- Compiling HW3.hs ---"
+ghc -Wall -Werror -package containers HW3.hs
 
 echo "--- Compiling Spec.hs ---"
-ghc --make -v Spec.hs -o Spec -package HUnit
+ghc --make -v Spec.hs -o Spec \
+     -package HUnit \
+     -package hspec \
+     -package containers
 
 echo "--- Running Spec ---"
 ./Spec

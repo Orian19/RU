@@ -21,8 +21,8 @@ import GHC.Base (undefined)
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Show, Eq)
 
 -- Useful utility
-singleTree :: a -> Tree a
-singleTree x = Tree Empty x Empty
+-- singleTree :: a -> Tree a
+-- singleTree x = Tree Empty x Empty
 
 treeSize :: Tree a -> Int
 treeSize = \case
@@ -71,7 +71,7 @@ classify tr
   where
     isDegenerate :: Tree a -> Bool
     isDegenerate = \case
-      Empty -> False
+      Empty -> True
       Tree Empty _ Empty -> True
       Tree Empty _ r -> isDegenerate r
       Tree l _ Empty -> isDegenerate l
@@ -142,13 +142,28 @@ iconcat (xs :> xss) = case xs of
   [] -> iconcat xss
   (y : ys) -> y :> iconcat (ys :> xss)
 
+-- grouped :: Integer -> InfiniteList a -> InfiniteList [a]
+-- grouped n l = appendN n l
+--     where
+--         appendN :: Integer -> InfiniteList a -> InfiniteList [a]
+--         appendN 0 ys = [] :> appendN n ys
+--         appendN _ (y :> ys) = case appendN (n - 1) ys of
+--             zs :> zss -> (y : zs) :> zss
+
 grouped :: Integer -> InfiniteList a -> InfiniteList [a]
-grouped n l = appendN n l
-    where
-        appendN :: Integer -> InfiniteList a -> InfiniteList [a]
-        appendN 0 ys = [] :> appendN n ys
-        appendN _ (y :> ys) = case appendN (n - 1) ys of
-            zs :> zss -> (y : zs) :> zss
+grouped n l
+    | n <= 0    = error "grouped: n must be positive"
+    | otherwise = makeGroups n l
+  where
+    makeGroups :: Integer -> InfiniteList a -> InfiniteList [a]
+    makeGroups k xs = let (group, rest) = takeGroup k xs
+                      in group :> makeGroups k rest
+    
+    -- Take k elements and return them along with the rest of the list
+    takeGroup :: Integer -> InfiniteList a -> ([a], InfiniteList a)
+    takeGroup 0 xs = ([], xs)
+    takeGroup k (x :> xs) = let (group, rest) = takeGroup (k-1) xs
+                            in (x : group, rest)
 
 reverseN :: Integer -> InfiniteList a -> InfiniteList a
 reverseN n l = iconcat $ imap reverseList $ grouped n l
@@ -160,46 +175,49 @@ reverseN n l = iconcat $ imap reverseList $ grouped n l
 sqrtInf :: Rational -> InfiniteList Rational
 sqrtInf x =  iiterate (\ current -> ( current + x / current ) / 2) x
 
--- type InfiniteString = InfiniteList Char
--- longDivision :: Rational -> InfiniteString
--- longDivision r
---   | r < 0     = '-' :> longDivision (abs r)
---   | otherwise = let (n, d) = (numerator r, denominator r)
---                     (whole, rem) = n `divMod` d
---                 in  mapDigits (show whole ++ ".") rem d
---   where
---     mapDigits :: String -> Integer -> Integer -> InfiniteString
---     mapDigits (c:cs) rem d = c :> mapDigits cs rem d
---     mapDigits [] rem d =
---       let (digit, newRem) = (rem * 10) `divMod` d
---       in intToDigit (fromInteger digit) :> mapDigits [] newRem d
-
 type InfiniteString = InfiniteList Char
 longDivision :: Rational -> InfiniteString
-longDivision x | x < 0 = '-' :> (longDivison x)
-longDivision x = case (numerator(abs(x)), denominator(abs(x))) of
-    (x, 0) -> undefined
-    (0, y) -> '0' :> '.' :> irepeat '0'
-    (x, y) -> divison 0 (reverseNum x) y
-    
-    where
-        divison :: Double -> Integer -> Integer -> InfiniteString
-        divison remainder x y = case x of
-            0 -> if remainder > 0 then '.' :> show(remainder `div` y) else '.' :> irepeat '0'
-            z -> let msb = remainder + (z `mod` 10); res = msb `div` y in 
-                if msb >= y then 
-                    show(res) :> divison (10 * (msb - res * y)) (x `div` 10) y  
-                else divison (10 * (remainder + msb)) (x `div` 10) y
+longDivision r
+  | r < 0 = '-' :> longDivision (negate r)
+  | otherwise = let (n, d) = (numerator r, denominator r)
+                    (whole, rem) = n `divMod` d
+                in  mapDigits (show whole ++ ".") rem d
+  where
+    mapDigits :: String -> Integer -> Integer -> InfiniteString
+    mapDigits (c:cs) rem d = c :> mapDigits cs rem d
+    mapDigits [] rem d =
+      let (digit, newRem) = (rem * 10) `divMod` d
+          digitChar = case show digit of
+            (c : _) -> c
+            [] -> error "impossible: show produced empty string"
+      in digitChar :> mapDigits [] newRem d
 
-        reverseDigits :: Integer -> Integer
-        reverseDigits n = case n of
-            x -> (x `mod` 10) * 10 ^ (countDigits x - 1) + reverseDigits (x `div` 10)
-            _ -> 0
+-- type InfiniteString = InfiniteList Char
+-- longDivision :: Rational -> InfiniteString
+-- longDivision x | x < 0 = '-' :> (longDivision x)
+-- longDivision x = case (numerator(abs(x)), denominator(abs(x))) of
+--     (x, 0) -> undefined
+--     (0, y) -> '0' :> '.' :> irepeat '0'
+--     (x, y) -> divison 0 (reverseNum x) y
+    
+--     where
+--         divison :: Double -> Integer -> Integer -> InfiniteString
+--         divison remainder x y = case x of
+--             0 -> if remainder > 0 then '.' :> show(remainder `div` y) else '.' :> irepeat '0'
+--             z -> let msb = remainder + (z `mod` 10); res = msb `div` y in 
+--                 if msb >= y then 
+--                     show(res) :> divison (10 * (msb - res * y)) (x `div` 10) y  
+--                 else divison (10 * (remainder + msb)) (x `div` 10) y
+
+--         reverseDigits :: Integer -> Integer
+--         reverseDigits n = case n of
+--             x -> (x `mod` 10) * 10 ^ (countDigits x - 1) + reverseDigits (x `div` 10)
+--             _ -> 0
         
-        countDigits :: Integer -> Integer
-        countDigits n = case abs n of
-            x | x >= 10 -> 1 + countDigits (x `div` 10)
-            _ -> 1
+--         countDigits :: Integer -> Integer
+--         countDigits n = case abs n of
+--             x | x >= 10 -> 1 + countDigits (x `div` 10)
+--             _ -> 1
 
 sqrtStrings :: Rational -> InfiniteList InfiniteString
 sqrtStrings x = imap longDivision (sqrtInf x)
@@ -242,50 +260,53 @@ dequeue (Queue l (r : rs)) = Just (r, Queue l rs)
 
 shortestPath :: Maze -> CellPosition -> CellPosition -> Either Error [CellPosition]
 shortestPath m s t = case (cellAt m s, cellAt m t) of
-    (Blocked, _) -> Left InvalidCell
-    (_, Blocked) -> Left InvalidCell
+    (Just Blocked, _) -> Left InvalidCell
+    (_, Just Blocked) -> Left InvalidCell
     (Nothing, _) -> Left OutOfBounds
     (_, Nothing) -> Left OutOfBounds
-    (_, _) -> getPath (let moves = getAvailableMoves m s in (prev s moves) ++ bfs (Set . fromList [s]) (flattenQueue (enqueue moves emptyQueue)) m t) s t
+    _ -> case getAvailableMoves m s of
+         Left err -> Left err
+         Right moves -> let initialPath = prevMoves s moves 
+                            initialQueue = enqueueList moves emptyQueue
+                            visitedSet = Set.fromList [s]
+                         in buildPath (initialPath ++ bfsSearch visitedSet initialQueue) s t
         where
-            flattenList :: [[a]] -> [a]
-            flattenList = foldr (++) ([])
+            prevMoves :: CellPosition -> [CellPosition] -> [(CellPosition, CellPosition)]
+            prevMoves _ [] = []
+            prevMoves parent (x:xs) = (x, parent) : prevMoves parent xs
 
-            flattenQueue :: Queue [[a]] [a] -> Queue [a] [a]
-            flattenQueue (Queue l r) = Queue (flattenList l) r
+            bfsSearch :: Set.Set CellPosition -> Queue CellPosition -> [(CellPosition, CellPosition)]
+            bfsSearch _ q | dequeue q == Nothing = []
+            bfsSearch visited q =
+                case dequeue q of
+                  Just (curPos, q')
+                    | curPos == t -> []
+                    | curPos `Set.member` visited -> bfsSearch visited q'
+                    | otherwise ->
+                        case getAvailableMoves m curPos of
+                          Left _ -> bfsSearch visited q'
+                          Right nextMoves -> 
+                              let cells = map (\pos -> (pos, curPos)) nextMoves
+                                  newVisited = Set.insert curPos visited
+                                  newQueue = enqueueList nextMoves q'
+                              in cells ++ bfsSearch newVisited newQueue
+                  Nothing -> []
 
-            prev :: CellPosition -> Either Error [CellPosition] -> [CellPosition, CellPosition]
-            prev parent = \case
-                Left _ -> []
-                Right [] -> []
-                Right (x : xs) -> (x, parent) ++ prev parent (Right xs)
+            enqueueList :: [a] -> Queue a -> Queue a
+            enqueueList xs q = foldr enqueue q xs
 
-            bfs :: Set CellPosition -> Queue a -> Maze -> CellPosition -> [CellPosition, CellPosition]
-            bfs visited (Queue (x : xs) r) m t = case getAvailableMoves m x of
-                Left _ -> Left NoPath
-                Right [] -> Left NoPath
-                Right l_moves -> if x `Set.member` visited then [] else (prev x (Right l_moves)) ++ bfs (x `Set.insert` visited) (flattenQueue (enqueue l_moves (Queue xs r))) m t
-
-            getPath :: [(CellPosition, CellPosition)] -> CellPosition -> CellPosition -> Either Error [CellPosition]
-            getPath ((c, p) : xs) s t = case (c, p) of
-                (s, _) -> []
-                (step, t) -> getPath xs step ++ step
-
-            -- getPath :: [(CellPosition, CellPosition)] -> CellPosition -> CellPosition -> Either Error [CellPosition]
-            -- getPath cells s t = case backtrack t of
-            --     Nothing -> Left NoPath
-            --     Just path -> Right (reverse path)
-            --     where
-            --         backtrack cur = if cur == s then Just [s]
-            --             else case lookup cur cells of
-            --                 Nothing -> Nothing
-            --                 Just prev -> case backtrack prev of
-            --                     Nothing -> Nothing
-            --                     Just pth -> Just (cur : pth)
-
-
--- handled edge cases but left to handle bfs logic (mostly what we need to return and how to find minimum)
--- need to handle when we reached the target
+            buildPath :: [(CellPosition, CellPosition)] -> CellPosition -> CellPosition -> Either Error [CellPosition]
+            buildPath cells start end = case backtrack end of
+                Nothing -> Left NoPath
+                Just path -> Right (reverse path)
+                where
+                    backtrack cur = if cur == start then Just [start]
+                        else case lookup cur cells of
+                            Nothing -> Nothing
+                            Just prevPos -> case backtrack prevPos of
+                                Nothing -> Nothing
+                                Just pth -> Just (cur : pth)
 
 -- Bonus (15 points)
-treasureHunt :: Maze -> CellPosition -> Either Error [CellPosition]
+-- treasureHunt :: Maze -> CellPosition -> Either Error [CellPosition]
+
