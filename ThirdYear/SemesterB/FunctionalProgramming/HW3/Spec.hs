@@ -342,6 +342,15 @@ main = hspec $ do
         take 4 (map show (itoList (sqrtInf 2))) `shouldBe` ["2 % 1", "3 % 2", "17 % 12", "577 % 408"]
     
     describe "longDivision" $ do
+      it "handles fractions properly" $
+        take 5 (itoList (longDivision (0 Ratio.% 1))) `shouldBe` "0.000"
+
+      it "handles fractions properly" $
+        take 5 (itoList (longDivision (2 Ratio.% 1))) `shouldBe` "2.000"
+
+      it "converts rational numbers to decimal strings" $
+        take 10 (itoList (longDivision (2 Ratio.% 7))) `shouldBe` "0.28571428"
+
       it "converts rational numbers to decimal strings" $
         take 5 (itoList (longDivision (1 Ratio.% 3))) `shouldBe` "0.333"
         
@@ -412,32 +421,32 @@ main = hspec $ do
 
 
     -- Bonus section
-    -- describe "treasureHunt" $ do
-    --   it "finds a path that visits all treasures" $ do
-    --     let result = treasureHunt sampleMaze (CellPosition 0 0)
-    --     case result of
-    --       Left err -> fail $ "Expected Right, but got Left " ++ show err
-    --       Right path -> do
-    --         -- Check that all treasures are visited
-    --         let treasurePositions = [CellPosition 2 0, CellPosition 2 2]
-    --         let reachable = all (\pos -> pos `elem` path || pos == CellPosition 0 0) treasurePositions
-    --         reachable `shouldBe` True
+    describe "treasureHunt" $ do
+      it "finds a path that visits all treasures" $ do
+        let result = treasureHunt sampleMaze (CellPosition 0 0)
+        case result of
+          Left err -> fail $ "Expected Right, but got Left " ++ show err
+          Right path -> do
+            -- Check that all treasures are visited
+            let treasurePositions = [CellPosition 2 0, CellPosition 2 2]
+            let reachable = all (\pos -> pos `elem` path || pos == CellPosition 0 0) treasurePositions
+            reachable `shouldBe` True
             
-    --   it "returns InvalidCell for blocked starting positions" $
-    --     treasureHunt sampleMaze (CellPosition 1 1) `shouldBe` Left InvalidCell
+      it "returns InvalidCell for blocked starting positions" $
+        treasureHunt sampleMaze (CellPosition 1 1) `shouldBe` Left InvalidCell
         
-    --   it "returns OutOfBounds for out-of-bounds starting positions" $
-    --     treasureHunt sampleMaze (CellPosition 3 3) `shouldBe` Left OutOfBounds
+      it "returns OutOfBounds for out-of-bounds starting positions" $
+        treasureHunt sampleMaze (CellPosition 3 3) `shouldBe` Left OutOfBounds
         
-    --   it "handles complex mazes" $ do
-    --     let result = treasureHunt treasureMaze (CellPosition 0 0)
-    --     case result of
-    --       Left err -> fail $ "Expected Right, but got Left " ++ show err
-    --       Right path -> do
-    --         -- Check that all treasures are visited
-    --         let treasurePositions = [CellPosition 1 3, CellPosition 4 0, CellPosition 4 4]
-    --         let reachable = all (\pos -> pos `elem` path || pos == CellPosition 0 0) treasurePositions
-    --         reachable `shouldBe` True
+      it "handles complex mazes" $ do
+        let result = treasureHunt treasureMaze (CellPosition 0 0)
+        case result of
+          Left err -> fail $ "Expected Right, but got Left " ++ show err
+          Right path -> do
+            -- Check that all treasures are visited
+            let treasurePositions = [CellPosition 1 3, CellPosition 4 0, CellPosition 4 4]
+            let reachable = all (\pos -> pos `elem` path || pos == CellPosition 0 0) treasurePositions
+            reachable `shouldBe` True
             
-    --   it "returns NoPath when treasures are unreachable" $
-    --     treasureHunt blockedMaze (CellPosition 0 0) `shouldBe` Left NoPath
+      it "returns NoPath when treasures are unreachable" $
+        treasureHunt blockedMaze (CellPosition 0 0) `shouldBe` Left NoPath

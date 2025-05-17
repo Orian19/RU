@@ -20,10 +20,6 @@ import GHC.Base (undefined)
 
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Show, Eq)
 
--- Useful utility
--- singleTree :: a -> Tree a
--- singleTree x = Tree Empty x Empty
-
 treeSize :: Tree a -> Int
 treeSize = \case
     Empty -> 0
@@ -33,12 +29,6 @@ treeHeight :: Tree a -> Int
 treeHeight = \case
     Empty -> 0
     Tree l _ r -> 1 + max (treeHeight l) (treeHeight r)
-
-log2 :: Int -> Int
-log2 = \case
-    x | x <= 0 -> undefined
-    1 -> 0
-    x -> 1 + log2  (x `div` 2)
 
 -- DLR
 preOrderTraversal :: Tree a -> [a]
@@ -142,28 +132,17 @@ iconcat (xs :> xss) = case xs of
   [] -> iconcat xss
   (y : ys) -> y :> iconcat (ys :> xss)
 
--- grouped :: Integer -> InfiniteList a -> InfiniteList [a]
--- grouped n l = appendN n l
---     where
---         appendN :: Integer -> InfiniteList a -> InfiniteList [a]
---         appendN 0 ys = [] :> appendN n ys
---         appendN _ (y :> ys) = case appendN (n - 1) ys of
---             zs :> zss -> (y : zs) :> zss
-
 grouped :: Integer -> InfiniteList a -> InfiniteList [a]
 grouped n l
-    | n <= 0    = error "grouped: n must be positive"
+    | n <= 0 = undefined
     | otherwise = makeGroups n l
   where
     makeGroups :: Integer -> InfiniteList a -> InfiniteList [a]
-    makeGroups k xs = let (group, rest) = takeGroup k xs
-                      in group :> makeGroups k rest
+    makeGroups k xs = let (group, rest) = takeGroup k xs in group :> makeGroups k rest
     
-    -- Take k elements and return them along with the rest of the list
     takeGroup :: Integer -> InfiniteList a -> ([a], InfiniteList a)
     takeGroup 0 xs = ([], xs)
-    takeGroup k (x :> xs) = let (group, rest) = takeGroup (k-1) xs
-                            in (x : group, rest)
+    takeGroup k (x :> xs) = let (group, rest) = takeGroup (k - 1) xs in (x : group, rest)
 
 reverseN :: Integer -> InfiniteList a -> InfiniteList a
 reverseN n l = iconcat $ imap reverseList $ grouped n l
@@ -180,44 +159,17 @@ longDivision :: Rational -> InfiniteString
 longDivision r
   | r < 0 = '-' :> longDivision (negate r)
   | otherwise = let (n, d) = (numerator r, denominator r)
-                    (whole, rem) = n `divMod` d
-                in  mapDigits (show whole ++ ".") rem d
+                    (divRes, remainder) = n `divMod` d
+                in iLongDivRes (show divRes ++ ".") remainder d
   where
-    mapDigits :: String -> Integer -> Integer -> InfiniteString
-    mapDigits (c:cs) rem d = c :> mapDigits cs rem d
-    mapDigits [] rem d =
-      let (digit, newRem) = (rem * 10) `divMod` d
+    iLongDivRes :: String -> Integer -> Integer -> InfiniteString
+    iLongDivRes (c : cs) remainder d = c :> iLongDivRes cs remainder d
+    iLongDivRes [] remainder d =
+      let (digit, newRem) = (remainder * 10) `divMod` d
           digitChar = case show digit of
             (c : _) -> c
-            [] -> error "impossible: show produced empty string"
-      in digitChar :> mapDigits [] newRem d
-
--- type InfiniteString = InfiniteList Char
--- longDivision :: Rational -> InfiniteString
--- longDivision x | x < 0 = '-' :> (longDivision x)
--- longDivision x = case (numerator(abs(x)), denominator(abs(x))) of
---     (x, 0) -> undefined
---     (0, y) -> '0' :> '.' :> irepeat '0'
---     (x, y) -> divison 0 (reverseNum x) y
-    
---     where
---         divison :: Double -> Integer -> Integer -> InfiniteString
---         divison remainder x y = case x of
---             0 -> if remainder > 0 then '.' :> show(remainder `div` y) else '.' :> irepeat '0'
---             z -> let msb = remainder + (z `mod` 10); res = msb `div` y in 
---                 if msb >= y then 
---                     show(res) :> divison (10 * (msb - res * y)) (x `div` 10) y  
---                 else divison (10 * (remainder + msb)) (x `div` 10) y
-
---         reverseDigits :: Integer -> Integer
---         reverseDigits n = case n of
---             x -> (x `mod` 10) * 10 ^ (countDigits x - 1) + reverseDigits (x `div` 10)
---             _ -> 0
-        
---         countDigits :: Integer -> Integer
---         countDigits n = case abs n of
---             x | x >= 10 -> 1 + countDigits (x `div` 10)
---             _ -> 1
+            [] -> undefined
+      in digitChar :> iLongDivRes [] newRem d
 
 sqrtStrings :: Rational -> InfiniteList InfiniteString
 sqrtStrings x = imap longDivision (sqrtInf x)
@@ -266,30 +218,30 @@ shortestPath m s t = case (cellAt m s, cellAt m t) of
     (_, Nothing) -> Left OutOfBounds
     _ -> case getAvailableMoves m s of
          Left err -> Left err
-         Right moves -> let initialPath = prevMoves s moves 
-                            initialQueue = enqueueList moves emptyQueue
+         Right moves -> let initPath = prevMoves s moves 
+                            initQueue = enqueueList moves emptyQueue
                             visitedSet = Set.fromList [s]
-                         in buildPath (initialPath ++ bfsSearch visitedSet initialQueue) s t
+                        in buildPath (initPath ++ bfs visitedSet initQueue) s t
         where
             prevMoves :: CellPosition -> [CellPosition] -> [(CellPosition, CellPosition)]
             prevMoves _ [] = []
-            prevMoves parent (x:xs) = (x, parent) : prevMoves parent xs
+            prevMoves parent (x : xs) = (x, parent) : prevMoves parent xs
 
-            bfsSearch :: Set.Set CellPosition -> Queue CellPosition -> [(CellPosition, CellPosition)]
-            bfsSearch _ q | dequeue q == Nothing = []
-            bfsSearch visited q =
+            bfs :: Set.Set CellPosition -> Queue CellPosition -> [(CellPosition, CellPosition)]
+            bfs _ q | dequeue q == Nothing = []
+            bfs visited q =
                 case dequeue q of
                   Just (curPos, q')
                     | curPos == t -> []
-                    | curPos `Set.member` visited -> bfsSearch visited q'
+                    | curPos `Set.member` visited -> bfs visited q'
                     | otherwise ->
                         case getAvailableMoves m curPos of
-                          Left _ -> bfsSearch visited q'
+                          Left _ -> bfs visited q'
                           Right nextMoves -> 
-                              let cells = map (\pos -> (pos, curPos)) nextMoves
-                                  newVisited = Set.insert curPos visited
+                              let cells = prevMoves curPos nextMoves
+                                  newVisited = curPos `Set.insert` visited
                                   newQueue = enqueueList nextMoves q'
-                              in cells ++ bfsSearch newVisited newQueue
+                              in cells ++ bfs newVisited newQueue
                   Nothing -> []
 
             enqueueList :: [a] -> Queue a -> Queue a
@@ -308,5 +260,28 @@ shortestPath m s t = case (cellAt m s, cellAt m t) of
                                 Just pth -> Just (cur : pth)
 
 -- Bonus (15 points)
--- treasureHunt :: Maze -> CellPosition -> Either Error [CellPosition]
+treasureHunt :: Maze -> CellPosition -> Either Error [CellPosition]
+treasureHunt m s = let 
+                    treasures = findTreasures m  --(CellPosition 0 0) 
+                    in if treasures == [] then Left NoPath else Right $ findAllPaths m s treasures
+    where
+        -- findTreasures :: Maze -> CellPosition -> [CellPosition]
+        -- findTreasures m pos = filter isTreasure (concat (layout m))
+        findTreasures :: Maze -> [CellPosition]
+        findTreasures m =
+            [ CellPosition r c
+            | (r, row) <- zip [0..] (layout m)
+            , (c, cell) <- zip [0..] row
+            , isTreasure cell
+            ]
 
+        isTreasure :: Cell -> Bool
+        isTreasure = \case
+            Treasure -> True
+            _ -> False
+
+        findAllPaths :: Maze -> CellPosition -> [CellPosition] -> [CellPosition]
+        findAllPaths m s = \case
+            [] -> []
+            (x : xs) -> (shortestPath m s x ++ x) ++ findAllPaths m x xs
+        
