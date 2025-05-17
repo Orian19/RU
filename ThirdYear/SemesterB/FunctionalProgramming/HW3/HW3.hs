@@ -246,16 +246,43 @@ shortestPath m s t = case (cellAt m s, cellAt m t) of
     (_, Blocked) -> Left InvalidCell
     (Nothing, _) -> Left OutOfBounds
     (_, Nothing) -> Left OutOfBounds
-    (_, _) -> 
-        -- todo: assuming ((enqueue getAvailableMoves emptyQueue s)) is a flattend list
-        bfs (enqueue getAvailableMoves emptyQueue s) m t
+    (_, _) -> getPath (let moves = getAvailableMoves m s in (prev s moves) ++ bfs (Set . fromList [s]) (flattenQueue (enqueue moves emptyQueue)) m t) s t
         where
-            bfs :: Queue a -> Maze -> CellPosition -> Queue a
-            bfs (Queue (x : xs) r) m t = case getAvailableMoves m x of
+            flattenList :: [[a]] -> [a]
+            flattenList = foldr (++) ([])
+
+            flattenQueue :: Queue [[a]] [a] -> Queue [a] [a]
+            flattenQueue (Queue l r) = Queue (flattenList l) r
+
+            prev :: CellPosition -> Either Error [CellPosition] -> [CellPosition, CellPosition]
+            prev parent = \case
+                Left _ -> []
+                Right [] -> []
+                Right (x : xs) -> (x, parent) ++ prev parent (Right xs)
+
+            bfs :: Set CellPosition -> Queue a -> Maze -> CellPosition -> [CellPosition, CellPosition]
+            bfs visited (Queue (x : xs) r) m t = case getAvailableMoves m x of
                 Left _ -> Left NoPath
                 Right [] -> Left NoPath
-                -- assuming (enqueue getAvailableMoves emptyQueue s) flattend
-                Right l -> if t `elem` l then   bfs (enqueue l (Queue xs r)) m t
+                Right l_moves -> if x `Set.member` visited then [] else (prev x (Right l_moves)) ++ bfs (x `Set.insert` visited) (flattenQueue (enqueue l_moves (Queue xs r))) m t
+
+            getPath :: [(CellPosition, CellPosition)] -> CellPosition -> CellPosition -> Either Error [CellPosition]
+            getPath ((c, p) : xs) s t = case (c, p) of
+                (s, _) -> []
+                (step, t) -> getPath xs step ++ step
+
+            -- getPath :: [(CellPosition, CellPosition)] -> CellPosition -> CellPosition -> Either Error [CellPosition]
+            -- getPath cells s t = case backtrack t of
+            --     Nothing -> Left NoPath
+            --     Just path -> Right (reverse path)
+            --     where
+            --         backtrack cur = if cur == s then Just [s]
+            --             else case lookup cur cells of
+            --                 Nothing -> Nothing
+            --                 Just prev -> case backtrack prev of
+            --                     Nothing -> Nothing
+            --                     Just pth -> Just (cur : pth)
+
 
 -- handled edge cases but left to handle bfs logic (mostly what we need to return and how to find minimum)
 -- need to handle when we reached the target
