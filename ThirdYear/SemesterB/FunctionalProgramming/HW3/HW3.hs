@@ -133,9 +133,13 @@ iconcat (xs :> xss) = case xs of
 
 grouped :: Integer -> InfiniteList a -> InfiniteList [a]
 grouped n l
-    | n <= 0 = undefined
+    | n < 0 = undefined
+    | n == 0 = mapIL (\x -> [x]) l
     | otherwise = makeGroups n l
   where
+    mapIL :: (a -> b) -> InfiniteList a -> InfiniteList b
+    mapIL f (x :> xs) = f x :> mapIL f xs
+
     makeGroups :: Integer -> InfiniteList a -> InfiniteList [a]
     makeGroups k xs = let (group, rest) = takeGroup k xs in group :> makeGroups k rest
     
