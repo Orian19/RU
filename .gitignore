@@ -182,10 +182,8 @@ fabric.properties
 *.jar
 *.docx
 *.csv
-*.ipynb
 node_modules
 *.jpg
-*.ipynb
 *.rar
 obj
 *.doc
