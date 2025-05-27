@@ -32,19 +32,74 @@ class Jsonable a where
   toJson :: a -> Json
   fromJson :: Json -> Maybe a
 
-instance Jsonable Bool
-instance Jsonable JString
-instance Jsonable Integer
-instance Jsonable Double
-instance (Jsonable a, Jsonable b) => Jsonable (a, b)
-instance (Jsonable a, Jsonable b, Jsonable c) => Jsonable (a, b, c)
-instance Jsonable a => Jsonable (Maybe a)
-instance (Jsonable l, Jsonable r) => Jsonable (Either l r)
-instance Jsonable a => Jsonable [a]
+instance Jsonable Bool where
+  toJson = JsonBool
+  fromJson JsonBool b = Just b
+  fromJson _ = Nothing
+
+instance Jsonable JString where
+  toJson (JString s) = JsonString (JString s)
+  fromJson (JsonString (JString s)) = Just (JString s)
+  fromJson _ = Nothing
+
+instance Jsonable Integer where
+  toJson = JsonInt
+  fromJson (JsonInt i) = Just i
+  fromJson _ = Nothing
+
+instance Jsonable Double where 
+  toJson = JsonDouble
+  fromJson (JsonDouble d) = Just d
+  fromJson _ = Nothing
+
+instance (Jsonable a, Jsonable b) => Jsonable (a, b) where
+  toJson (a, b) = JsonArray [toJson a, toJson b]
+  fromJson (JsonArray [a, b]) = Just (fromJson a, fromJson b)
+  fromJson _ = Nothing
+
+instance (Jsonable a, Jsonable b, Jsonable c) => Jsonable (a, b, c) where
+  toJson (a, b, c) = JsonArray [toJson a, toJson b, toJson c]
+  fromJson (JsonArray [a, b, c]) = Just (fromJson a, fromJson b, fromJson c)
+  fromJson _ = Nothing
+
+instance Jsonable a => Jsonable (Maybe a) where
+  toJson = \case
+    Nothing -> JsonNull
+    Just a -> toJson a
+  fromJson = \case
+    JsonNull -> Just Nothing
+    j -> case fromJson j of
+      Just x -> Just (Just x)
+      Nothing -> Nothing
+
+instance (Jsonable l, Jsonable r) => Jsonable (Either l r) where
+  toJson = \case
+    Left l -> JsonArray [JsonString (JString "Left"), toJson l]
+    Right r -> JsonArray [JsonString (JString "Right"), toJson r]
+  fromJson (JsonArray [JsonString (JString "Left"), jsonL]) = case fromJson jsonL of
+    Just l -> Just (Left l)
+    Nothing -> Nothing
+  fromJson (JsonArray [JsonString (JString "Right"), jsonR]) = case fromJson jsonR of
+    Just r -> Just (Right r)
+    Nothing -> Nothing
+  fromJson _ = Nothing
+
+instance Jsonable a => Jsonable [a] where
+  toJson l = JsonArray (map toJson l)
+  fromJson (JsonArray jsonList) = collectMaybes (map fromJson jsonList)
+    where
+      collectMaybes :: [Maybe a] -> Maybe [a]
+      collectMaybes [] = Just []
+      collectMaybes (Nothing : _) = Nothing
+      collectMaybes (Just x : xs) = case collectMaybes xs of
+        Nothing -> Nothing
+        Just ys -> Just (x : ys)
+  fromJson _ = Nothing
 
 data Matrix a = Matrix [[a]] deriving (Show, Eq)
 
-instance (Jsonable a, Ord a) => Jsonable (MS.MultiSet a)
+instance (Jsonable a, Ord a) => Jsonable (MS.MultiSet a) where
+
 instance Jsonable a => Jsonable (Matrix a)
 
 -- A sparse matrix is a more efficient representation of a matrix when most of the entries are zero.
@@ -56,6 +111,7 @@ data SparseMatrix a
   , entries :: Map.Map (Integer, Integer) a
   }
   deriving (Show, Eq)
+
 instance Jsonable a => Jsonable (SparseMatrix a)
 
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Show, Eq)
