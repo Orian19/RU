@@ -84,23 +84,32 @@ instance (Jsonable l, Jsonable r) => Jsonable (Either l r) where
     Nothing -> Nothing
   fromJson _ = Nothing
 
+removeMaybes :: [Maybe a] -> Maybe [a]
+removeMaybes [] = Just []
+removeMaybes (Nothing : _) = Nothing
+removeMaybes (Just x : xs) = case removeMaybes xs of
+  Nothing -> Nothing
+  Just ys -> Just (x : ys)
+
 instance Jsonable a => Jsonable [a] where
   toJson l = JsonArray (map toJson l)
-  fromJson (JsonArray jsonList) = collectMaybes (map fromJson jsonList)
-    where
-      collectMaybes :: [Maybe a] -> Maybe [a]
-      collectMaybes [] = Just []
-      collectMaybes (Nothing : _) = Nothing
-      collectMaybes (Just x : xs) = case collectMaybes xs of
-        Nothing -> Nothing
-        Just ys -> Just (x : ys)
+  fromJson (JsonArray l) = Just $ removeMaybes (map fromJson l)
   fromJson _ = Nothing
 
+instance (Jsonable a, Ord a) => Jsonable (MS.MultiSet a) where
+  toJson m = JsonArray (map toJson (MS.toList m))
+  fromJson (JsonArray l) = case removeMaybes (map fromJson l) of
+    Just xs -> Just (MS.fromList xs)
+    Nothing -> Nothing
+  
 data Matrix a = Matrix [[a]] deriving (Show, Eq)
 
-instance (Jsonable a, Ord a) => Jsonable (MS.MultiSet a) where
-
-instance Jsonable a => Jsonable (Matrix a)
+instance Jsonable a => Jsonable (Matrix a) where
+  toJson m = JsonArray (map toJson m)
+  fromJson (JsonArray m) = case removeMaybes (map fromJson m) of
+      Just ls -> Just (Matrix ls)
+      Nothing -> Nothing
+  fromJson _ = Nothing
 
 -- A sparse matrix is a more efficient representation of a matrix when most of the entries are zero.
 -- Note that zero values should not appear in the map.
@@ -112,37 +121,113 @@ data SparseMatrix a
   }
   deriving (Show, Eq)
 
-instance Jsonable a => Jsonable (SparseMatrix a)
+instance Jsonable a => Jsonable (SparseMatrix a) where
+  toJson (SparseMatrix r c es) = JsonObject $ Map.fromList
+    [ ("rows", JsonInt r)
+    , ("cols", JsonInt c)
+    , ("entries", JsonObject $
+        Map.mapKeys (\(i,j) -> show i ++ "," ++ show j) $  -- todo: "," / ", "?
+        Map.map toJson es)
+    ]
+
+-- todo: filter 0 values
+
+  -- toJson (SparseMatrix r c e) = JsonObject $ Map.fromList
+  --   [ ("rows", toJson r)
+  --   , ("cols", toJson c) 
+  --   , ("entries", toJson (Map.toList e))
+  --   ]
+  -- fromJson (JsonObject obj) = case (Map.lookup "rows" obj, Map.lookup "cols" obj, Map.lookup "entries" obj) of
+  --   (Just rowsJson, Just colsJson, Just entriesJson) -> 
+  --     case (fromJson rowsJson, fromJson colsJson, fromJson entriesJson) of
+  --       (Just r, Just c, Just entryList) -> Just (SparseMatrix r c (Map.fromList entryList))
+  --       _ -> Nothing
+  --   _ -> Nothing
+  -- fromJson _ = Nothing
 
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Show, Eq)
-instance Jsonable a => Jsonable (Tree a)
+instance Jsonable a => Jsonable (Tree a) where
+  toJson Empty = JsonObject $ Map.fromList [("Empty", JsonNull)]
+  toJson (Tree l x r) = JsonObject $ Map.fromList [("Tree", JsonArray (toJson l, toJson x, toJson r))]
+  fromJson (JsonObject o) = case Map.lookup "Empty" o of
+    Just JsonNull -> Just Empty
+    _ ->
+      case Map.lookup "Tree" o of
+        Just (JsonArray [jl, jx, jr]) ->
+          case (fromJson jl, fromJson jx, fromJson jr) of
+            (Just l, Just x, Just r) -> Just (Tree l x r)
+            _ -> Nothing
+        _ -> Nothing
+  fromJson _ = Nothing
 
 -- Section 3: Num
 -- Subsection: Num instances
-instance Num Bool
+instance Num Bool where
+  b1 + b2 = b1 /= b2
+  b1 - b2 = b1 /= b2
+  b1 * b2 = b1 && b2
+  abs = id
+  signum = id
+  -- signum b = if b then 1 else 0
+  fromInteger = odd
+  -- fromInteger n = (n `mod` 2) == 1
 
-data Expression
+data Expression a
   = Iden String
-  | Lit Integer
-  | Plus Expression Expression
-  | Minus Expression Expression
-  | Mult Expression Expression
-  | Div Expression Expression
-  | Signum Expression
+  | Lit a
+  | Plus (Expression a) (Expression a)
+  | Minus (Expression a) (Expression a)
+  | Mult (Expression a) (Expression a)
+  | Div (Expression a) (Expression a)
+  | Signum (Expression a)
   deriving (Eq, Show)
-instance Num Expression
+  
+instance Num a => Num (Expression a) where
+  (+) = Plus
+  (-) = Minus
+  (*) = Mult
+  abs (Lit a) = Lit (abs a) 
+  abs _ = undefined
+  signum = Signum
+  fromInteger = Lit . fromInteger
 
 newtype MatrixSum a = MatrixSum {getMS :: Matrix a} deriving (Show, Eq)
 newtype MatrixMult a = MatrixMult {getMM :: Matrix a} deriving (Show, Eq)
-instance Num a => Semigroup (MatrixSum a)
-instance Num a => Semigroup (MatrixMult a)
+
+instance Num a => Semigroup (MatrixSum a) where
+  (<>) :: MatrixSum a -> MatrixSum a -> MatrixSum a
+  (MatrixSum (Matrix a)) <> (MatrixSum (Matrix b)) = MatrixSum $ Matrix $ zipWith (zipWith (+)) a b
+
+instance Num a => Semigroup (MatrixMult a) where
+  (<>) :: MatrixMult a -> MatrixMult a -> MatrixMult a
+  (MatrixMult (Matrix a)) <> (MatrixMult (Matrix b)) = MatrixMult $ Matrix $ 
+    map (\row -> map (dotProduct row) (transpose b)) a
+    where
+      dotProduct :: [a] -> [a] -> a
+      dotProduct xs ys = sum (zipWith (*) xs ys)
 
 newtype SparseMatrixSum a = SparseMatrixSum {getSMS :: SparseMatrix a} deriving (Show, Eq)
 newtype SparseMatrixMult a = SparseMatrixMult {getSMM :: SparseMatrix a} deriving (Show, Eq)
 
 -- These have Eq constraint so you can filter out zero values, which should not appear in sparse matrices.
-instance (Num a, Eq a) => Semigroup (SparseMatrixSum a)
-instance (Num a, Eq a) => Semigroup (SparseMatrixMult a)
+instance (Num a, Eq a) => Semigroup (SparseMatrixSum a) where
+  (<>) :: SparseMatrixSum a -> SparseMatrixSum a -> SparseMatrixSum a
+  (SparseMatrixSum (SparseMatrix r1, c1, e1)) <> (SparseMatrixSum (SparseMatrix r2, c2, e2))
+    | r1 /= r2 || c1 /= c2 = error "dims not compatibale"
+    | otherwise = 
+      SparseMatrixSum $ SparseMatrix r1 c1 $ Map.filter (/= 0) $ Map.unionWith (+) e1 e2
+
+instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
+  (<>) :: SparseMatrixMult a -> SparseMatrixMult a -> SparseMatrixMult a
+  (SparseMatrixMult (SparseMatrix r1 c1 e1)) <> (SparseMatrixMult (SparseMatrix r2 c2 e2))
+    | c1 /= r2 = error "dims not compatibale"
+    | otherwise = 
+      SparseMatrixMult $ SparseMatrix r1 c2 $ Map.filter (/= 0) $ Map.fromList $
+        [ ((i, j), sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]])
+        | i <- [0..r1-1], j <- [0..c2-1]
+        , let val = sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]]
+        , val /= 0
+        ]
 
 -- Subsection: General functions
 evalPoly :: Num a => [a] -> a -> a
@@ -152,6 +237,8 @@ type I = Int
 type J = Int
 pathsOfLengthK :: Length -> I -> J -> Matrix Int -> Int
 hasPath :: I -> J -> Matrix Int -> Bool
+
 -- Section 4: Simplify expressions
-simplify :: Expression -> Expression
-inlineExpressions :: [(Expression, String)] -> [(Expression, String)]
+-- We constrain the type to Integral so we can use integer division
+simplify :: (Expression Integer) -> (Expression Integer)
+inlineExpressions :: [(Expression Integer, String)] -> [(Expression Integer, String)]
