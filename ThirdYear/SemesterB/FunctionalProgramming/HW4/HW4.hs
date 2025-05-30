@@ -277,19 +277,52 @@ hasPath i j (Matrix m) = compute 1
 -- We constrain the type to Integral so we can use integer division
 simplify :: (Expression Integer) -> (Expression Integer)
 simplify = \case
-  Iden x = Iden x
-  Plus 
-  Minus
-  Mult
-  Div
-  Signum
+  Lit n -> Lit n
+  Iden s -> Iden s
+  
+  Plus e1 e2 -> 
+    let s1 = simplify e1
+        s2 = simplify e2
+    in case (s1, s2) of
+      (Lit 0, e) -> e
+      (e, Lit 0) -> e
+      (Lit a, Lit b) -> Lit (a + b)
+      _ -> Plus s1 s2
+  
+  Minus e1 e2 ->
+    let s1 = simplify e1
+        s2 = simplify e2
+    in case (s1, s2) of
+      (e, Lit 0) -> e
+      (Lit a, Lit b) -> Lit (a - b)
+      _ -> Minus s1 s2
+  
+  Mult e1 e2 ->
+    let s1 = simplify e1
+        s2 = simplify e2
+    in case (s1, s2) of
+      (Lit 1, e) -> e
+      (e, Lit 1) -> e
+      -- (Lit 0, _) -> Lit 0      -- 0 * e = 0
+      -- (_, Lit 0) -> Lit 0      -- e * 0 = 0
+      (Lit a, Lit b) -> Lit (a * b)
+      _ -> Mult s1 s2
+  
+  Div e1 e2 ->
+    let s1 = simplify e1
+        s2 = simplify e2
+    in case (s1, s2) of
+      (e, Lit 1) -> e
+      (Lit a, Lit b) | b /= 0 -> Lit (a `div` b)
+      _ -> Div s1 s2
 
-  | Iden String
-  | Lit a
-  | Plus (Expression a) (Expression a)
-  | Minus (Expression a) (Expression a)
-  | Mult (Expression a) (Expression a)
-  | Div (Expression a) (Expression a)
-  | Signum (Expression a)
+  Signum e ->
+    let s = simplify e
+    in case s of
+      Lit n -> Lit (signum n)
+      Mult e1 e2 -> simplify (Mult (Signum e1) (Signum e2))
+      Div e1 e2 -> simplify (Div (Signum e1) (Signum e2))
+      _ -> Signum s
 
-inlineExpressions :: [(Expression Integer, String)] -> [(Expression Integer, String)]
+
+-- inlineExpressions :: [(Expression Integer, String)] -> [(Expression Integer, String)]
