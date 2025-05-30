@@ -34,7 +34,7 @@ class Jsonable a where
 
 instance Jsonable Bool where
   toJson = JsonBool
-  fromJson JsonBool b = Just b
+  fromJson (JsonBool b) = Just b
   fromJson _ = Nothing
 
 instance Jsonable JString where
@@ -54,12 +54,16 @@ instance Jsonable Double where
 
 instance (Jsonable a, Jsonable b) => Jsonable (a, b) where
   toJson (a, b) = JsonArray [toJson a, toJson b]
-  fromJson (JsonArray [a, b]) = Just (fromJson a, fromJson b)
+  fromJson (JsonArray [jsonA, jsonB]) = case (fromJson jsonA, fromJson jsonB) of
+    (Just a, Just b) -> Just (a, b)
+    _ -> Nothing
   fromJson _ = Nothing
 
 instance (Jsonable a, Jsonable b, Jsonable c) => Jsonable (a, b, c) where
   toJson (a, b, c) = JsonArray [toJson a, toJson b, toJson c]
-  fromJson (JsonArray [a, b, c]) = Just (fromJson a, fromJson b, fromJson c)
+  fromJson (JsonArray [jsonA, jsonB, jsonC]) = case (fromJson jsonA, fromJson jsonB, fromJson jsonC) of
+    (Just a, Just b, Just c) -> Just (a, b, c)
+    _ -> Nothing
   fromJson _ = Nothing
 
 instance Jsonable a => Jsonable (Maybe a) where
@@ -92,8 +96,8 @@ removeMaybes (Just x : xs) = case removeMaybes xs of
   Just ys -> Just (x : ys)
 
 instance Jsonable a => Jsonable [a] where
-  toJson l = JsonArray (map toJson l)
-  fromJson (JsonArray l) = Just $ removeMaybes (map fromJson l)
+  toJson xs = JsonArray (map toJson xs)
+  fromJson (JsonArray jsonList) = removeMaybes (map fromJson jsonList)
   fromJson _ = Nothing
 
 instance (Jsonable a, Ord a) => Jsonable (MS.MultiSet a) where
@@ -101,11 +105,12 @@ instance (Jsonable a, Ord a) => Jsonable (MS.MultiSet a) where
   fromJson (JsonArray l) = case removeMaybes (map fromJson l) of
     Just xs -> Just (MS.fromList xs)
     Nothing -> Nothing
+  fromJson _ = Nothing
   
 data Matrix a = Matrix [[a]] deriving (Show, Eq)
 
 instance Jsonable a => Jsonable (Matrix a) where
-  toJson m = JsonArray (map toJson m)
+  toJson (Matrix m) = JsonArray (map toJson m)
   fromJson (JsonArray m) = case removeMaybes (map fromJson m) of
       Just ls -> Just (Matrix ls)
       Nothing -> Nothing
@@ -148,7 +153,7 @@ instance Jsonable a => Jsonable (SparseMatrix a) where
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Show, Eq)
 instance Jsonable a => Jsonable (Tree a) where
   toJson Empty = JsonObject $ Map.fromList [("Empty", JsonNull)]
-  toJson (Tree l x r) = JsonObject $ Map.fromList [("Tree", JsonArray (toJson l, toJson x, toJson r))]
+  toJson (Tree l x r) = JsonObject $ Map.fromList [("Tree", JsonArray [toJson l, toJson x, toJson r])]
   fromJson (JsonObject o) = case Map.lookup "Empty" o of
     Just JsonNull -> Just Empty
     _ ->
@@ -169,8 +174,7 @@ instance Num Bool where
   abs = id
   signum = id
   -- signum b = if b then 1 else 0
-  fromInteger = odd
-  -- fromInteger n = (n `mod` 2) == 1
+  fromInteger n = (n `mod` 2) == 1
 
 data Expression a
   = Iden String
@@ -212,7 +216,7 @@ newtype SparseMatrixMult a = SparseMatrixMult {getSMM :: SparseMatrix a} derivin
 -- These have Eq constraint so you can filter out zero values, which should not appear in sparse matrices.
 instance (Num a, Eq a) => Semigroup (SparseMatrixSum a) where
   (<>) :: SparseMatrixSum a -> SparseMatrixSum a -> SparseMatrixSum a
-  (SparseMatrixSum (SparseMatrix r1, c1, e1)) <> (SparseMatrixSum (SparseMatrix r2, c2, e2))
+  (SparseMatrixSum (SparseMatrix r1 c1 e1)) <> (SparseMatrixSum (SparseMatrix r2 c2 e2))
     | r1 /= r2 || c1 /= c2 = error "dims not compatibale"
     | otherwise = SparseMatrixSum $ SparseMatrix r1 c1 $ Map.filter (/= 0) $ Map.unionWith (+) e1 e2
 
@@ -228,28 +232,28 @@ instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
         , val /= 0
         ]
 
-instance Num a => Monoid (Bool a) where
-  mempty :: Num a => Bool as
-  mempty = False
+-- instance Num a => Monoid (Bool a) where
+--   mempty :: Num a => Bool as
+--   mempty = False
 
-instance Num a => Monoid (Integer a) where
-  mempty :: Num a => Integer as
-  mempty = 0
+-- instance Num a => Monoid (Integer a) where
+--   mempty :: Num a => Integer as
+--   mempty = 0
 
-instance Num a => Monoid (Expression a) where
-  mempty :: Num a => Expression as
-  mempty = Lit 0
+-- instance Num a => Monoid (Expression a) where
+--   mempty :: Num a => Expression as
+--   mempty = Lit 0
 
 -- Subsection: General functions
 evalPoly :: Num a => [a] -> a -> a
 -- evalPoly coefficients x = foldr (\coeff acc -> coeff + x * acc) 0 coefficients
 evalPoly coefficients x = eval coefficients x 0
   where
-    eval :: [a] -> a -> a -> a
-    eval cs x n = case cs of
-      [] -> mempty
-      (y : ys) -> y * x ^ n + eval ys x (n + 1)
-
+    eval :: Num a => [a] -> a -> Int -> a
+    eval cs y n = case cs of
+      [] -> 0
+      (z : zs) -> z * y ^ n + eval zs y (n + 1)
+      
 type Length = Int
 type I = Int
 type J = Int
@@ -258,9 +262,9 @@ pathsOfLengthK k i j m = let Matrix result = getMM (mult (MatrixMult m) k)
                          in result !! i !! j
   where
     mult :: Num a => MatrixMult a -> Int -> MatrixMult a
-    mult m k
-      | k <= 1 = m
-      | otherwise = m <> mult m (k - 1)
+    mult mat n
+      | n <= 1 = mat
+      | otherwise = mat <> mult mat (n - 1)
 
 hasPath :: I -> J -> Matrix Int -> Bool
 hasPath i j (Matrix m) = compute 1
@@ -269,7 +273,7 @@ hasPath i j (Matrix m) = compute 1
     compute k
       | k >= length m = False
       | pathsOfLengthK k i j (Matrix m) > 0 = True
-      | otherwise = go (k + 1)
+      | otherwise = compute (k + 1)
 
 -- hasPath i j (Matrix m) = let nodes = length(m) in pathsOfLengthK $ nodes i j m > 0
 
