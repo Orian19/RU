@@ -122,28 +122,28 @@ data SparseMatrix a
   deriving (Show, Eq)
 
 instance Jsonable a => Jsonable (SparseMatrix a) where
-  toJson (SparseMatrix r c es) = JsonObject $ Map.fromList
-    [ ("rows", JsonInt r)
-    , ("cols", JsonInt c)
-    , ("entries", JsonObject $
-        Map.mapKeys (\(i,j) -> show i ++ "," ++ show j) $  -- todo: "," / ", "?
-        Map.map toJson es)
-    ]
+  -- toJson (SparseMatrix r c es) = JsonObject $ Map.fromList
+  --   [ ("rows", JsonInt r)
+  --   , ("cols", JsonInt c)
+  --   , ("entries", JsonObject $
+  --       Map.mapKeys (\(i,j) -> show i ++ "," ++ show j) $  -- todo: "," / ", "?
+  --       Map.map toJson es)
+  --   ]
 
 -- todo: filter 0 values
 
-  -- toJson (SparseMatrix r c e) = JsonObject $ Map.fromList
-  --   [ ("rows", toJson r)
-  --   , ("cols", toJson c) 
-  --   , ("entries", toJson (Map.toList e))
-  --   ]
-  -- fromJson (JsonObject obj) = case (Map.lookup "rows" obj, Map.lookup "cols" obj, Map.lookup "entries" obj) of
-  --   (Just rowsJson, Just colsJson, Just entriesJson) -> 
-  --     case (fromJson rowsJson, fromJson colsJson, fromJson entriesJson) of
-  --       (Just r, Just c, Just entryList) -> Just (SparseMatrix r c (Map.fromList entryList))
-  --       _ -> Nothing
-  --   _ -> Nothing
-  -- fromJson _ = Nothing
+  toJson (SparseMatrix r c e) = JsonObject $ Map.fromList
+    [ ("rows", toJson r)
+    , ("cols", toJson c) 
+    , ("entries", toJson (Map.toList e))
+    ]
+  fromJson (JsonObject obj) = case (Map.lookup "rows" obj, Map.lookup "cols" obj, Map.lookup "entries" obj) of
+    (Just rowsJson, Just colsJson, Just entriesJson) -> 
+      case (fromJson rowsJson, fromJson colsJson, fromJson entriesJson) of
+        (Just r, Just c, Just entryList) -> Just (SparseMatrix r c (Map.fromList entryList))
+        _ -> Nothing
+    _ -> Nothing
+  fromJson _ = Nothing
 
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Show, Eq)
 instance Jsonable a => Jsonable (Tree a) where
@@ -214,8 +214,7 @@ instance (Num a, Eq a) => Semigroup (SparseMatrixSum a) where
   (<>) :: SparseMatrixSum a -> SparseMatrixSum a -> SparseMatrixSum a
   (SparseMatrixSum (SparseMatrix r1, c1, e1)) <> (SparseMatrixSum (SparseMatrix r2, c2, e2))
     | r1 /= r2 || c1 /= c2 = error "dims not compatibale"
-    | otherwise = 
-      SparseMatrixSum $ SparseMatrix r1 c1 $ Map.filter (/= 0) $ Map.unionWith (+) e1 e2
+    | otherwise = SparseMatrixSum $ SparseMatrix r1 c1 $ Map.filter (/= 0) $ Map.unionWith (+) e1 e2
 
 instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
   (<>) :: SparseMatrixMult a -> SparseMatrixMult a -> SparseMatrixMult a
@@ -229,16 +228,68 @@ instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
         , val /= 0
         ]
 
+instance Num a => Monoid (Bool a) where
+  mempty :: Num a => Bool as
+  mempty = False
+
+instance Num a => Monoid (Integer a) where
+  mempty :: Num a => Integer as
+  mempty = 0
+
+instance Num a => Monoid (Expression a) where
+  mempty :: Num a => Expression as
+  mempty = Lit 0
+
 -- Subsection: General functions
 evalPoly :: Num a => [a] -> a -> a
+-- evalPoly coefficients x = foldr (\coeff acc -> coeff + x * acc) 0 coefficients
+evalPoly coefficients x = eval coefficients x 0
+  where
+    eval :: [a] -> a -> a -> a
+    eval cs x n = case cs of
+      [] -> mempty
+      (y : ys) -> y * x ^ n + eval ys x (n + 1)
 
 type Length = Int
 type I = Int
 type J = Int
 pathsOfLengthK :: Length -> I -> J -> Matrix Int -> Int
+pathsOfLengthK k i j m = let Matrix result = getMM (mult (MatrixMult m) k)
+                         in result !! i !! j
+  where
+    mult :: Num a => MatrixMult a -> Int -> MatrixMult a
+    mult m k
+      | k <= 1 = m
+      | otherwise = m <> mult m (k - 1)
+
 hasPath :: I -> J -> Matrix Int -> Bool
+hasPath i j (Matrix m) = compute 1
+  where
+    compute :: Int -> Bool
+    compute k
+      | k >= length m = False
+      | pathsOfLengthK k i j (Matrix m) > 0 = True
+      | otherwise = go (k + 1)
+
+-- hasPath i j (Matrix m) = let nodes = length(m) in pathsOfLengthK $ nodes i j m > 0
 
 -- Section 4: Simplify expressions
 -- We constrain the type to Integral so we can use integer division
 simplify :: (Expression Integer) -> (Expression Integer)
+simplify = \case
+  Iden x = Iden x
+  Plus 
+  Minus
+  Mult
+  Div
+  Signum
+
+  | Iden String
+  | Lit a
+  | Plus (Expression a) (Expression a)
+  | Minus (Expression a) (Expression a)
+  | Mult (Expression a) (Expression a)
+  | Div (Expression a) (Expression a)
+  | Signum (Expression a)
+
 inlineExpressions :: [(Expression Integer, String)] -> [(Expression Integer, String)]
