@@ -55,9 +55,9 @@ toList m = Set.foldr insertVal [] (_getMultiset m)
         insertVal :: Arg a Int -> [a] -> [a]
         insertVal (Arg a b) l = replicate b a ++ l
 
-instance Eq a => Eq (MultiSet a) where
-    (==) :: Eq a => MultiSet a -> MultiSet a -> Bool
-    (MultiSet x) == (MultiSet y) = Set.toList x == Set.toList y
+instance Ord a => Eq (MultiSet a) where
+  (==) :: Ord a => MultiSet a -> MultiSet a -> Bool
+  m1 == m2 = toList m1 == toList m2
 
 -- todo: need spaces between ","?
 -- instance (Ord a, Show a) => Show (MultiSet a) where

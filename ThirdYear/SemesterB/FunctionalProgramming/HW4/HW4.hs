@@ -220,6 +220,7 @@ instance (Num a, Eq a) => Semigroup (SparseMatrixSum a) where
     | r1 /= r2 || c1 /= c2 = error "dims not compatibale"
     | otherwise = SparseMatrixSum $ SparseMatrix r1 c1 $ Map.filter (/= 0) $ Map.unionWith (+) e1 e2
 
+-- todo: modify
 instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
   (<>) :: SparseMatrixMult a -> SparseMatrixMult a -> SparseMatrixMult a
   (SparseMatrixMult (SparseMatrix r1 c1 e1)) <> (SparseMatrixMult (SparseMatrix r2 c2 e2))
