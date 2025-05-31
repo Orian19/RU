@@ -35,14 +35,16 @@ count x m = case lookupS x (_getMultiset m) of
 
 -- | Insert one occurrence of an element into the multiset.
 insert :: Ord a => a -> MultiSet a -> MultiSet a
-insert x m = MultiSet $ Set.insert (Arg x (count x m + 1)) (_getMultiset m)
+insert x (MultiSet s) = case lookupS x s of
+  Nothing -> MultiSet $ Set.insert (Arg x 1) s
+  Just n -> MultiSet $ Set.insert (Arg x (n + 1)) (Set.delete (Arg x n) s)
 
 -- | Remove one occurrence of an element from the multiset.
 remove :: Ord a => a -> MultiSet a -> MultiSet a
 remove x (MultiSet s) = case lookupS x s of
     Nothing -> MultiSet s
     Just 1 -> MultiSet $ Set.delete (Arg x 1) s
-    Just n -> MultiSet $ Set.insert (Arg x (n - 1)) s --(Set.delete (Arg x n) s))
+    Just n -> MultiSet $ Set.insert (Arg x (n - 1)) (Set.delete (Arg x n) s)
 
 -- | Convert a list into a multiset.
 fromList :: Ord a => [a] -> MultiSet a
@@ -60,8 +62,6 @@ instance Ord a => Eq (MultiSet a) where
   m1 == m2 = toList m1 == toList m2
 
 -- todo: need spaces between ","?
--- instance (Ord a, Show a) => Show (MultiSet a) where
---     show m = "{" ++ intercalate ", " (map show (toList m)) ++ "}"
 instance Show a => Show (MultiSet a) where
   show :: Show a => MultiSet a -> String
   show m =

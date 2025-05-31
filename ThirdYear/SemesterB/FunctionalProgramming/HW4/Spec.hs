@@ -333,6 +333,20 @@ main = hspec $ do
       it "evaluates Bool all false (test 5)" $
         evalPoly [False, False, False] True @?= False
     
+    describe "evalPoly Expression" $ do
+      it "(test 0)" $
+        evalPoly [Lit 2, Lit 3] ( Lit 5) @?= Plus (Mult (Lit 2) (Lit 1)) (Plus (Mult (Lit 3) (Lit 5)) (Lit 0))
+      it "evaluates constant expression (test 1)" $
+        evalPoly [Lit 5] 2 @?= Plus (Mult (Lit 5) (Lit 1)) (Lit 0)
+      it "evaluates linear expression (test 2)" $
+        evalPoly [Lit 1, Lit 2] 3 @?= Plus (Mult (Lit 1) (Lit 1)) (Plus (Mult (Lit 2) (Lit 3)) (Lit 0))
+      it "evaluates quadratic expression (test 3)" $
+        evalPoly [Lit 1, Lit 2, Lit 3] 2 @?= Plus (Mult (Lit 1) (Lit 1)) (Plus (Mult (Lit 2) (Lit 2)) (Plus (Mult (Lit 3) (Mult (Lit 2) (Lit 2))) (Lit 0)))
+      it "evaluates empty expression (test 4)" $
+        evalPoly [] 5 @?= Lit 0
+      it "evaluates complex expression (test 5)" $
+        evalPoly [Lit 1, Lit 0, Lit (-3), Lit 2] (-1) @?= Plus (Mult (Lit 1) (Lit 1)) (Plus (Mult (Lit 0) (Minus (Lit 0) (Lit 1))) (Plus (Mult (Lit (-3)) (Mult (Minus (Lit 0) (Lit 1)) (Minus (Lit 0) (Lit 1)))) (Plus (Mult (Lit 2) (Mult (Mult (Minus (Lit 0) (Lit 1)) (Minus (Lit 0) (Lit 1))) (Minus (Lit 0) (Lit 1)))) (Lit 0))))
+    
     describe "pathsOfLengthK" $ do
       it "path of length 1 (test 0)" $
         pathsOfLengthK 1 1 2 adjMatrix @?= 1
@@ -523,172 +537,177 @@ main = hspec $ do
         let ms = insert 1 mempty
         count 1 ms @?= 1
 
-  -- describe "Section 10: SparseMatrix Semigroup Operations" $ do
+  describe "Section 10: SparseMatrix Semigroup Operations" $ do
 
-  --   describe "SparseMatrixSum operations" $ do
-  --     it "adds sparse matrices element-wise (test 1)" $ do
-  --       let sm1 = SparseMatrixSum sparseMatrix1
-  --           sm2 = SparseMatrixSum sparseMatrix2
-  --           result = sm1 <> sm2
-  --       -- Check that non-zero entries are combined properly
-  --       let SparseMatrix _ _ entries = getSMS result
-  --       Map.lookup (0,0) entries @?= Just 1
-  --       Map.lookup (0,1) entries @?= Just 2
-  --       Map.lookup (1,0) entries @?= Just 4
-  --       Map.lookup (1,1) entries @?= Just 5
+    describe "SparseMatrixSum operations" $ do
+      it "adds sparse matrices element-wise (test 1)" $ do
+        let sm1 = SparseMatrixSum sparseMatrix1
+            sm2 = SparseMatrixSum sparseMatrix2
+            result = sm1 <> sm2
+        -- Check that non-zero entries are combined properly
+        let SparseMatrix _ _ entries = getSMS result
+        Map.lookup (0,0) entries @?= Just 1
+        Map.lookup (0,1) entries @?= Just 2
+        Map.lookup (1,0) entries @?= Just 4
+        Map.lookup (1,1) entries @?= Just 5
       
-  --     it "adds with empty sparse matrix (test 2)" $ do
-  --       let sm1 = SparseMatrixSum sparseMatrix1
-  --           sm2 = SparseMatrixSum emptySparseMatrix
-  --           result = sm1 <> sm2
-  --       getSMS result @?= sparseMatrix1
+      it "adds with empty sparse matrix (test 2)" $ do
+        let sm1 = SparseMatrixSum sparseMatrix1
+            sm2 = SparseMatrixSum emptySparseMatrix
+            result = sm1 <> sm2
+        getSMS result @?= sparseMatrix1
       
-  --     it "adds same position entries (test 3)" $ do
-  --       let sparse1 = SparseMatrix 2 2 (Map.fromList [((0,0),3), ((1,1),4)])
-  --           sparse2 = SparseMatrix 2 2 (Map.fromList [((0,0),2), ((1,1),1)])
-  --           sm1 = SparseMatrixSum sparse1
-  --           sm2 = SparseMatrixSum sparse2
-  --           result = sm1 <> sm2
-  --       let SparseMatrix _ _ entries = getSMS result
-  --       Map.lookup (0,0) entries @?= Just 5
-  --       Map.lookup (1,1) entries @?= Just 5
+      it "adds same position entries (test 3)" $ do
+        let sparse1 = SparseMatrix 2 2 (Map.fromList [((0,0),3), ((1,1),4)])
+            sparse2 = SparseMatrix 2 2 (Map.fromList [((0,0),2), ((1,1),1)])
+            sm1 = SparseMatrixSum sparse1
+            sm2 = SparseMatrixSum sparse2
+            result = sm1 <> sm2
+        let SparseMatrix _ _ entries = getSMS result
+        Map.lookup (0,0) entries @?= Just 5
+        Map.lookup (1,1) entries @?= Just 5
       
-  --     it "associativity property (test 4)" $ do
-  --       let sm1 = SparseMatrixSum sparseMatrix1
-  --           sm2 = SparseMatrixSum sparseMatrix2
-  --           sm3 = SparseMatrixSum emptySparseMatrix
-  --           result1 = (sm1 <> sm2) <> sm3
-  --           result2 = sm1 <> (sm2 <> sm3)
-  --       getSMS result1 @?= getSMS result2
+      it "associativity property (test 4)" $ do
+        let sm1 = SparseMatrixSum sparseMatrix1
+            sm2 = SparseMatrixSum sparseMatrix2
+            sm3 = SparseMatrixSum emptySparseMatrix
+            result1 = (sm1 <> sm2) <> sm3
+            result2 = sm1 <> (sm2 <> sm3)
+        getSMS result1 @?= getSMS result2
       
-  --     it "single element sparse matrices (test 5)" $ do
-  --       let sparse1 = SparseMatrix 3 3 (Map.fromList [((1,1),10)])
-  --           sparse2 = SparseMatrix 3 3 (Map.fromList [((1,1),5)])
-  --           sm1 = SparseMatrixSum sparse1
-  --           sm2 = SparseMatrixSum sparse2
-  --           result = sm1 <> sm2
-  --       let SparseMatrix _ _ entries = getSMS result
-  --       Map.lookup (1,1) entries @?= Just 15
+      it "single element sparse matrices (test 5)" $ do
+        let sparse1 = SparseMatrix 3 3 (Map.fromList [((1,1),10)])
+            sparse2 = SparseMatrix 3 3 (Map.fromList [((1,1),5)])
+            sm1 = SparseMatrixSum sparse1
+            sm2 = SparseMatrixSum sparse2
+            result = sm1 <> sm2
+        let SparseMatrix _ _ entries = getSMS result
+        Map.lookup (1,1) entries @?= Just 15
       
-  --     it "filters out zero entries after addition (test 6)" $ do
-  --       let sparse1 = SparseMatrix 3 3 (Map.fromList [((0,0),5), ((1,1),3), ((2,2),-7)])
-  --           sparse2 = SparseMatrix 3 3 (Map.fromList [((0,0),-5), ((1,1),2), ((2,2),7)])
-  --           sm1 = SparseMatrixSum sparse1
-  --           sm2 = SparseMatrixSum sparse2
-  --           result = sm1 <> sm2
-  --       let SparseMatrix _ _ entries = getSMS result
-  --       Map.lookup (0,0) entries @?= Nothing  -- 5 + (-5) = 0, should be filtered out
-  --       Map.lookup (1,1) entries @?= Just 5   -- 3 + 2 = 5
-  --       Map.lookup (2,2) entries @?= Nothing  -- (-7) + 7 = 0, should be filtered out
-  --       Map.size entries @?= 1  -- Only one non-zero entry should remain
+      it "filters out zero entries after addition (test 6)" $ do
+        let sparse1 = SparseMatrix 3 3 (Map.fromList [((0,0),5), ((1,1),3), ((2,2),-7)])
+            sparse2 = SparseMatrix 3 3 (Map.fromList [((0,0),-5), ((1,1),2), ((2,2),7)])
+            sm1 = SparseMatrixSum sparse1
+            sm2 = SparseMatrixSum sparse2
+            result = sm1 <> sm2
+        let SparseMatrix _ _ entries = getSMS result
+        Map.lookup (0,0) entries @?= Nothing  -- 5 + (-5) = 0, should be filtered out
+        Map.lookup (1,1) entries @?= Just 5   -- 3 + 2 = 5
+        Map.lookup (2,2) entries @?= Nothing  -- (-7) + 7 = 0, should be filtered out
+        Map.size entries @?= 1  -- Only one non-zero entry should remain
     
-  --   describe "SparseMatrixMult operations" $ do
-  --     it "multiplies sparse matrices (test 1)" $ do
-  --       let diag1 = SparseMatrix 3 3 (Map.fromList [((0,0),2), ((1,1),3), ((2,2),4)])
-  --           diag2 = SparseMatrix 3 3 (Map.fromList [((0,0),1), ((1,1),2), ((2,2),1)])
-  --           sm1 = SparseMatrixMult diag1
-  --           sm2 = SparseMatrixMult diag2
-  --           result = sm1 <> sm2
-  --       let SparseMatrix _ _ entries = getSMM result
-  --       Map.lookup (0,0) entries @?= Just 2
-  --       Map.lookup (1,1) entries @?= Just 6
-  --       Map.lookup (2,2) entries @?= Just 4
+    describe "SparseMatrixMult operations" $ do
+      it "multiplies sparse matrices (test 1)" $ do
+        let diag1 = SparseMatrix 3 3 (Map.fromList [((0,0),2), ((1,1),3), ((2,2),4)])
+            diag2 = SparseMatrix 3 3 (Map.fromList [((0,0),1), ((1,1),2), ((2,2),1)])
+            sm1 = SparseMatrixMult diag1
+            sm2 = SparseMatrixMult diag2
+            result = sm1 <> sm2
+        let SparseMatrix _ _ entries = getSMM result
+        Map.lookup (0,0) entries @?= Just 2
+        Map.lookup (1,1) entries @?= Just 6
+        Map.lookup (2,2) entries @?= Just 4
       
-  --     it "multiplies with identity-like sparse (test 2)" $ do
-  --       let identity = SparseMatrix 3 3 (Map.fromList [((0,0),1), ((1,1),1), ((2,2),1)])
-  --           sm1 = SparseMatrixMult sparseMatrix1
-  --           sm2 = SparseMatrixMult identity
-  --           result = sm1 <> sm2
-  --       getSMM result @?= sparseMatrix1
+      it "multiplies with identity-like sparse (test 2)" $ do
+        let identity = SparseMatrix 3 3 (Map.fromList [((0,0),1), ((1,1),1), ((2,2),1)])
+            sm1 = SparseMatrixMult sparseMatrix1
+            sm2 = SparseMatrixMult identity
+            result = sm1 <> sm2
+        getSMM result @?= sparseMatrix1
       
-  --     it "multiplies with empty sparse matrix (test 3)" $ do
-  --       let sm1 = SparseMatrixMult sparseMatrix1
-  --           sm2 = SparseMatrixMult emptySparseMatrix
-  --           result = sm1 <> sm2
-  --       let SparseMatrix _ _ entries = getSMM result
-  --       Map.size entries @?= 0
+      it "multiplies with empty sparse matrix (test 3)" $ do
+        let sm1 = SparseMatrixMult sparseMatrix1
+            sm2 = SparseMatrixMult emptySparseMatrix
+            result = sm1 <> sm2
+        let SparseMatrix _ _ entries = getSMM result
+        Map.size entries @?= 0
       
-  --     it "associativity property (test 4)" $ do
-  --       let identity = SparseMatrix 2 2 (Map.fromList [((0,0),1), ((1,1),1)])
-  --           sparse = SparseMatrix 2 2 (Map.fromList [((0,0),2), ((0,1),3)])
-  --           sm1 = SparseMatrixMult identity
-  --           sm2 = SparseMatrixMult sparse
-  --           sm3 = SparseMatrixMult identity
-  --           result1 = (sm1 <> sm2) <> sm3
-  --           result2 = sm1 <> (sm2 <> sm3)
-  --       getSMM result1 @?= getSMM result2
+      it "associativity property (test 4)" $ do
+        let identity = SparseMatrix 2 2 (Map.fromList [((0,0),1), ((1,1),1)])
+            sparse = SparseMatrix 2 2 (Map.fromList [((0,0),2), ((0,1),3)])
+            sm1 = SparseMatrixMult identity
+            sm2 = SparseMatrixMult sparse
+            sm3 = SparseMatrixMult identity
+            result1 = (sm1 <> sm2) <> sm3
+            result2 = sm1 <> (sm2 <> sm3)
+        getSMM result1 @?= getSMM result2
       
-  --     it "single element multiplication (test 5)" $ do
-  --       let sparse1 = SparseMatrix 1 1 (Map.fromList [((0,0),5)])
-  --           sparse2 = SparseMatrix 1 1 (Map.fromList [((0,0),3)])
-  --           sm1 = SparseMatrixMult sparse1
-  --           sm2 = SparseMatrixMult sparse2
-  --           result = sm1 <> sm2
-  --       let SparseMatrix _ _ entries = getSMM result
-  --       Map.lookup (0,0) entries @?= Just 15
+      it "single element multiplication (test 5)" $ do
+        let sparse1 = SparseMatrix 1 1 (Map.fromList [((0,0),5)])
+            sparse2 = SparseMatrix 1 1 (Map.fromList [((0,0),3)])
+            sm1 = SparseMatrixMult sparse1
+            sm2 = SparseMatrixMult sparse2
+            result = sm1 <> sm2
+        let SparseMatrix _ _ entries = getSMM result
+        Map.lookup (0,0) entries @?= Just 15
 
-  -- describe "Section 11: Jsonable roundtrip tests" $ do
-    
-  --   describe "Bool Jsonable roundtrip" $ do
-  --     it "True roundtrip (test 1)" $
-  --       fromJson (toJson True) @?= Just True
-  --     it "False roundtrip (test 2)" $
-  --       fromJson (toJson False) @?= Just False
-    
-  --   describe "Integer Jsonable roundtrip" $ do
-  --     it "positive integer roundtrip (test 1)" $
-  --       (fromJson (toJson (42 :: Integer)) :: Maybe Integer) @?= Just 42
-  --     it "zero roundtrip (test 2)" $
-  --       (fromJson (toJson (0 :: Integer)) :: Maybe Integer) @?= Just 0
-  --     it "negative integer roundtrip (test 3)" $
-  --       (fromJson (toJson ((-15) :: Integer)) :: Maybe Integer) @?= Just (-15)
-    
-  --   describe "List Jsonable roundtrip" $ do
-  --     it "empty list roundtrip (test 1)" $
-  --       (fromJson (toJson ([] :: [Integer])) :: Maybe [Integer]) @?= Just []
-  --     it "single element list roundtrip (test 2)" $
-  --       (fromJson (toJson [42 :: Integer]) :: Maybe [Integer]) @?= Just [42]
-  --     it "multiple elements roundtrip (test 3)" $
-  --       (fromJson (toJson [1,2,3 :: Integer]) :: Maybe [Integer]) @?= Just [1,2,3]
-    
-  --   describe "Maybe Jsonable roundtrip" $ do
-  --     it "Nothing roundtrip (test 1)" $
-  --       (fromJson (toJson (Nothing :: Maybe Integer)) :: Maybe (Maybe Integer)) @?= Just Nothing
-  --     it "Just value roundtrip (test 2)" $
-  --       (fromJson (toJson (Just 42 :: Maybe Integer)) :: Maybe (Maybe Integer)) @?= Just (Just 42)
-    
-  --   describe "MultiSet Jsonable roundtrip" $ do
-  --     it "empty multiset roundtrip (test 1)" $
-  --       (fromJson (toJson (empty :: MultiSet Integer)) :: Maybe (MultiSet Integer)) @?= Just empty
-  --     it "single element multiset roundtrip (test 2)" $
-  --       (fromJson (toJson (insert 1 empty)) :: Maybe (MultiSet Integer)) @?= Just (insert 1 empty)
-  --     it "multiset with duplicates roundtrip (test 3)" $
-  --       (fromJson (toJson (fromList [1,1,2])) :: Maybe (MultiSet Integer)) @?= Just (fromList [1,1,2])
-    
-  --   describe "Matrix Jsonable roundtrip" $ do
-  --     it "empty matrix roundtrip (test 1)" $
-  --       (fromJson (toJson (Matrix ([] :: [[Integer]]))) :: Maybe (Matrix Integer)) @?= Just (Matrix [])
-  --     it "single element matrix roundtrip (test 2)" $
-  --       (fromJson (toJson (Matrix [[42]])) :: Maybe (Matrix Integer)) @?= Just (Matrix [[42]])
-  --     it "2x2 matrix roundtrip (test 3)" $
-  --       (fromJson (toJson (Matrix [[1,2], [3,4]])) :: Maybe (Matrix Integer)) @?= Just (Matrix [[1,2], [3,4]])
-    
-  --   describe "SparseMatrix Jsonable roundtrip" $ do
-  --     it "empty sparse matrix roundtrip (test 1)" $ do
-  --       let emptySparse = SparseMatrix 3 3 (Map.empty :: Map.Map (Integer, Integer) Integer)
-  --       (fromJson (toJson emptySparse) :: Maybe (SparseMatrix Integer)) @?= Just emptySparse
-  --     it "single entry sparse matrix roundtrip (test 2)" $ do
-  --       let sparse1 = SparseMatrix 3 3 (Map.fromList [((0,0),1), ((1,1),5), ((2,2),9)] :: Map.Map (Integer, Integer) Integer)
-  --       (fromJson (toJson sparse1) :: Maybe (SparseMatrix Integer)) @?= Just sparse1
-  --     it "multiple entries sparse matrix roundtrip (test 3)" $ do
-  --       let sparse2 = SparseMatrix 3 3 (Map.fromList [((0,1),2), ((1,0),4), ((2,1),8)] :: Map.Map (Integer, Integer) Integer)
-  --       (fromJson (toJson sparse2) :: Maybe (SparseMatrix Integer)) @?= Just sparse2
-    
-  --   describe "Tree Jsonable roundtrip" $ do
-  --     it "empty tree roundtrip (test 1)" $
-  --       (fromJson (toJson (Empty :: Tree Integer)) :: Maybe (Tree Integer)) @?= Just Empty
-  --     it "single node tree roundtrip (test 2)" $
-  --       (fromJson (toJson (Tree Empty 42 Empty)) :: Maybe (Tree Integer)) @?= Just (Tree Empty 42 Empty)
-  --     it "complex tree roundtrip (test 3)" $ do
-  --       let tree = Tree (Tree Empty 1 Empty) 2 (Tree Empty 3 Empty)
-  --       (fromJson (toJson tree) :: Maybe (Tree Integer)) @?= Just tree
+  describe "Section 11: Jsonable roundtrip tests" $ do
+
+    describe "Bool Jsonable roundtrip" $ do
+      it "True roundtrip (test 1)" $
+        fromJson (toJson True) @?= Just True
+      it "False roundtrip (test 2)" $
+        fromJson (toJson False) @?= Just False
+
+    describe "Integer Jsonable roundtrip" $ do
+      it "positive integer roundtrip (test 1)" $
+        (fromJson (toJson (42 :: Integer)) :: Maybe Integer) @?= Just 42
+      it "zero roundtrip (test 2)" $
+        (fromJson (toJson (0 :: Integer)) :: Maybe Integer) @?= Just 0
+      it "negative integer roundtrip (test 3)" $
+        (fromJson (toJson ((-15) :: Integer)) :: Maybe Integer) @?= Just (-15)
+
+    describe "List Jsonable roundtrip" $ do
+      it "empty list roundtrip (test 1)" $
+        (fromJson (toJson ([] :: [Integer])) :: Maybe [Integer]) @?= Just []
+      it "single element list roundtrip (test 2)" $
+        (fromJson (toJson [42 :: Integer]) :: Maybe [Integer]) @?= Just [42]
+      it "multiple elements roundtrip (test 3)" $
+        (fromJson (toJson [1,2,3 :: Integer]) :: Maybe [Integer]) @?= Just [1,2,3]
+
+    describe "Maybe Jsonable roundtrip" $ do
+      it "Nothing roundtrip (test 1)" $
+        (fromJson (toJson (Nothing :: Maybe Integer)) :: Maybe (Maybe Integer)) @?= Just Nothing
+      it "Just value roundtrip (test 2)" $
+        (fromJson (toJson (Just 42 :: Maybe Integer)) :: Maybe (Maybe Integer)) @?= Just (Just 42)
+
+    describe "MultiSet Jsonable roundtrip" $ do
+      it "empty multiset roundtrip (test 1)" $
+        (fromJson (toJson (empty :: MultiSet Integer)) :: Maybe (MultiSet Integer)) @?= Just empty
+      it "single element multiset roundtrip (test 2)" $
+        (fromJson (toJson (insert (1 :: Integer) (empty :: MultiSet Integer))) :: Maybe (MultiSet Integer))
+          @?= Just (insert 1 empty)
+      it "multiset with duplicates roundtrip (test 3)" $
+        (fromJson (toJson (fromList ([1,1,2] :: [Integer]) :: MultiSet Integer)) :: Maybe (MultiSet Integer))
+          @?= Just (fromList [1,1,2])
+
+    describe "Matrix Jsonable roundtrip" $ do
+      it "empty matrix roundtrip (test 1)" $
+        (fromJson (toJson (Matrix ([] :: [[Integer]]))) :: Maybe (Matrix Integer)) @?= Just (Matrix [])
+      it "single element matrix roundtrip (test 2)" $
+        (fromJson (toJson (Matrix [[42 :: Integer]])) :: Maybe (Matrix Integer))
+          @?= Just (Matrix [[42]])
+      it "2x2 matrix roundtrip (test 3)" $
+        (fromJson (toJson (Matrix [[1 :: Integer, 2], [3, 4]])) :: Maybe (Matrix Integer))
+          @?= Just (Matrix [[1, 2], [3, 4]])
+
+    describe "SparseMatrix Jsonable roundtrip" $ do
+      it "empty sparse matrix roundtrip (test 1)" $ do
+        let emptySparse = SparseMatrix 3 3 (Map.empty :: Map.Map (Integer, Integer) Integer)
+        (fromJson (toJson emptySparse) :: Maybe (SparseMatrix Integer)) @?= Just emptySparse
+      it "single entry sparse matrix roundtrip (test 2)" $ do
+        let sparse1 = SparseMatrix 3 3 (Map.fromList [((0,0),1), ((1,1),5), ((2,2),9)] :: Map.Map (Integer, Integer) Integer)
+        (fromJson (toJson sparse1) :: Maybe (SparseMatrix Integer)) @?= Just sparse1
+      it "multiple entries sparse matrix roundtrip (test 3)" $ do
+        let sparse2 = SparseMatrix 3 3 (Map.fromList [((0,1),2), ((1,0),4), ((2,1),8)] :: Map.Map (Integer, Integer) Integer)
+        (fromJson (toJson sparse2) :: Maybe (SparseMatrix Integer)) @?= Just sparse2
+
+    describe "Tree Jsonable roundtrip" $ do
+      it "empty tree roundtrip (test 1)" $
+        (fromJson (toJson (Empty :: Tree Integer)) :: Maybe (Tree Integer)) @?= Just Empty
+      it "single node tree roundtrip (test 2)" $
+        (fromJson (toJson (Tree Empty (42 :: Integer) Empty)) :: Maybe (Tree Integer))
+          @?= Just (Tree Empty 42 Empty)
+      it "complex tree roundtrip (test 3)" $ do
+        let tree = Tree (Tree Empty 1 Empty) 2 (Tree Empty 3 Empty)
+        (fromJson (toJson tree) :: Maybe (Tree Integer)) @?= Just tree

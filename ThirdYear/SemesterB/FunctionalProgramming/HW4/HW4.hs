@@ -127,16 +127,6 @@ data SparseMatrix a
   deriving (Show, Eq)
 
 instance Jsonable a => Jsonable (SparseMatrix a) where
-  -- toJson (SparseMatrix r c es) = JsonObject $ Map.fromList
-  --   [ ("rows", JsonInt r)
-  --   , ("cols", JsonInt c)
-  --   , ("entries", JsonObject $
-  --       Map.mapKeys (\(i,j) -> show i ++ "," ++ show j) $  -- todo: "," / ", "?
-  --       Map.map toJson es)
-  --   ]
-
--- todo: filter 0 values
-
   toJson (SparseMatrix r c e) = JsonObject $ Map.fromList
     [ ("rows", toJson r)
     , ("cols", toJson c) 
@@ -221,29 +211,37 @@ instance (Num a, Eq a) => Semigroup (SparseMatrixSum a) where
     | otherwise = SparseMatrixSum $ SparseMatrix r1 c1 $ Map.filter (/= 0) $ Map.unionWith (+) e1 e2
 
 -- todo: modify
+-- instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
+--   (<>) :: SparseMatrixMult a -> SparseMatrixMult a -> SparseMatrixMult a
+--   (SparseMatrixMult (SparseMatrix r1 c1 e1)) <> (SparseMatrixMult (SparseMatrix r2 c2 e2))
+--     | c1 /= r2 = error "dims not compatibale"
+--     | otherwise = 
+--       SparseMatrixMult $ SparseMatrix r1 c2 $ Map.filter (/= 0) $ Map.fromList $
+--         [ ((i, j), sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]])
+--         | i <- [0..r1-1], j <- [0..c2-1]
+--         , let val = sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]]
+--         , val /= 0
+--         ]
 instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
   (<>) :: SparseMatrixMult a -> SparseMatrixMult a -> SparseMatrixMult a
   (SparseMatrixMult (SparseMatrix r1 c1 e1)) <> (SparseMatrixMult (SparseMatrix r2 c2 e2))
-    | c1 /= r2 = error "dims not compatibale"
-    | otherwise = 
-      SparseMatrixMult $ SparseMatrix r1 c2 $ Map.filter (/= 0) $ Map.fromList $
-        [ ((i, j), sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]])
-        | i <- [0..r1-1], j <- [0..c2-1]
-        , let val = sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]]
-        , val /= 0
-        ]
-
--- instance Num a => Monoid (Bool a) where
---   mempty :: Num a => Bool as
---   mempty = False
-
--- instance Num a => Monoid (Integer a) where
---   mempty :: Num a => Integer as
---   mempty = 0
-
--- instance Num a => Monoid (Expression a) where
---   mempty :: Num a => Expression as
---   mempty = Lit 0
+    | c1 /= r2 = error "dims not compatible"
+    | otherwise = SparseMatrixMult $ SparseMatrix r1 c2 resultEntries
+    where
+      resultEntries :: Map.Map (Integer, Integer) a
+      resultEntries = Map.filter (/= 0) $ Map.fromList $ 
+        foldr (\i acc -> computeRow i ++ acc) [] [0..r1-1]
+      
+      computeRow :: Integer -> [((Integer, Integer), a)]
+      computeRow i = foldr (\j acc -> 
+        let val = sum $ map (\k -> getValue (i, k) e1 * getValue (k, j) e2) [0..c1-1]
+        in if val /= 0 then ((i, j), val) : acc else acc
+        ) [] [0..c2-1]
+      
+      getValue :: (Integer, Integer) -> Map.Map (Integer, Integer) a -> a
+      getValue pos entries = case Map.lookup pos entries of
+        Just v -> v
+        Nothing -> 0
 
 -- Subsection: General functions
 evalPoly :: Num a => [a] -> a -> a
