@@ -711,3 +711,113 @@ main = hspec $ do
       it "complex tree roundtrip (test 3)" $ do
         let tree = Tree (Tree Empty 1 Empty) 2 (Tree Empty 3 Empty)
         (fromJson (toJson tree) :: Maybe (Tree Integer)) @?= Just tree
+
+  describe "Section 12: Expression Inlining" $ do
+    
+    describe "inlineExpressions basic cases" $ do
+      it "simplify only - single expression (test 1)" $ do
+        let input = [(Plus (Lit 2) (Lit 3), "a")]
+            expected = [(Lit 5, "a")]
+        inlineExpressions input @?= expected
+      
+      it "simplify and inline - basic case (test 2)" $ do
+        let x = Iden "x"
+            input = [(Plus x (Lit 0), "e1"), (Mult (Plus x (Lit 0)) (Lit 2), "e2")]
+            expected = [(Iden "x", "e1"), (Mult (Iden "e1") (Lit 2), "e2")]
+        inlineExpressions input @?= expected
+      
+      it "multiple inlinings in one expression (test 3)" $ do
+        let input = [(Plus (Iden "x") (Iden "y"), "p"), 
+                    (Plus (Iden "z") (Iden "w"), "q"),
+                    (Mult (Plus (Iden "x") (Iden "y")) (Plus (Iden "z") (Iden "w")), "r")]
+            expected = [(Plus (Iden "x") (Iden "y"), "p"),
+                       (Plus (Iden "z") (Iden "w"), "q"),
+                       (Mult (Iden "p") (Iden "q"), "r")]
+        inlineExpressions input @?= expected
+      
+      it "no inlining needed (test 4)" $ do
+        let input = [(Iden "x", "a"), (Iden "y", "b"), (Plus (Iden "z") (Iden "w"), "c")]
+            expected = [(Iden "x", "a"), (Iden "y", "b"), (Plus (Iden "z") (Iden "w"), "c")]
+        inlineExpressions input @?= expected
+      
+      it "nested inlining (test 5)" $ do
+        let input = [(Lit 5, "five"), 
+                    (Plus (Lit 5) (Lit 3), "eight"),
+                    (Mult (Plus (Lit 5) (Lit 3)) (Lit 5), "result")]
+            expected = [(Lit 5, "five"), (Lit 8, "eight"), (Lit 40, "result")]
+        inlineExpressions input @?= expected
+    
+    describe "inlineExpressions complex cases" $ do
+      it "partial matching - only exact matches (test 1)" $ do
+        let input = [(Plus (Lit 1) (Lit 2), "three"),
+                    (Plus (Plus (Lit 1) (Lit 2)) (Lit 4), "seven")]
+            expected = [(Lit 3,"three"),(Lit 7,"seven")]
+        inlineExpressions input @?= expected
+      
+      it "order matters - later expressions don't affect earlier (test 2)" $ do
+        let input = [(Mult (Lit 2) (Lit 3), "six"),
+                    (Lit 6, "also_six"),
+                    (Plus (Lit 6) (Lit 1), "seven")]
+            expected = [(Lit 6,"six"),(Iden "six","also_six"),(Lit 7,"seven")]
+        inlineExpressions input @?= expected
+      
+      it "deep nesting with multiple levels (test 3)" $ do
+        let input = [(Lit 1, "one"),
+                    (Plus (Lit 1) (Lit 1), "two"),
+                    (Mult (Plus (Lit 1) (Lit 1)) (Lit 1), "also_two")]
+            expected = [(Lit 1,"one"),(Lit 2,"two"),(Iden "two","also_two")]
+        inlineExpressions input @?= expected
+      
+      it "no simplification possible, only inlining (test 4)" $ do
+        let x = Iden "x"
+            y = Iden "y"
+            input = [(Plus x y, "sum"),
+                    (Mult (Plus x y) x, "product")]
+            expected = [(Plus x y, "sum"),
+                       (Mult (Iden "sum") x, "product")]
+        inlineExpressions input @?= expected
+      
+      it "chain of dependencies (test 5)" $ do
+        let input = [(Lit 2, "two"),
+                    (Plus (Lit 2) (Lit 1), "three"),
+                    (Mult (Lit 2) (Plus (Lit 2) (Lit 1)), "six"),
+                    (Plus (Mult (Lit 2) (Plus (Lit 2) (Lit 1))) (Lit 2), "eight")]
+            expected = [(Lit 2,"two"),(Lit 3,"three"),(Lit 6,"six"),(Lit 8,"eight")]
+        inlineExpressions input @?= expected
+    
+    describe "inlineExpressions edge cases" $ do
+      it "empty list (test 1)" $ do
+        let input = []
+            expected = []
+        inlineExpressions input @?= expected
+      
+      it "single element (test 2)" $ do
+        let input = [(Plus (Lit 1) (Lit 0), "one")]
+            expected = [(Lit 1, "one")]
+        inlineExpressions input @?= expected
+      
+      it "identical expressions with different names (test 3)" $ do
+        let input = [(Lit 5, "five"),
+                    (Lit 5, "five_again"),
+                    (Plus (Lit 5) (Lit 5), "ten")]
+            expected = [(Lit 5, "five"),
+                       (Iden "five", "five_again"),
+                       (Lit 10, "ten")]
+        inlineExpressions input @?= expected
+      
+      it "self-reference impossible (test 4)" $ do
+        let x = Iden "x"
+            input = [(Plus x x, "double_x"),
+                    (Mult (Plus x x) (Plus x x), "quadruple_x")]
+            expected = [(Plus x x, "double_x"),
+                       (Mult (Iden "double_x") (Iden "double_x"), "quadruple_x")]
+        inlineExpressions input @?= expected
+      
+      it "complex arithmetic with inlining (test 5)" $ do
+        let input = [(Minus (Lit 10) (Lit 3), "seven"),
+                    (Div (Minus (Lit 10) (Lit 3)) (Lit 1), "also_seven"),
+                    (Signum (Minus (Lit 10) (Lit 3)), "positive")]
+            expected = [(Lit 7, "seven"),
+                       (Iden "seven", "also_seven"),
+                       (Lit 1, "positive")]
+        inlineExpressions input @?= expected

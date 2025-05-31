@@ -163,7 +163,6 @@ instance Num Bool where
   b1 * b2 = b1 && b2
   abs = id
   signum = id
-  -- signum b = if b then 1 else 0
   fromInteger n = (n `mod` 2) == 1
 
 data Expression a
@@ -210,18 +209,6 @@ instance (Num a, Eq a) => Semigroup (SparseMatrixSum a) where
     | r1 /= r2 || c1 /= c2 = error "dims not compatibale"
     | otherwise = SparseMatrixSum $ SparseMatrix r1 c1 $ Map.filter (/= 0) $ Map.unionWith (+) e1 e2
 
--- todo: modify
--- instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
---   (<>) :: SparseMatrixMult a -> SparseMatrixMult a -> SparseMatrixMult a
---   (SparseMatrixMult (SparseMatrix r1 c1 e1)) <> (SparseMatrixMult (SparseMatrix r2 c2 e2))
---     | c1 /= r2 = error "dims not compatibale"
---     | otherwise = 
---       SparseMatrixMult $ SparseMatrix r1 c2 $ Map.filter (/= 0) $ Map.fromList $
---         [ ((i, j), sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]])
---         | i <- [0..r1-1], j <- [0..c2-1]
---         , let val = sum [Map.findWithDefault 0 (i, k) e1 * Map.findWithDefault 0 (k, j) e2 | k <- [0..c1-1]]
---         , val /= 0
---         ]
 instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
   (<>) :: SparseMatrixMult a -> SparseMatrixMult a -> SparseMatrixMult a
   (SparseMatrixMult (SparseMatrix r1 c1 e1)) <> (SparseMatrixMult (SparseMatrix r2 c2 e2))
@@ -245,7 +232,6 @@ instance (Num a, Eq a) => Semigroup (SparseMatrixMult a) where
 
 -- Subsection: General functions
 evalPoly :: Num a => [a] -> a -> a
--- evalPoly coefficients x = foldr (\coeff acc -> coeff + x * acc) 0 coefficients
 evalPoly coefficients x = eval coefficients x 0
   where
     eval :: Num a => [a] -> a -> Int -> a
@@ -273,8 +259,6 @@ hasPath i j (Matrix m) = compute 1
       | k >= length m = False
       | pathsOfLengthK k i j (Matrix m) > 0 = True
       | otherwise = compute (k + 1)
-
--- hasPath i j (Matrix m) = let nodes = length(m) in pathsOfLengthK $ nodes i j m > 0
 
 -- Section 4: Simplify expressions
 -- We constrain the type to Integral so we can use integer division
@@ -306,8 +290,6 @@ simplify = \case
     in case (s1, s2) of
       (Lit 1, e) -> e
       (e, Lit 1) -> e
-      -- (Lit 0, _) -> Lit 0      -- 0 * e = 0
-      -- (_, Lit 0) -> Lit 0      -- e * 0 = 0
       (Lit a, Lit b) -> Lit (a * b)
       _ -> Mult s1 s2
   
@@ -328,4 +310,35 @@ simplify = \case
       _ -> Signum s
 
 
--- inlineExpressions :: [(Expression Integer, String)] -> [(Expression Integer, String)]
+inlineExpressions :: [(Expression Integer, String)] -> [(Expression Integer, String)]
+inlineExpressions pairs = 
+  let simplifiedPairs = map (\(e, name) -> (simplify e, name)) pairs
+  in inlinePhase simplifiedPairs []
+
+inlinePhase :: [(Expression Integer, String)] -> [(Expression Integer, String)] -> [(Expression Integer, String)]
+inlinePhase [] result = reverse result
+inlinePhase ((e, name) : rest) seen =
+  let inlinede = replaceWithSubExp e seen
+      newPair = (inlinede, name)
+  in inlinePhase rest (newPair : seen)
+
+replaceWithSubExp :: Expression Integer -> [(Expression Integer, String)] -> Expression Integer
+replaceWithSubExp e seen = 
+  case lookupPair e seen of
+    Just matchName -> Iden matchName
+    Nothing -> 
+      case e of
+        Lit n -> Lit n
+        Iden s -> Iden s
+        Plus e1 e2 -> Plus (replaceWithSubExp e1 seen) (replaceWithSubExp e2 seen)
+        Mult e1 e2 -> Mult (replaceWithSubExp e1 seen) (replaceWithSubExp e2 seen)
+        Minus e1 e2 -> Minus (replaceWithSubExp e1 seen) (replaceWithSubExp e2 seen)
+        Div e1 e2 -> Div (replaceWithSubExp e1 seen) (replaceWithSubExp e2 seen)
+        Signum exp -> Signum (replaceWithSubExp exp seen)
+
+lookupPair :: Expression Integer -> [(Expression Integer, String)] -> Maybe String
+lookupPair _ [] = Nothing
+lookupPair e ((seenExpr, seenName):rest) = 
+  if e == seenExpr 
+    then Just seenName
+    else lookupPair e rest
