@@ -242,9 +242,13 @@ evalPoly coefficients x = eval coefficients x 0
 type Length = Int
 type I = Int
 type J = Int
+
 pathsOfLengthK :: Length -> I -> J -> Matrix Int -> Int
-pathsOfLengthK k i j m = let Matrix result = getMM (mult (MatrixMult m) k)
-                         in result !! i !! j
+pathsOfLengthK k i j (Matrix m)
+  | m == [] = 0
+  | k == 0 = if i == j then 1 else 0
+  | otherwise = let Matrix result = getMM (mult (MatrixMult (Matrix m)) k)
+                in result !! i !! j
   where
     mult :: Num a => MatrixMult a -> Int -> MatrixMult a
     mult mat n
@@ -252,7 +256,7 @@ pathsOfLengthK k i j m = let Matrix result = getMM (mult (MatrixMult m) k)
       | otherwise = mat <> mult mat (n - 1)
 
 hasPath :: I -> J -> Matrix Int -> Bool
-hasPath i j (Matrix m) = compute 1
+hasPath i j (Matrix m) = compute 0
   where
     compute :: Int -> Bool
     compute k

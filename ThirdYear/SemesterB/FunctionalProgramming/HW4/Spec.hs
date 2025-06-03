@@ -371,7 +371,7 @@ main = hspec $ do
       it "no path exists (test 3)" $
         hasPath 3 0 adjMatrix @?= False
       it "same node (test 4)" $
-        hasPath 1 1 adjMatrix @?= False
+        hasPath 1 1 adjMatrix @?= True
       it "complex path (test 5)" $
         hasPath 0 2 adjMatrix @?= True
 
