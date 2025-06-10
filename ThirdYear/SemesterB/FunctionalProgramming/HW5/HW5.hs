@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
-module HW4 where
+module HW5 where
 
 import Data.Either
 import Data.List (foldl', sort, uncons)
@@ -22,18 +22,52 @@ import Prelude (Bool (..), Char, Either (..), Enum (..), Eq (..), Foldable (fold
 
 -- Section 1: Foldable functions
 fold :: (Foldable t, Monoid a) => t a -> a
+fold = foldMap id
+
 toList :: Foldable t => t a -> [a]
+toList = foldmap (:[])
+
 elem :: (Foldable t, Eq a) => a -> t a -> Bool
+elem = any . (==)
+
 find :: (Foldable t, Eq a) => (a -> Bool) -> t a -> Maybe a
+-- uses toList
+find p ta = case filter p (toList ta) of
+  [] -> Nothing
+  (x: _) -> Just x
+
 length :: Foldable t => t a -> Int
+length = foldr (\_ n -> n + 1) 0
+
 null :: Foldable t => t a -> Bool
+null = any . (const False)
+
 maximum :: (Foldable t, Ord a) => t a -> Maybe a
+maximum = getMax . foldMap (Max . Just)
+
 maxBy :: (Foldable t, Ord b) => (a -> b) -> t a -> Maybe a
+maxBy f = foldr step Nothing
+  where
+    step x Nothing  = Just x
+    step x (Just y) = Just (if f x `max` f y == f x then x else y)
+
 minimum :: (Foldable t, Ord a) => t a -> Maybe a
+minimum = getMin . foldMap (Min . Just)
+
 minBy :: (Foldable t, Ord b) => (a -> b) -> t a -> Maybe a
+minBy f = foldr step Nothing
+  where
+    step x Nothing  = Just x
+    step x (Just y) = Just (if f x `min` f y == f x then x else y)
+
 sum :: (Foldable t, Num a) => t a -> a
+sum = foldMap Sum
+
 product :: (Foldable t, Num a) => t a -> a
+product = foldMap Product
+
 concatMap :: Foldable t => (a -> [b]) -> t a -> [b]
+concatMap = foldMap
 
 -- Section 2: Composing folds
 data Fold a b c = Fold (b -> a -> b) b (b -> c)
