@@ -85,28 +85,6 @@ instance Functor (Fold a b) where
   fmap :: (c -> d) -> Fold a b c -> Fold a b d
   fmap f (Fold a b c) = Fold a b (f . c)
 
--- From the lectures
--- class Functor f => Apply f where
---   {-# MINIMAL (<*>) | liftA2 #-}
---   liftA2 :: (a -> b -> c) -> fa -> f b -> f c
---   liftA2 f x = (<*>) (fmap f x)
---   (<*>) :: f (a -> b) -> f a -> f b
---   (<*>) = liftA2 id
-
--- instance Apply (Fold a b) where
---   liftA2 :: (c -> d -> e) -> Fold a b c -> Fold a b d -> Fold a b e
---   liftA2 f (Fold a b c) (Fold a' b' d) =
---     Fold
---       (\(x, y) z ->
---         let x' = a x z
---             y' = a' y z
---         in (x', y'))
---       (b, b')
---       (\(x, y) -> 
---         let cx = c x
---             dy = d y
---         in f cx dy)
-
 -- Execute a fold operation as a left fold.
 runFold :: Foldable t => Fold a b c -> t a -> c
 runFold (Fold a b c) ta = c (foldl' a b ta)
@@ -124,7 +102,9 @@ nullF :: Fold a Bool Bool
 nullF = Fold (\_ _ -> False) True id
 
 findF :: (a -> Bool) -> Fold a (Maybe a) (Maybe a)
-findF p = Fold (\x y -> if p y then Just y else x) Nothing id
+findF p = Fold (\x y -> case x of
+                          Nothing -> if p y then Just y else Nothing
+                          Just _ -> x) Nothing id
 
 topKF :: Ord a => Int -> Fold a [a] [a]
 topKF k = Fold (\x y -> y : x) [] (take k . reverse . sort)
@@ -167,12 +147,7 @@ combineWith f (Fold a b c) (Fold a' b' c') =
 
 -- averageF :: Fractional a => Fold a (a, b) a
 averageF :: Fractional a => Fold a (a, Int) a
--- todo: modify to use combine and combine with
 averageF = combineWith (\s c -> if c == 0 then 0 else s / fromIntegral c) sumF lengthF
--- averageF = Fold step (0, 0) extract
---   where
---     step (s, c) x = (s + x, c + 1)
---     extract (s, c) = if c == 0 then 0 else s / fromIntegral c
 
 -- Section 3: Functor functions
 
@@ -232,7 +207,7 @@ instance Monoid a => Monoid (ZipList a) where
 varianceF :: Fractional a => Fold a ((a, a), Int) a
 -- varianceF :: Fractional a => Fold a (a, a, Int) a
 -- todo: changed sig
-varianceF = combineWith (\(s, ssq) c -> (ssq / fromIntegral c) - (s / fromIntegral c) * (s / fromIntegral c)) (combine sumF sumSq) lengthF
+varianceF = combineWith (\(s, ssq) c -> if c == 0 then 0 else (ssq / fromIntegral c) - (s / fromIntegral c) * (s / fromIntegral c)) (combine sumF sumSq) lengthF
   where
     sumSq :: Num a => Fold a a a
     sumSq = mapF (\x -> x * x) sumF
