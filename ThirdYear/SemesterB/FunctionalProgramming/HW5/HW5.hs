@@ -44,7 +44,10 @@ null :: Foldable t => t a -> Bool
 null = foldr (\_ _ -> False) True
 
 maximum :: (Foldable t, Ord a) => t a -> Maybe a
-maximum = getMax . foldMap (Max . Just)
+maximum = foldr step Nothing
+  where
+    step x Nothing = Just x
+    step x (Just y) = Just (max x y)
 
 maxBy :: (Foldable t, Ord b) => (a -> b) -> t a -> Maybe a
 maxBy f = foldr step Nothing
@@ -53,7 +56,10 @@ maxBy f = foldr step Nothing
     step x (Just y) = Just (if f x `max` f y == f x then x else y)
 
 minimum :: (Foldable t, Ord a) => t a -> Maybe a
-minimum = getMin . foldMap (Min . Just)
+minimum = foldr step Nothing
+  where
+    step x Nothing = Just x
+    step x (Just y) = Just (min x y)
 
 minBy :: (Foldable t, Ord b) => (a -> b) -> t a -> Maybe a
 minBy f = foldr step Nothing
@@ -131,7 +137,7 @@ productF :: Num a => Fold a a a
 productF = Fold (*) 1 id
 
 lengthF :: Fold a Int Int
-lengthF = Fold (\_ y -> fromIntegral y + 1) 0 id
+lengthF = Fold (\n _ -> n + 1) 0 id
 
 combine :: Fold a b c -> Fold a b' c' -> Fold a (b, b') (c, c')
 combine (Fold a b c) (Fold a' b' c') = 
@@ -197,15 +203,15 @@ instance Foldable FoldOccur where
   foldr :: (a -> b -> b) -> b -> FoldOccur a -> b
   foldr f b (FoldOccur a) = MultiSet.foldOccur (\x _ z -> f x z) b a
 
-newtype MinToMax a = MinToMax {getMinToMax :: MultiSet a}
-instance Foldable MinToMax where
-  foldr :: (a -> b -> b) -> b -> MinToMax a -> b
-  foldr f b (MinToMax a) = foldr f b (sort (MultiSet.toList a))
+-- newtype MinToMax a = MinToMax {getMinToMax :: MultiSet a}
+-- instance Ord a => Foldable (MinToMax a) where
+--   foldr :: (a -> b -> b) -> b -> MinToMax a -> b
+--   foldr f b (MinToMax a) = foldr f b (sort (MultiSet.toList a))
 
-newtype MaxToMin a = MaxToMin {getMaxToMin :: MultiSet a}
-instance Foldable MaxToMin where
-  foldr :: (a -> b -> b) -> b -> MaxToMin a -> b
-  foldr f b (MaxToMin a) = foldr f b (reverse (sort (MultiSet.toList a)))
+-- newtype MaxToMin a = MaxToMin {getMaxToMin :: MultiSet a}
+-- instance Ord a => Foldable (MinToMax a) where
+--   foldr :: (a -> b -> b) -> b -> MaxToMin a -> b
+--   foldr f b (MaxToMin a) = foldr f b (reverse (sort (MultiSet.toList a)))
 
 -- Bonus section
 
