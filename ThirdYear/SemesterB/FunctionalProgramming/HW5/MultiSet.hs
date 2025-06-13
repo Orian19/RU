@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -Werror #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
-module MultiSet (MultiSet, empty, member, count, remove, insert, fromList, toList) where
+module MultiSet (MultiSet(..), empty, member, count, remove, insert, fromList, toList, foldOccur) where
 
 import Data.Either
 import Data.List (find, intercalate, transpose)
@@ -10,7 +10,7 @@ import Data.Map qualified as Map
 import Data.Maybe
 import Data.Semigroup (Arg (..))
 import Data.Set qualified as Set
-import Prelude (Bool (..), Char, Double, Either (..), Eq (..), Int, Integer, Integral, Maybe (..), Monoid (..), Num (..), Ord (..), Semigroup (..), Foldable (foldr), Show (..), String, all, const, div, drop, error, filter, foldl', foldr, id, init, iterate, length, lookup, map, mod, not, otherwise, product, replicate, reverse, sum, undefined, zip, zipWith, (!!), ($), (&&), (++), (.), (^), (||))
+import Prelude (Bool (..), Char, Double, Either (..), Eq (..), Foldable, Int, Integer, Integral, Maybe (..), Monoid (..), Num (..), Ord (..), Semigroup (..), Show (..), String, all, const, div, drop, error, filter, foldl', foldr, id, init, iterate, length, lookup, map, mod, not, otherwise, product, replicate, reverse, sum, undefined, zip, zipWith, (!!), ($), (&&), (++), (.), (^), (||))
 
 newtype MultiSet a = MultiSet {_getMultiset :: Set.Set (Arg a Int)}
 
@@ -81,9 +81,13 @@ instance Ord a => Monoid (MultiSet a) where
 
 -- instance Foldable (MultiSet a) where
     -- changed sig
+-- instance Foldable MultiSet where
+--     foldr :: (a -> b -> b) -> b -> MultiSet a -> b
+--     foldr f b m = foldr f b (toList m)
+
 instance Foldable MultiSet where
-    foldr :: (a -> b -> b) -> b -> MultiSet a -> b
-    foldr f b m = foldr f b (toList m)
+  foldr :: (a -> b -> b) -> b -> MultiSet a -> b
+  foldr f b m = foldOccur (\x n acc -> foldr f acc (replicate n x)) b m
 
 -- | /O(n)/. Fold over the elements of a multiset with their occurrences.
 foldOccur :: (a -> Int -> b -> b) -> b -> MultiSet a -> b
