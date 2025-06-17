@@ -31,16 +31,12 @@ elem :: (Foldable t, Eq a) => a -> t a -> Bool
 elem = any . (==)
 
 find :: (Foldable t, Eq a) => (a -> Bool) -> t a -> Maybe a
--- uses toList
-find p ta = case filter p (HW5.toList ta) of
-  [] -> Nothing
-  (x: _) -> Just x
+find p = foldr (\x acc -> if p x then Just x else acc) Nothing
 
 length :: Foldable t => t a -> Int
 length = foldr (\_ n -> n + 1) 0
 
 null :: Foldable t => t a -> Bool
--- null = any . (const False)
 null = foldr (\_ _ -> False) True
 
 maximum :: (Foldable t, Ord a) => t a -> Maybe a
@@ -178,15 +174,15 @@ instance Foldable FoldOccur where
   foldr :: (a -> b -> b) -> b -> FoldOccur a -> b
   foldr f b (FoldOccur a) = MultiSet.foldOccur (\x _ z -> f x z) b a
 
--- newtype MinToMax a = MinToMax {getMinToMax :: MultiSet a}
--- instance Ord a => Foldable (MinToMax a) where
---   foldr :: (a -> b -> b) -> b -> MinToMax a -> b
---   foldr f b (MinToMax a) = foldr f b (sort (MultiSet.toList a))
+newtype MinToMax a = MinToMax {getMinToMax :: MultiSet a}
+instance Foldable MinToMax where
+  foldr :: (a -> b -> b) -> b -> MinToMax a -> b
+  foldr f b (MinToMax a) = foldr f b (MultiSet.toList a)
 
--- newtype MaxToMin a = MaxToMin {getMaxToMin :: MultiSet a}
--- instance Ord a => Foldable (MinToMax a) where
---   foldr :: (a -> b -> b) -> b -> MaxToMin a -> b
---   foldr f b (MaxToMin a) = foldr f b (reverse (sort (MultiSet.toList a)))
+newtype MaxToMin a = MaxToMin {getMaxToMin :: MultiSet a}
+instance Foldable MaxToMin where
+  foldr :: (a -> b -> b) -> b -> MaxToMin a -> b
+  foldr f b (MaxToMin ms) = foldr f b (reverse (MultiSet.toList ms))
 
 -- Bonus section
 
@@ -205,19 +201,7 @@ instance Monoid a => Monoid (ZipList a) where
 -- Bonus (5 pt.): implement the varianceF Fold. This is slightly harder than average - the formula is
 -- E[X^2] - E[x]^2, so you need to keep track of more than two quantities in your tuple. Use `combineWith` as needed.
 varianceF :: Fractional a => Fold a ((a, a), Int) a
--- varianceF :: Fractional a => Fold a (a, a, Int) a
--- todo: changed sig
 varianceF = combineWith (\(s, ssq) c -> if c == 0 then 0 else (ssq / fromIntegral c) - (s / fromIntegral c) * (s / fromIntegral c)) (combine sumF sumSq) lengthF
   where
     sumSq :: Num a => Fold a a a
     sumSq = mapF (\x -> x * x) sumF
-
--- todo: modify according to -> 
-  -- use combineWith, map and alike as needed to accumulate multiple quantities at the same time and combining them
--- varianceF = Fold
---   (\(s, sumSq, c) x -> (s + x, sumSq + x * x, c + 1)) 
---   (0, 0, 0)
---   (\(s, sumSq, c) -> 
---     if c == 0
---       then 0
---       else (sumSq / fromIntegral c) - (s / fromIntegral c) ^ 2)

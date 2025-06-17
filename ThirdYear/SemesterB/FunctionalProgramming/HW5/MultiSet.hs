@@ -51,7 +51,7 @@ fromList :: Ord a => [a] -> MultiSet a
 fromList = foldr insert empty
 
 -- | Convert a multiset into a list, including duplicates.
-toList :: Ord a => MultiSet a -> [a]
+toList :: MultiSet a -> [a]
 toList m = Set.foldr insertVal [] (_getMultiset m)
     where
         insertVal :: Arg a Int -> [a] -> [a]
@@ -79,12 +79,6 @@ instance Ord a => Monoid (MultiSet a) where
 
 ---------------- Ex. 5 --------------------- 
 
--- instance Foldable (MultiSet a) where
-    -- changed sig
--- instance Foldable MultiSet where
---     foldr :: (a -> b -> b) -> b -> MultiSet a -> b
---     foldr f b m = foldr f b (toList m)
-
 instance Foldable MultiSet where
   foldr :: (a -> b -> b) -> b -> MultiSet a -> b
   foldr f b m = foldOccur (\x n acc -> foldr f acc (replicate n x)) b m
@@ -92,7 +86,3 @@ instance Foldable MultiSet where
 -- | /O(n)/. Fold over the elements of a multiset with their occurrences.
 foldOccur :: (a -> Int -> b -> b) -> b -> MultiSet a -> b
 foldOccur f s (MultiSet m) = Set.foldr (\(Arg a b) x -> f a b x) s m
-
-
-
-

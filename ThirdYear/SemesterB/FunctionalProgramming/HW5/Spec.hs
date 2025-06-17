@@ -261,6 +261,7 @@ main = hspec $ do
         runFold (findF even) [1, 3, 4, 6] @?= Just 4
       it "findF on single element (test 5)" $
         runFold (findF (== 42)) singleList @?= Just 42
+        -- todo: is this supposed to run? (is this a valid test?)
     --   it "findF on infinite list (test 6)" $
     --     runFold (findF (> 100)) [1..] @?= Just 101
 
@@ -444,37 +445,43 @@ main = hspec $ do
         let ms = FoldOccur $ fromList [5, 5, 5]
         HW5.toList ms @?= [5]
 
-    -- describe "MinToMax instance" $ do
-    --   it "toList ascending order (test 1)" $ do
-    --     let ms = MinToMax $ insert 3 $ insert 1 $ insert 2 empty
-    --     HW5.toList ms @?= [1, 2, 3]
-    --   it "MinToMax with duplicates (test 2)" $ do
-    --     let ms = MinToMax $ fromList [3, 1, 2, 1, 3]
-    --     HW5.toList ms @?= [1, 1, 2, 3, 3]
-    --   it "MinToMax single element (test 3)" $ do
-    --     let ms = MinToMax $ fromList [42]
-    --     HW5.toList ms @?= [42]
-    --   it "MinToMax empty set (test 4)" $
-    --     HW5.toList (MinToMax (empty :: MultiSet Int)) @?= []
-    --   it "MinToMax with negatives (test 5)" $ do
-    --     let ms = MinToMax $ fromList [-1, 3, -2, 0]
-    --     HW5.toList ms @?= [-2, -1, 0, 3]
+    describe "MinToMax instance" $ do
+      it "toList - pdf (test 0)" $ do
+        let ms = HW5.toList $ MinToMax $ insert 2 $ insert 1 $ insert 2 mempty
+        HW5.toList ms @?= [1, 2, 2]  -- Sorted in ascending order
+      it "toList ascending order (test 1)" $ do
+        let ms = MinToMax $ insert 3 $ insert 1 $ insert 2 empty
+        HW5.toList ms @?= [1, 2, 3]
+      it "MinToMax with duplicates (test 2)" $ do
+        let ms = MinToMax $ fromList [3, 1, 2, 1, 3]
+        HW5.toList ms @?= [1, 1, 2, 3, 3]
+      it "MinToMax single element (test 3)" $ do
+        let ms = MinToMax $ fromList [42]
+        HW5.toList ms @?= [42]
+      it "MinToMax empty set (test 4)" $
+        HW5.toList (MinToMax (empty :: MultiSet Int)) @?= []
+      it "MinToMax with negatives (test 5)" $ do
+        let ms = MinToMax $ fromList [-1, 3, -2, 0]
+        HW5.toList ms @?= [-2, -1, 0, 3]
 
-    -- describe "MaxToMin instance" $ do
-    --   it "toList descending order (test 1)" $ do
-    --     let ms = MaxToMin $ insert 1 $ insert 3 $ insert 2 empty
-    --     HW5.toList ms @?= [3, 2, 1]
-    --   it "MaxToMin with duplicates (test 2)" $ do
-    --     let ms = MaxToMin $ fromList [1, 3, 2, 3, 1]
-    --     HW5.toList ms @?= [3, 3, 2, 1, 1]
-    --   it "MaxToMin single element (test 3)" $ do
-    --     let ms = MaxToMin $ fromList [42]
-    --     HW5.toList ms @?= [42]
-    --   it "MaxToMin empty set (test 4)" $
-    --     HW5.toList (MaxToMin (empty :: MultiSet Int)) @?= []
-    --   it "MaxToMin with negatives (test 5)" $ do
-    --     let ms = MaxToMin $ fromList [-1, 3, -2, 0]
-    --     HW5.toList ms @?= [3, 0, -1, -2]
+    describe "MaxToMin instance" $ do
+      it "toList - pdf (test 0)" $ do
+        let ms = HW5.toList $ MaxToMin $ insert 2 $ insert 1 $ insert 2 mempty
+        HW5.toList ms @?= [2, 2, 1]  -- Sorted in ascending order
+      it "toList descending order (test 1)" $ do
+        let ms = MaxToMin $ insert 1 $ insert 3 $ insert 2 empty
+        HW5.toList ms @?= [3, 2, 1]
+      it "MaxToMin with duplicates (test 2)" $ do
+        let ms = MaxToMin $ fromList [1, 3, 2, 3, 1]
+        HW5.toList ms @?= [3, 3, 2, 1, 1]
+      it "MaxToMin single element (test 3)" $ do
+        let ms = MaxToMin $ fromList [42]
+        HW5.toList ms @?= [42]
+      it "MaxToMin empty set (test 4)" $
+        HW5.toList (MaxToMin (empty :: MultiSet Int)) @?= []
+      it "MaxToMin with negatives (test 5)" $ do
+        let ms = MaxToMin $ fromList [-1, 3, -2, 0]
+        HW5.toList ms @?= [3, 0, -1, -2]
 
     describe "foldOccur function" $ do
       it "foldOccur on empty multiset (test 1)" $
@@ -565,3 +572,4 @@ main = hspec $ do
       it "varianceF on negative numbers (test 5)" $ do
         let result = runFold varianceF [-1.0, 0.0, 1.0]
         (abs (result - 0.6666666666666666) < 1e-10) @?= True
+        
