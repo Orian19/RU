@@ -15,10 +15,18 @@ import qualified Data.Set as S
 data Tree a = Empty | Tree (Tree a) a (Tree a) deriving (Eq, Show)
 
 instance Functor Tree where
+  fmap _ Empty = Empty
+  fmap f (Tree l d r) = Tree (fmap f l) (f d) (fmap f r)
+
 -- In-order traversal
 instance Foldable Tree where
+  foldr _ acc Empty = acc
+  foldr f acc (Tree l d r) = foldr f (f d (foldr f acc r)) l
+
 -- In-order traversal
 instance Traversable Tree where
+  traverse _ Empty = pure Empty
+  traverse f (Tree l d r) = Tree <$> traverse f l <*> f d <*> traverse f r
 
 -- State as defined in the lectures
 data State s a = State {runState :: s -> (a, s)}
@@ -38,6 +46,10 @@ instance Monad (State s) where
 
 -- Labeling: Start from 1, use in-order.
 label :: Tree a -> Tree (Int, a)
+label tree = fst $ runState (traverse labelValue tree) 1
+  where
+    labelValue :: a -> State Int (Int, a)
+    labelValue value = State $ \counter -> ((counter, value), counter + 1)
 
 
 -- Section 2: Destroy Iran's Nuclear sites
