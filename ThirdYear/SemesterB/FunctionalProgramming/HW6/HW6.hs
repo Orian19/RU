@@ -7,6 +7,7 @@
 module HW6 where
 
 import qualified Data.Set as S
+import Text.Read (readEither)
 
 --
 -- Section 1: Binary Tree as Traversable
@@ -126,28 +127,83 @@ data Cell = Hidden | Hit | Miss
 -- Entry point
 
 play :: GameConfig -> IO ()
+play config = withGameState (initGameState config)
 
 -- Printing / rendering
 
 renderGameState :: GameState -> [[Cell]]
+renderGameState state = 
+  [ [ cellAt r c | c <- [0..numColumns (config state) - 1] ]
+  | r <- [0..numRows (config state) - 1] ]
+  where
+    cellAt r c
+      | coord `S.member` hits state = Hit
+      | coord `S.member` misses state = Miss
+      | otherwise = Hidden
+      where coord = Coordinate r c
 
 showCell :: Cell -> Char
+showCell Hidden = '*'
+showCell Hit = '!'
+showCell Miss = 'X'
 
 showCells :: Int -> Int -> [[Cell]] -> String
+showCells rows cols cells = unlines (header : zipWith showRow [0..rows-1] cells)
+  where
+    header = "\\ " ++ concatMap show [0..cols-1]
+    showRow rowNum cellRow = show rowNum ++ " " ++ map showCell cellRow
 
 showBoard :: GameState -> String
+showBoard state = showCells (numRows cfg) (numColumns cfg) (renderGameState state)
+  where cfg = config state
 
 -- Initiaoization
 
 initGameState :: GameConfig -> GameState
+initGameState config = GameState config S.empty S.empty 0
 
 -- Game flow
 
 gameStatus :: GameState -> GameStatus
+gameStatus state
+  | hits state == sites (config state) = Win
+  | guessesSoFar state >= maxGuesses (config state) = Lose
+  | otherwise = Running
 
 nextGameState :: Coordinate -> GameState -> GameState
+nextGameState coord state
+  | coord `S.member` (hits state `S.union` misses state) = state  -- already guessed
+  | coord `S.member` sites (config state) = state { hits = S.insert coord (hits state), guessesSoFar = guessesSoFar state + 1 }
+  | otherwise = state { misses = S.insert coord (misses state), guessesSoFar = guessesSoFar state + 1 }
 
 withGameState :: GameState -> IO ()
+withGameState state = do
+  putStrLn (showBoard state)
+  case gameStatus state of
+    Win -> win
+    Lose -> lose
+    Running -> do
+      putStr "Guess: "
+      result <- readCoordinate
+      case result of
+        Left "?" -> do
+          showGameInfo state
+          withGameState state
+        Left err -> do
+          putStrLn err
+          withGameState state
+        Right coord -> withGameState (nextGameState coord state)
+
+-- show information about guesses so far and remaining guesses
+showGameInfo :: GameState -> IO ()
+showGameInfo state = do
+  putStrLn "Guesses so far:"
+  mapM_ (putStrLn . showCoordinate) allGuesses
+  putStrLn (show guessesLeft ++ " Guesses left!")
+  where
+    allGuesses = S.toList (hits state `S.union` misses state)
+    guessesLeft = maxGuesses (config state) - guessesSoFar state
+    showCoordinate (Coordinate r c) = show r ++ " " ++ show c
 
 -- win / lose functions, pre-defined.
 
@@ -159,8 +215,21 @@ lose = putStrLn "Game over :((("
 
  -- Input parsing, pre-defined.
 
+data InputResult = CoordInput Coordinate | HelpRequest | ParseError String
+
 readCoordinate :: IO (Either String Coordinate)
-readCoordinate = parseCoordinate <$> getLine
+readCoordinate = do
+  result <- parseInput <$> getLine
+  case result of
+    CoordInput coord -> return (Right coord)
+    HelpRequest -> return (Left "?")
+    ParseError err -> return (Left err)
+
+parseInput :: String -> InputResult
+parseInput "?" = HelpRequest
+parseInput s = case parseCoordinate s of
+  Right coord -> CoordInput coord
+  Left err -> ParseError err
 
 -- | Parses a string into two integers.
 --   Returns Left an error message if parsing fails, Right (a, b) otherwise.
