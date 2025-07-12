@@ -144,22 +144,37 @@ liftEither2 f a b = case a of
 data Expr = Iden String | Lit Int | Plus Expr Expr | Minus Expr Expr | Mul Expr Expr | Div Expr Expr deriving (Show, Eq)
 
 -- Adds parentheses around sub-expressions (the top level expression never has parentheses).
-exprToString :: Expr -> String
-exprToString e = toStr e
-  where
-    toStr :: Expr -> String
-    toStr (Lit n) = show n
-    toStr (Iden s) = s
-    toStr (Plus e1 e2) = toStr e1 ++ " + " ++ wrapPar e2
-    toStr (Minus e1 e2) = toStr e1 ++ " - " ++ wrapPar e2
-    toStr (Mul e1 e2) = toStr e1 ++ " * " ++ wrapPar e2
-    toStr (Div e1 e2) = toStr e1 ++ " / " ++ wrapPar e2
+-- exprToString :: Expr -> String
+-- exprToString e = toStr e
+--   where
+--     toStr :: Expr -> String
+--     toStr (Lit n) = show n
+--     toStr (Iden s) = s
+--     toStr (Plus e1 e2) = toStr e1 ++ " + " ++ wrapPar e2
+--     toStr (Minus e1 e2) = toStr e1 ++ " - " ++ wrapPar e2
+--     toStr (Mul e1 e2) = toStr e1 ++ " * " ++ wrapPar e2
+--     toStr (Div e1 e2) = toStr e1 ++ " / " ++ wrapPar e2
     
-    wrapPar :: Expr -> String
-    wrapPar ex = case ex of
-      Lit x -> show x
-      Iden y -> y
-      _ -> "(" ++ toStr ex ++ ")"
+--     wrapPar :: Expr -> String
+--     wrapPar ex = case ex of
+--       Lit x -> show x
+--       Iden y -> y
+--       _ -> "(" ++ toStr ex ++ ")"
+
+exprToString :: Expr -> String
+exprToString = \case
+  Iden x -> x
+  Lit x -> show x
+  Plus l r -> aux '+' l r
+  Mul l r -> aux '*' l r
+  Minus l r -> aux '-' l r
+  Div l r -> aux '/' l r
+ where
+  aux op l r = withParens l ++ " " ++ [op] ++ " " ++ withParens r
+  withParens l = case l of
+    Iden _ -> exprToString l
+    Lit _ -> exprToString l
+    e -> "(" ++ exprToString e ++ ")"
 
 -- Bonus (25 points): Same as the above, but without unnecessary parentheses
 exprToString' :: Expr -> String
@@ -208,6 +223,7 @@ partialEvaluate ids = \case
   Iden x -> case lookup x ids of
     Nothing -> Just $ Iden x
     Just y -> Just $ Lit y
+    
   Lit x -> Just $ Lit x
 
   Plus x y -> case partialEvaluate ids x of
@@ -298,17 +314,26 @@ zipEither = \case
       Left err -> Left err
       Right zs -> Right ((x, y) : zs)
 
+-- unzip :: [(a, b)] -> ([a], [b])
+-- unzip = \case
+--   [] -> ([], [])
+--   ((a, b) : xs) -> case unzip xs of
+--     (as, bs) -> (a : as, b : bs)
+
+-- unzipFirst :: [(a, b)] -> [a]
+-- unzipFirst = fst . unzip
+
+-- unzipSecond :: [(a, b)] -> [b]
+-- unzipSecond = snd . unzip
+
 unzip :: [(a, b)] -> ([a], [b])
-unzip = \case
-  [] -> ([], [])
-  ((a, b) : xs) -> case unzip xs of
-    (as, bs) -> (a : as, b : bs)
+unzip l = (unzipFirst l, unzipSecond l)
 
 unzipFirst :: [(a, b)] -> [a]
-unzipFirst = fst . unzip
+unzipFirst = map fst
 
 unzipSecond :: [(a, b)] -> [b]
-unzipSecond = snd . unzip
+unzipSecond = map snd
 
 cartesianWith :: (a -> b -> c) -> [a] -> [b] -> [c]
 cartesianWith f a b = [f x y | x <- a, y <- b]
