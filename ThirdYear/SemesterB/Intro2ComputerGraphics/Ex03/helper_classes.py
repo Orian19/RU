@@ -225,7 +225,7 @@ class Triangle(Object3D):
             return None
     
         # for the point to be on the plane:
-        # N * (p - a) = 0, where N - normal, p - O + tD, a - point on the plane
+        # N * (p - a) = 0, where N - normal, p = O + tD, a - point on the plane
         # opening the equation we get:
         # N * p = N * a = d
         # =>  N * (O + tD) = d  => N * O + t(N*D) = d
@@ -237,8 +237,8 @@ class Triangle(Object3D):
         if t < 0:
             return None
     
-        # after we checked the point is on the plane and the ray is no parallel,
-        # we can use the Barycentric coordinates to check if the point is also on the triangle
+        # after we checked the point is on the plane and the ray is not parallel,
+        # we can use the Barycentric coordinates to check if the point is also on the triangle (not just on the plane)
         p = ray.origin + t * ray.direction
     
         abc_total_area = self.compute_triangle_area(self.ab, self.ac)
