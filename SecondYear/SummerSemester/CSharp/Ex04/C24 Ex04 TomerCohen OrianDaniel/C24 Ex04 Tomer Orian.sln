@@ -1,13 +1,13 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ex04.Menus.Interfaces", "Ex04.Menus.Interfaces\Ex04.Menus.Interfaces.csproj", "{50B962FC-CE5F-42BE-A78D-1F6E85E337F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ex04.Menus.Interfaces", "Ex04.Menus.Interfaces\Ex04.Menus.Interfaces.csproj", "{50B962FC-CE5F-42BE-A78D-1F6E85E337F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ex04.Menus.Events", "Ex04.Menus.Events\Ex04.Menus.Events.csproj", "{2C9E3906-9F78-4F39-B4B6-E20A865D1899}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ex04.Menus.Events", "Ex04.Menus.Events\Ex04.Menus.Events.csproj", "{2C9E3906-9F78-4F39-B4B6-E20A865D1899}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ex04.Menus.Test", "Ex04.Menus.Test\Ex04.Menus.Test.csproj", "{CFB239E3-1AF3-4A05-AAB4-EA0A8EFCB437}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ex04.Menus.Test", "Ex04.Menus.Test\Ex04.Menus.Test.csproj", "{CFB239E3-1AF3-4A05-AAB4-EA0A8EFCB437}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

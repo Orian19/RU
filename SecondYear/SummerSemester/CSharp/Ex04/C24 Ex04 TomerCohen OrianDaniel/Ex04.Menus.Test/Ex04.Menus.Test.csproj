@@ -1,61 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CFB239E3-1AF3-4A05-AAB4-EA0A8EFCB437}</ProjectGuid>
+    <TargetFramework>net9.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Ex04.Menus.Test</RootNamespace>
-    <AssemblyName>Ex04.Menus.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <ProjectReference Include="..\Ex04.Menus.Events\Ex04.Menus.Events.csproj" />
+    <ProjectReference Include="..\Ex04.Menus.Interfaces\Ex04.Menus.Interfaces.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="EventsTest\CountCapitalsEvents.cs" />
-    <Compile Include="EventsTest\ShowCurrentDateEvents.cs" />
-    <Compile Include="EventsTest\ShowCurrentTimeEvents.cs" />
-    <Compile Include="EventsTest\ShowVersionEvents.cs" />
-    <Compile Include="InterfacesTest\CountCapitalsInterfaces.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="InterfacesTest\ShowCurrentDateInterfaces.cs" />
-    <Compile Include="InterfacesTest\ShowCurrentTimeInterfaces.cs" />
-    <Compile Include="InterfacesTest\ShowVersionInterfaces.cs" />
-    <Compile Include="Test.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Ex04.Menus.Events\Ex04.Menus.Events.csproj">
-      <Project>{2c9e3906-9f78-4f39-b4b6-e20a865d1899}</Project>
-      <Name>Ex04.Menus.Events</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Ex04.Menus.Interfaces\Ex04.Menus.Interfaces.csproj">
-      <Project>{50b962fc-ce5f-42be-a78d-1f6e85e337f3}</Project>
-      <Name>Ex04.Menus.Interfaces</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
